@@ -1,0 +1,17 @@
+*.o
+*.a
+*.mod
+.nfs*
+*.kate-swp
+*.auto.f90
+*.pyc
+*.so
+*.so.dSYM
+*.tmp
+*.png
+*.pyf
+.python-version
+.DS_Store
+*/examples/.ipynb_checkpoints
+*/docs/build
+*/build
