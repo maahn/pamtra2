@@ -30,9 +30,5 @@ def water(Tk,f):
     eps1=(es-e1)/(1+A1*A1)+(e1-einf)/(1+A2*A2)+einf
     eps2=(es*A1-e1*A1)/(1+A1*A1)+(e1*A2-einf*A2)/(1+A2*A2)
 
-    N=np.sqrt(eps1*eps1+eps2*eps2)
-    r=np.sqrt(N)
-    THETA=np.arctan2(eps2,eps1)
-    nreal=r*(np.cos(0.5*THETA))
-    nimm=r*(np.sin(0.5*THETA))
-    return complex(nreal,nimm)
+    eps = complex(eps1,eps2)
+    return np.sqrt(eps)
