@@ -1,8 +1,12 @@
-import numpy as np
 """
 Matzler (2006)
 
+Temperature in Kelvin
+Frequency in GHz
+
 """
+
+import numpy as np
 
 B1 = 0.0207
 b = 335.
@@ -21,7 +25,7 @@ def matzler_2006(T,f):
     betaM=B1*np.exp(b/T)/(T*((np.exp(b/T)-1)*(np.exp(b/T)-1)))+B2*f*f
     beta=betaM+deltabeta
     eps2=alpha/f + beta*f
-    return complex(eps1,eps2)
+    return eps1 + 1j*eps2
 
 #######################################################################################################
 
