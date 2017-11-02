@@ -37,25 +37,6 @@ def matzler_2006(temperatures,frequencies):
     """Ice complex relative dielectric constant according to Matzler (2006)
     "Microwave remote sensing" TODO: correct book title
 
-    Function parameters should be documented in the ``Parameters`` section.
-    The name of each parameter is required. The type and description of each
-    parameter is optional, but should be included if not obvious.
-
-    If \*args or \*\*kwargs are accepted,
-    they should be listed as ``*args`` and ``**kwargs``.
-
-    The format for a parameter is::
-
-        name : type
-            description
-
-            The description may span multiple lines. Following lines
-            should be indented to match the first line of the description.
-            The ": type" is optional.
-
-            Multiple paragraphs are supported in parameter
-            descriptions.
-
     Parameters
     ----------
     temperatures : float
@@ -96,15 +77,15 @@ def matzler_2006(temperatures,frequencies):
 
 #######################################################################################################
 
-def eps(T,f,what="Matzler_2006"):
+def eps(temperatures,frequencies,what="Matzler_2006"):
     if (what == "Matzler_2006"):
-        return matzler_2006(T,f)
+        return matzler_2006(temperatures,frequencies)
     else:
         print("I do not recognize the ice refractive index specification, falling back to Matzler 2006")
-        return matzler_2006(T,f)
+        return matzler_2006(temperatures,frequencies)
 
-def n(T,f,what="Matzler_2006"):
-    return np.sqrt(eps(T,f,what))
+def n(temperatures,frequencies,what="Matzler_2006"):
+    return np.sqrt(eps(temperatures,frequencies,what))
 
 #######################################################################################################
 

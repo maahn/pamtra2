@@ -1,47 +1,118 @@
+""" refractive.ice module.
+
+This module provides a list of water refractive index models to compute the
+dielectric properties of water according to the requested frequencies and
+temeperatures.
+The module can be also used as a standalone python script.
+
+Example
+-------
+The python script is callable as
+
+    $ python water.py Temperature Frequency
+
+and returns the complex refractive index of water at the requested
+Temperature [Kelvin] and Frequency [GHz]
+
+Notes
+-----
+    It is possible to call the functions implemented in this module using
+    nd-arrays. The function arguments must either have exactly the same
+    shape allowing element-wise application of the functions or one of
+    the two must be a scalar which will be spread across the nd computations
+
+Temperatures should be provided in Kelvin and frequencies in GHz
+A very basic non-negative value check is performed on the data
+
+"""
+
 import numpy as np
-"""
-Ellison et al. (2005)
-IF I REMEMBER CORRECTLY
 
-"""
+def ellison(temperatures,frequencies):
+    """Water complex relative dielectric constant according to Ellison (2005)
+    "..." TODO: put the extensive correct reference here
 
+    Parameters
+    ----------
+    temperatures : float
+        nd array of temperatures [kelvin]
+    frequencies : float
+        nd array of frequencies [GHz]
 
-a0 = 5.7230
-a1 = 2.2379e-2
-a2 = -7.1237e-4
-a3 = 5.0478
-a4 = -7.0315e-2
-a5 = 6.0059e-4
-a6 = 3.6143
-a7 = 2.8841e-2
-a8 = 1.3652e-1
-a9 = 1.4825e-3
-a10 = 2.4166e-4
+    Returns
+    -------
+    nd - complex
+        Relative dielectric constant of ice at the requested frequencies and temperatures
 
-def ellison(Tk,f):
-    T = Tk-273.15
+    Raises
+    ------
+    ValueError
+        If a negative frequency or temperature is passed as an argument
+
+    """
+
+    if (frequencies < 0).any():
+        raise ValueError('A negative frequency value has been passed')
+    if (temperatures < 0).any():
+        raise ValueError('A negative temperature value has been passed')
+
+    a0 = 5.7230
+    a1 = 2.2379e-2
+    a2 = -7.1237e-4
+    a3 = 5.0478
+    a4 = -7.0315e-2
+    a5 = 6.0059e-4
+    a6 = 3.6143
+    a7 = 2.8841e-2
+    a8 = 1.3652e-1
+    a9 = 1.4825e-3
+    a10 = 2.4166e-4
+
+    T = temperatures-273.15
     es=(37088.6-82.168*T)/(421.854+T)
     einf=a6+a7*T
     e1=a0+a1*T+a2*T*T
     ni1=(45+T)/(a3+a4*T+a5*T*T)
     ni2=(45+T)/(a8+a9*T+a10*T*T)
-    A1=f/ni1
-    A2=f/ni2
+    A1=frequencies/ni1
+    A2=frequencies/ni2
     eps1=(es-e1)/(1+A1*A1)+(e1-einf)/(1+A2*A2)+einf
     eps2=(es*A1-e1*A1)/(1+A1*A1)+(e1*A2-einf*A2)/(1+A2*A2)
     return eps1 + 1j*eps2
 
 #######################################################################################################
 
-def eps(T,f,what="ellison"):
+def eps(Temperatures,Frequencies,what="ellison"):
+    """Water complex relative dielectric constant according to the requested model
+
+    Parameters
+    ----------
+    temperatures : float
+        nd array of temperatures [kelvin]
+    frequencies : float
+        nd array of frequencies [GHz]
+    what : string
+        dielectric model name default to Ellison (2005)
+
+    Returns
+    -------
+    nd - complex
+        Relative dielectric constant of ice at the requested frequencies and temperatures
+
+    Raises
+    ------
+    ValueError
+        If a negative frequency or temperature is passed as an argument
+
+    """
     if (what == "ellison"):
-        return ellison(T,f)
+        return ellison(Temperatures,Frequencies)
     else:
         print("I do not recognize the ice refractive index specification, falling back to ellison")
-        return ellison(T,f)
+        return ellison(Temperatures,Frequencies)
 
-def n(T,f,what="ellison"):
-    return np.sqrt(eps(T,f,what))
+def n(Temperatures,Frequencies,what="ellison"):
+    return np.sqrt(eps(Temperatures,Frequencies,what))
 
 #######################################################################################################
 
