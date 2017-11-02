@@ -101,10 +101,10 @@ def eps(temperatures,frequencies,model="Matzler_2006"):
 
     """
     if (model == "Matzler_2006"):
-        return matzler_2006(temperatures,frequencies)
+        return matzler_2006(np.array(temperatures),np.array(frequencies))
     else:
         print("I do not recognize the ice refractive index specification, falling back to Matzler 2006")
-        return matzler_2006(temperatures,frequencies)
+        return matzler_2006(np.array(temperatures),np.array(frequencies))
 
 def n(temperatures,frequencies,model="Matzler_2006"):
     """Ice complex refractive index according to the requested model
@@ -129,7 +129,7 @@ def n(temperatures,frequencies,model="Matzler_2006"):
         If a negative frequency or temperature is passed as an argument
 
     """
-    return np.sqrt(eps(temperatures,frequencies,model))
+    return np.sqrt(eps(np.array(temperatures),np.array(frequencies),model))
 
 #######################################################################################################
 

@@ -55,14 +55,16 @@ def bruggeman(m, mix):
     e_eff = (-b - np.sqrt(b**2-4*a*c))/(2*a)
     return np.sqrt(e_eff)
 
-def sihvola(m,mix,ni=0.85)::
+def sihvola(m,mix,ni=0.85):
     """Sihvola EMA for the refractive index.
 
     For instructions, see mg_refractive in this module, except this routine
     only works for two components.
 
     The original formulation is defaulted to ni=0.85 which has been found to be
-    the best for many snow applications
+    the best for many snow applications. Also, the analitic solution for Sihvola
+    modified EMA is way too complicated to be written and computed efficiently:
+    a numerically converging solution is applied instead.
     """
     return bruggeman(m,mix)
 

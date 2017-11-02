@@ -80,6 +80,10 @@ def ellison(temperatures,frequencies):
     eps2=(es*A1-e1*A1)/(1+A1*A1)+(e1*A2-einf*A2)/(1+A2*A2)
     return eps1 + 1j*eps2
 
+def pamtra_water(Temperatures,Frequencies):
+    return ellison(np.array(Temperatures),np.array(Frequencies))
+# PLACEHOLDER FOR WHAT PAMTRA IS CURRENTLY COMPUTING
+
 #######################################################################################################
 
 def eps(Temperatures,Frequencies,model="ellison"):
@@ -106,10 +110,10 @@ def eps(Temperatures,Frequencies,model="ellison"):
 
     """
     if (model == "ellison"):
-        return ellison(Temperatures,Frequencies)
+        return ellison(np.array(Temperatures),np.array(Frequencies))
     else:
         print("I do not recognize the ice refractive index specification, falling back to ellison")
-        return ellison(Temperatures,Frequencies)
+        return ellison(np.array(Temperatures),np.array(Frequencies))
 
 def n(Temperatures,Frequencies,model="ellison"):
     """Water complex refractive index according to the requested model
@@ -134,7 +138,7 @@ def n(Temperatures,Frequencies,model="ellison"):
         If a negative frequency or temperature is passed as an argument
 
     """
-    return np.sqrt(eps(Temperatures,Frequencies,model))
+    return np.sqrt(eps(np.array(Temperatures),np.array(Frequencies),model))
 
 #######################################################################################################
 
