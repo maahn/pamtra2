@@ -10,7 +10,7 @@ def read(fname):
 
 def configuration(parent_package='',top_path=None):
     
-    config = Configuration('pyPamtra2', parent_package, top_path,
+    config = Configuration('refractive', parent_package, top_path,
         version = '0.1',
         author  = "Pamtra Team",
         author_email = "dori@uni-koeln.de",
@@ -24,7 +24,6 @@ def configuration(parent_package='',top_path=None):
             "Development Status :: 3 - Alpha",
             "License :: OSI Approved :: MIT License",
             "Operating System :: OS Independent",
-            #"Programming Language :: Fortran",
             "Programming Language :: Python",
             "Intended Audience :: Science/Research",
             "Topic :: Scientific/Engineering :: Atmospheric Science",
@@ -37,10 +36,10 @@ def configuration(parent_package='',top_path=None):
 if __name__ == "__main__":
     
     setup(configuration=configuration,
-        packages = ['pyPamtra2'],        
+        packages = ['refractive'],        
         # package_data = {
         #     'pyPamtra2': ['file'],
         # },
         platforms = ['any'],
-        requires = ['numpy', 'scipy','xarray','json'])
+        requires = ['numpy'])
 

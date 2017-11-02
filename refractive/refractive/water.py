@@ -71,9 +71,9 @@ def ellison(temperatures,frequencies):
     T = temperatures-273.15
     es=(37088.6-82.168*T)/(421.854+T)
     einf=a6+a7*T
-    e1=a0+a1*T+a2*T*T
-    ni1=(45+T)/(a3+a4*T+a5*T*T)
-    ni2=(45+T)/(a8+a9*T+a10*T*T)
+    e1=a0+T*(a1+T*a2)              #a0+a1*T+a2*T*T
+    ni1=(45.0+T)/(a3+T*(a4+T*a5))  #(a3+a4*T+a5*T*T)
+    ni2=(45.0+T)/(a8+T*(a9+T*a10)) #(a8+a9*T+a10*T*T)
     A1=frequencies/ni1
     A2=frequencies/ni2
     eps1=(es-e1)/(1+A1*A1)+(e1-einf)/(1+A2*A2)+einf

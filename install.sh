@@ -1,7 +1,6 @@
 #! /usr/bin/env bash 
 set -e
 
-
 cd pyPamtraRadarSimulator
 python setup.py install
 cd ../
@@ -19,5 +18,5 @@ make
 cd ../
 
 cd refractive
-make
+python setup.py install
 cd ../
