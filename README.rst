@@ -9,6 +9,7 @@ Included Modules
 * pyPamtra2 - The core package.
 * pyPamtraRadarSimulator - Simulate a radar Doppler spectrum
 * pyPamtraRadarMoments - Estimate the moments of the radar Doppler spectrum
+* refractive - general purpose refractive index of ice, water and Effective Medium Approximations
 
 Installation
 ============

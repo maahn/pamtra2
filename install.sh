@@ -17,3 +17,7 @@ cd ../
 cd dfftpack 
 make  
 cd ../
+
+cd refractive
+make
+cd ../
