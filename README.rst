@@ -10,6 +10,7 @@ Included Modules
 * pyPamtraRadarSimulator - Simulate a radar Doppler spectrum
 * pyPamtraRadarMoments - Estimate the moments of the radar Doppler spectrum
 * refractive - general purpose refractive index of ice, water and Effective Medium Approximations
+* scattering - general purpose electromagnetic single-scattering module. Includes several scattering methods
 
 Installation
 ============
