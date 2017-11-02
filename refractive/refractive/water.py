@@ -105,13 +105,13 @@ def eps(Temperatures,Frequencies,model="ellison"):
         If a negative frequency or temperature is passed as an argument
 
     """
-    if (what == "ellison"):
+    if (model == "ellison"):
         return ellison(Temperatures,Frequencies)
     else:
         print("I do not recognize the ice refractive index specification, falling back to ellison")
         return ellison(Temperatures,Frequencies)
 
-def n(Temperatures,Frequencies,what="ellison"):
+def n(Temperatures,Frequencies,model="ellison"):
     """Water complex refractive index according to the requested model
 
     Parameters
@@ -134,7 +134,7 @@ def n(Temperatures,Frequencies,what="ellison"):
         If a negative frequency or temperature is passed as an argument
 
     """
-    return np.sqrt(eps(Temperatures,Frequencies,what))
+    return np.sqrt(eps(Temperatures,Frequencies,model))
 
 #######################################################################################################
 

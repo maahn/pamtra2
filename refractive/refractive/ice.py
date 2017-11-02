@@ -129,7 +129,7 @@ def n(temperatures,frequencies,model="Matzler_2006"):
         If a negative frequency or temperature is passed as an argument
 
     """
-    return np.sqrt(eps(temperatures,frequencies,what))
+    return np.sqrt(eps(temperatures,frequencies,model))
 
 #######################################################################################################
 
