@@ -1,5 +1,5 @@
 """
-Implement a couple of mixing formulas...
+Implement a few effective medium approximation formulas...
 
 
 """
@@ -7,14 +7,18 @@ Implement a couple of mixing formulas...
 def maxwell_garnett(m, mix):
     """Maxwell-Garnett EMA for the refractive index.
 
-    Args:
-       m: Tuple of the complex refractive indices of the media.
-       mix: Tuple of the volume fractions of the media, len(mix)==len(m)
+    Parameters
+    ----------
+        m: Tuple of complex
+            refractive indices of the media.
+        mix: Tuple of float
+            the volume fractions of the media, len(mix)==len(m)
             (if sum(mix)!=1, these are taken relative to sum(mix))
 
     Returns:
-       The Maxwell-Garnett approximation for the complex refractive index of 
-       the effective medium
+    ----------
+        The Maxwell-Garnett approximation for the complex refractive index of 
+        the effective medium
 
     If len(m)==2, the first element is taken as the matrix and the second as 
     the inclusion. If len(m)>2, the media are mixed recursively so that the 
@@ -51,7 +55,7 @@ def bruggeman(m, mix):
     e_eff = (-b - np.sqrt(b**2-4*a*c))/(2*a)
     return np.sqrt(e_eff)
 
-def sihvola()::
+def sihvola(m,mix,ni=0.85)::
     """Sihvola EMA for the refractive index.
 
     For instructions, see mg_refractive in this module, except this routine
@@ -61,3 +65,6 @@ def sihvola()::
     the best for many snow applications
     """
     return bruggeman(m,mix)
+
+def effective_medium_approximation(refractive_indices,volume_fractions,model='sihvola',ni=0.85):
+    return sihvola(refractive_indices,volume_fractions,ni)

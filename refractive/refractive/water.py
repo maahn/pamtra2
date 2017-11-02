@@ -82,7 +82,7 @@ def ellison(temperatures,frequencies):
 
 #######################################################################################################
 
-def eps(Temperatures,Frequencies,what="ellison"):
+def eps(Temperatures,Frequencies,model="ellison"):
     """Water complex relative dielectric constant according to the requested model
 
     Parameters
@@ -91,13 +91,13 @@ def eps(Temperatures,Frequencies,what="ellison"):
         nd array of temperatures [kelvin]
     frequencies : float
         nd array of frequencies [GHz]
-    what : string
+    model : string
         dielectric model name default to Ellison (2005)
 
     Returns
     -------
     nd - complex
-        Relative dielectric constant of ice at the requested frequencies and temperatures
+        Relative dielectric constant of water for the requested frequencies and temperatures
 
     Raises
     ------
@@ -112,6 +112,28 @@ def eps(Temperatures,Frequencies,what="ellison"):
         return ellison(Temperatures,Frequencies)
 
 def n(Temperatures,Frequencies,what="ellison"):
+    """Water complex refractive index according to the requested model
+
+    Parameters
+    ----------
+    temperatures : float
+        nd array of temperatures [kelvin]
+    frequencies : float
+        nd array of frequencies [GHz]
+    model : string
+        dielectric model name default to Ellison (2005)
+
+    Returns
+    -------
+    nd - complex
+        Refractive index of water for the requested frequencies and temperatures
+
+    Raises
+    ------
+    ValueError
+        If a negative frequency or temperature is passed as an argument
+
+    """
     return np.sqrt(eps(Temperatures,Frequencies,what))
 
 #######################################################################################################

@@ -77,14 +77,58 @@ def matzler_2006(temperatures,frequencies):
 
 #######################################################################################################
 
-def eps(temperatures,frequencies,what="Matzler_2006"):
-    if (what == "Matzler_2006"):
+def eps(temperatures,frequencies,model="Matzler_2006"):
+    """Ice complex relative dielectric constant according to the requested model
+
+    Parameters
+    ----------
+    temperatures : float
+        nd array of temperatures [kelvin]
+    frequencies : float
+        nd array of frequencies [GHz]
+    model : string
+        dielectric model name default to Matzler (2006)
+
+    Returns
+    -------
+    nd - complex
+        Relative dielectric constant of ice at the requested frequencies and temperatures
+
+    Raises
+    ------
+    ValueError
+        If a negative frequency or temperature is passed as an argument
+
+    """
+    if (model == "Matzler_2006"):
         return matzler_2006(temperatures,frequencies)
     else:
         print("I do not recognize the ice refractive index specification, falling back to Matzler 2006")
         return matzler_2006(temperatures,frequencies)
 
-def n(temperatures,frequencies,what="Matzler_2006"):
+def n(temperatures,frequencies,model="Matzler_2006"):
+    """Ice complex refractive index according to the requested model
+
+    Parameters
+    ----------
+    temperatures : float
+        nd array of temperatures [kelvin]
+    frequencies : float
+        nd array of frequencies [GHz]
+    model : string
+        dielectric model name default to Matzler (2006)
+
+    Returns
+    -------
+    nd - complex
+        Refractive index of ice at the requested frequencies and temperatures
+
+    Raises
+    ------
+    ValueError
+        If a negative frequency or temperature is passed as an argument
+
+    """
     return np.sqrt(eps(temperatures,frequencies,what))
 
 #######################################################################################################
