@@ -1,6 +1,10 @@
 """
 Implement a few effective medium approximation formulas...
 
+Both material dielectric models and EMAs usually work with dielec permittivity
+and refractive index is derived as sqrt(eps), hence this modules is implemented
+to always take eps as arguments of both the eps and n functions for
+computational efficiency
 
 """
 
@@ -8,6 +12,7 @@ import numpy as np
 
 def maxwell_garnett(eps, mix):
     """Maxwell-Garnett EMA for the refractive index.
+       AKA: Rayleigh mixing formula [Sihvola, 1989]
 
     Parameters
     ----------
@@ -22,28 +27,12 @@ def maxwell_garnett(eps, mix):
         The Maxwell-Garnett approximation for the complex refractive index of 
         the effective medium
 
-    If len(m)==2, the first element is taken as the matrix and the second as 
-    the inclusion. If len(m)>2, the media are mixed recursively so that the 
-    last element is used as the inclusion and the second to last as the 
-    matrix, then this mixture is used as the last element on the next 
-    iteration, and so on.
+    The first element of the eps and mix tuples is taken as the matrix and the
+    second as the inclusion.
     """
 
     cF = mix[1] / (mix[0]+mix[1]) * (eps[1]-eps[0]) / (eps[1]+2*eps[0])
     return eps[0]*(1.0+2.0*cF) / (1.0-cF)
-#    m = np.sqrt(er)
-    
-#    if len(m) == 2:
-#        cF = float(mix[1]) / (mix[0]+mix[1]) * \
-#            (m[1]**2-m[0]**2) / (m[1]**2+2*m[0]**2)
-#        er = m[0]**2 * (1.0+2.0*cF) / (1.0-cF)
-#        m = np.sqrt(er)
-#    else:
-#        m_last = maxwell_garnett(m[-2:], mix[-2:])
-#        mix_last = mix[-2] + mix[-1]
-#        m = maxwell_garnett(m[:-2] + (m_last,), mix[:-2] + (mix_last,))
-#    return m
-
 
 def bruggeman(eps, mix):
     """Bruggeman EMA for the refractive index.
@@ -60,7 +49,6 @@ def bruggeman(eps, mix):
     c = (f1+f2)*e1*e2
     #e_eff = (-b - np.sqrt(b**2-4*a*c))/(2*a)
     return (-b - np.sqrt(b**2-4*a*c))/(2*a)
-    #return np.sqrt(e_eff)
 
 def sihvola(eps,mix,ni=0.85):
     """Sihvola EMA for the refractive index.

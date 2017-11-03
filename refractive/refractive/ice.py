@@ -28,10 +28,50 @@ A very basic non-negative value check is performed on the data
 """
 
 import numpy as np
+import pandas as pd
+from scipy import interpolate
 
-def warren_brandt_2008(temperatures,frequencies):
-    print("Not implemented yet falling back to Matzler 2006")
-    return matzler_2006(temperatures,frequencies)
+from os import path
+module_path = path.split(path.abspath(__file__))[0]
+warren_ice_table = pd.read_csv(module_path+'/IOP_2008_ASCIItable.dat',delim_whitespace=True,names=['wl','mr','mi'])
+warren_ice_table['f'] = 299792.458/warren_ice_table.wl # wl is microns, should return GHz
+warren_ice_table.set_index('f',inplace=True)
+warren_ice_table.sort_index(inplace=True)
+warren_ice_eps = (warren_ice_table.mr.values+1j*warren_ice_table.mi.values)**2
+warren_ice_interpolated = interpolate.interp1d(warren_ice_table.index.values,warren_ice_eps)
+
+def warren_brandt_2008(frequencies):
+    """Ice complex relative dielectric constant according to Warren (2008)
+    'Optical constants of ice from the ultraviolet to the microwave: A 
+    revised compilation.' J. Geophys. Res., 113, D14220, doi:10.1029/2007JD009744.
+    which updates and corrects Warren, S. G. (1984), 'Optical constants of ice from
+    the ultraviolet to the microwave', Appl. Opt., 23, 1206–1225.
+    
+    The model is valid for temperature = 266 K, thus this parameter is dropped
+    Source of the tables https://atmos.washington.edu/ice_optical_constants/
+
+    Parameters
+    ----------
+    temperatures : float
+        nd array of temperatures [kelvin] which will be ignored
+    frequencies : float
+        nd array of frequencies [GHz]
+
+    Returns
+    -------
+    nd - complex
+        Relative dielectric constant of ice at the requested frequencies and temperatures
+
+    Raises
+    ------
+    ValueError
+        If a negative frequency or temperature is passed as an argument
+
+    """
+    if (frequencies < 0).any():
+        raise ValueError('A negative frequency value has been passed')
+    
+    return warren_ice_interpolated(frequencies)
 
 def matzler_2006(temperatures,frequencies):
     """Ice complex relative dielectric constant according to Matzler (2006)
@@ -100,8 +140,10 @@ def eps(temperatures,frequencies,model="Matzler_2006"):
         If a negative frequency or temperature is passed as an argument
 
     """
-    if (model == "Matzler_2006"):
+    if (model == 'Matzler_2006'):
         return matzler_2006(np.array(temperatures),np.array(frequencies))
+    if (model == 'Warren_2008'):
+        return warren_brandt_2008(np.array(frequencies))
     else:
         print("I do not recognize the ice refractive index specification, falling back to Matzler 2006")
         return matzler_2006(np.array(temperatures),np.array(frequencies))
