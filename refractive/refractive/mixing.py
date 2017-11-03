@@ -13,6 +13,16 @@ import numpy as np
 def maxwell_garnett(eps, mix):
     """Maxwell-Garnett EMA for the refractive index.
        AKA: Rayleigh mixing formula [Sihvola, 1989]
+       
+       The MG relation for effective medium approximation is derived for the 
+       case of small, highly diluted, spatially well separated, optically soft
+       and spherical inclusions in a medium. Also the size of the considered
+       volume should be small.
+       
+       The MG relation is asymmetric, the order of medium and inclusion in the
+       formula counts. This is a consequence of the aformentioned assumptions.
+       
+       'J.C.M. Garnett, Philos. Trans. R. Soc. 203, 385 (1904); 205, 237 (1906).'
 
     Parameters
     ----------
@@ -39,6 +49,10 @@ def bruggeman(eps, mix):
 
     For instructions, see mg_refractive in this module, except this routine
     only works for two components.
+    
+    'D.A.G. Bruggeman, Ann. Phys. 24, 636 (1935)'
+    
+    Bruggeman model has the advantage with respect to MG of beeing symmetric
     """
     f1 = mix[0]/sum(mix)
     f2 = mix[1]/sum(mix)
@@ -47,7 +61,6 @@ def bruggeman(eps, mix):
     a = -2*(f1+f2)
     b = (2*f1*e1 - f1*e2 + 2*f2*e2 - f2*e1)
     c = (f1+f2)*e1*e2
-    #e_eff = (-b - np.sqrt(b**2-4*a*c))/(2*a)
     return (-b - np.sqrt(b**2-4*a*c))/(2*a)
 
 def sihvola(eps,mix,ni=0.85):
@@ -60,28 +73,32 @@ def sihvola(eps,mix,ni=0.85):
     the best for many snow applications. Also, the analitic solution for Sihvola
     modified EMA is way too complicated to be written and computed efficiently:
     a numerically converging solution is applied instead.
+    
+    A.H. Sihvola 'Self-Consistency Aspects of Dielectric Mixing Theories'
+    IEEE Trans. Geos. Rem. Sens. vol 27, n 4, 1989
     """
+    print('Sihvola EMA is not yet implemented fallback to Bruggeman')
     return bruggeman(eps,mix)
     
 ################################################################################
 
 def n(refractive_indices,volume_fractions,model='bruggeman',ni=0.85):
-    if model == 'bruggeman':
+    if model == 'Bruggeman':
         return np.sqrt(bruggeman(refractive_indices**2,volume_fractions))
-    elif model == 'sihvola':
+    elif model == 'Sihvola':
         return np.sqrt(sihvola(refractive_indices**2,volume_fractions,ni=ni))
-    elif model == 'maxwell_garnett':
+    elif model == 'Maxwell_Garnett':
         return np.sqrt(maxwell_garnett(refractive_indices**2,volume_fractions))
     else:
         print('Unknown model, fallback to Bruggeman')
         return np.sqrt(bruggeman(refractive_indices**2,volume_fractions))
         
 def eps(dielectric_permittivity,volume_fractions,model='bruggeman',ni=0.85):
-    if model == 'bruggeman':
+    if model == 'Bruggeman':
         return bruggeman(dielectric_permittivity,volume_fractions)
-    elif model == 'sihvola':
+    elif model == 'Sihvola':
         return sihvola(dielectric_permittivity,volume_fractions,ni=ni)
-    elif model == 'maxwell_garnett':
+    elif model == 'Maxwell_garnett':
         return maxwell_garnett(dielectric_permittivity,volume_fractions)
     else:
         print('Unknown model, fallback to Bruggeman')
