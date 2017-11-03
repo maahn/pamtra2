@@ -1,0 +1,92 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module pyPamtraRadarMomentsLib ! in 
+    interface  ! in :pyPamtraRadarMomentsLib
+        module calc_moments ! in :pyPamtraRadarMomentsLib:calc_moments.f90
+            subroutine calc_moments_column(errorstatus,n_heights,radar_nfft,radar_npeaks,radar_spectrum_in,noise,noise_max,radar_max_v,radar_min_v,radar_smooth_spectrum,radar_use_wider_peak,radar_peak_min_bins,radar_peak_min_snr,spectrum_out,moments,slope,edge,quality) ! in :pyPamtraRadarMomentsLib:calc_moments.f90:calc_moments
+                use report_module
+                use kinds
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(shape(radar_spectrum_in,0)==n_heights),depend(radar_spectrum_in) :: n_heights=shape(radar_spectrum_in,0)
+                integer, optional,intent(in),check(shape(radar_spectrum_in,1)==radar_nfft),depend(radar_spectrum_in) :: radar_nfft=shape(radar_spectrum_in,1)
+                integer intent(in) :: radar_npeaks
+                real(kind=dbl) dimension(n_heights,radar_nfft),intent(in) :: radar_spectrum_in
+                real(kind=dbl) dimension(n_heights),intent(in),depend(n_heights) :: noise
+                real(kind=dbl) dimension(n_heights),intent(in),depend(n_heights) :: noise_max
+                real(kind=dbl) intent(in) :: radar_max_v
+                real(kind=dbl) intent(in) :: radar_min_v
+                logical intent(in) :: radar_smooth_spectrum
+                logical intent(in) :: radar_use_wider_peak
+                integer intent(in) :: radar_peak_min_bins
+                real(kind=dbl) intent(in) :: radar_peak_min_snr
+                real(kind=dbl) dimension(n_heights,radar_nfft),intent(out),depend(n_heights,radar_nfft) :: spectrum_out
+                real(kind=dbl) dimension(n_heights,5,radar_npeaks),intent(out),depend(n_heights,radar_npeaks) :: moments
+                real(kind=dbl) dimension(n_heights,2,radar_npeaks),intent(out),depend(n_heights,radar_npeaks) :: slope
+                real(kind=dbl) dimension(n_heights,2,radar_npeaks),intent(out),depend(n_heights,radar_npeaks) :: edge
+                integer dimension(n_heights),intent(out),depend(n_heights) :: quality
+            end subroutine calc_moments_column
+            subroutine calc_moments_one(errorstatus,radar_nfft,radar_npeaks,radar_spectrum_in,noise,noise_max,radar_max_v,radar_min_v,radar_smooth_spectrum,radar_use_wider_peak,radar_peak_min_bins,radar_peak_min_snr,spectrum_out,moments,slope,edge,quality) ! in :pyPamtraRadarMomentsLib:calc_moments.f90:calc_moments
+                use report_module
+                use kinds
+                use constants
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(len(radar_spectrum_in)>=radar_nfft),depend(radar_spectrum_in) :: radar_nfft=len(radar_spectrum_in)
+                integer intent(in) :: radar_npeaks
+                real(kind=dbl) dimension(radar_nfft),intent(in) :: radar_spectrum_in
+                real(kind=dbl) intent(in) :: noise
+                real(kind=dbl) intent(in) :: noise_max
+                real(kind=dbl) intent(in) :: radar_max_v
+                real(kind=dbl) intent(in) :: radar_min_v
+                logical intent(in) :: radar_smooth_spectrum
+                logical intent(in) :: radar_use_wider_peak
+                integer intent(in) :: radar_peak_min_bins
+                real(kind=dbl) intent(in) :: radar_peak_min_snr
+                real(kind=dbl) dimension(radar_nfft),intent(out),depend(radar_nfft) :: spectrum_out
+                real(kind=dbl) dimension(5,radar_npeaks),intent(out),depend(radar_npeaks) :: moments
+                real(kind=dbl) dimension(2,radar_npeaks),intent(out),depend(radar_npeaks) :: slope
+                real(kind=dbl) dimension(2,radar_npeaks),intent(out),depend(radar_npeaks) :: edge
+                integer intent(out) :: quality
+            end subroutine calc_moments_one
+        end module calc_moments
+        subroutine hildebrand_sekhon(errorstatus,spectrum,n_ave,n_heights,n_ffts,noise_mean,noise_max) ! in :pyPamtraRadarMomentsLib:hildebrand_sekhon.f90
+            use report_module
+            use kinds
+            integer(kind=long_bn) intent(out) :: errorstatus
+            real(kind=dbl) dimension(n_heights,n_ffts),intent(in) :: spectrum
+            integer intent(in) :: n_ave
+            integer, optional,intent(in),check(shape(spectrum,0)==n_heights),depend(spectrum) :: n_heights=shape(spectrum,0)
+            integer, optional,intent(in),check(shape(spectrum,1)==n_ffts),depend(spectrum) :: n_ffts=shape(spectrum,1)
+            real(kind=dbl) dimension(n_heights),intent(out),depend(n_heights) :: noise_mean
+            real(kind=dbl) dimension(n_heights),intent(out),depend(n_heights) :: noise_max
+        end subroutine hildebrand_sekhon
+        module report_module ! in :pyPamtraRadarMomentsLib:report_module.f90
+            use kinds
+            integer(kind=long_bn), parameter,optional :: info=3
+            integer(kind=long_bn), parameter,optional :: fatal=2
+            integer(kind=long_bn), parameter,optional :: nstatus=3
+            integer(kind=long_bn), optional :: verbose=0
+            integer(kind=long_bn), parameter,optional :: success=0
+            character(len=7), parameter,optional,dimension(4),depend(info,fatal,success,warning) :: status_text=(/'success','warning','fatal','info'/)
+            integer(kind=long_bn), parameter,optional :: warning=1
+            subroutine report(status,message,nameofroutine) ! in :pyPamtraRadarMomentsLib:report_module.f90:report_module
+                integer(kind=long_bn) intent(in) :: status
+                character*(*) intent(in) :: message
+                character*(*) intent(in) :: nameofroutine
+            end subroutine report
+            subroutine assert_true(error,logic,message) ! in :pyPamtraRadarMomentsLib:report_module.f90:report_module
+                integer intent(inout) :: error
+                logical intent(in) :: logic
+                character*(*) intent(in) :: message
+            end subroutine assert_true
+            subroutine assert_false(error,logic,message) ! in :pyPamtraRadarMomentsLib:report_module.f90:report_module
+                integer intent(inout) :: error
+                logical intent(in) :: logic
+                character*(*) intent(in) :: message
+            end subroutine assert_false
+        end module report_module
+    end interface 
+end python module pyPamtraRadarMomentsLib
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/

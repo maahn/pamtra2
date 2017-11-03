@@ -1,6 +1,10 @@
 #! /usr/bin/env bash 
 set -e
 
+cd dfftpack 
+make  
+cd ../
+
 cd pyPamtraRadarSimulator
 python setup.py install
 cd ../
@@ -11,10 +15,6 @@ cd ../
 
 cd pyPamtra2
 python setup.py install
-cd ../
-
-cd dfftpack 
-make  
 cd ../
 
 cd refractive
