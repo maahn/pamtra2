@@ -16,5 +16,18 @@ eps2n = lambda eps: np.sqrt(eps)
 n2eps = lambda n: n*n
 
 def K2(eps):
+    """ Radar dielectric factor |K|**2
+
+    Parameters
+    ----------
+    eps : complex
+        nd array of complex relative dielectric constants
+
+    Returns
+    -------
+    nd - float
+        Radar dielectric factor |K|**2
+
+    """
     K = (eps-1.0)/(eps+2.0)
     return K*K.conj()
