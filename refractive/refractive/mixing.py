@@ -77,8 +77,9 @@ def sihvola(eps,mix,ni=0.85):
     A.H. Sihvola 'Self-Consistency Aspects of Dielectric Mixing Theories'
     IEEE Trans. Geos. Rem. Sens. vol 27, n 4, 1989
     """
-    print('Sihvola EMA is not yet implemented fallback to Bruggeman')
-    return bruggeman(eps,mix)
+#    print('Sihvola EMA is not yet implemented fallback to Bruggeman')
+#    return bruggeman(eps,mix)
+    raise NotImplementedError
     
 ################################################################################
 

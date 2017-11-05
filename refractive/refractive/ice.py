@@ -128,7 +128,7 @@ def warren_brandt_2008(frequencies):
 
 def matzler_2006(temperatures,frequencies):
     """Ice complex relative dielectric constant according to Matzler (2006)
-    "Microwave remote sensing" TODO: correct book title
+    "Thermal Microwave Radiation: application to remote sensing"
 
     Parameters
     ----------
