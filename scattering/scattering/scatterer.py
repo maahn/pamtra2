@@ -1,43 +1,36 @@
-""" scattering.utilities.py
+""" scattering.scatterer.py
 
-This submodule implements useful functions that helps in the definition of the
-scatterer geometry and the conversion among diverse scattering frameworks
+This module implements the scatterer class and its scattering model specific subclasses.
 
 """
 
 import numpy as np
+import sys
+from . import scattering_utilities
 
-from ...refractive import refractive.utilities as ref_utils
-
-#class amplitude_matrix
-
-#class mueller_matrix
-
-#def amplitude2mueller(ampl):
-#    """
-#    This function implement the conversion between complex 2x2 amplitude matrix
-#    to the real 4x4 scattering Mueller matrix according to Bohren Huffman pp..
-#    
-#    """
-#    mueller =1.0
-#    return mueller
+try:
+    from refractive import utilities as ref_utils
+except:
+    sys.path.append('../../refractive/')
+    from refractive import utilities as ref_utils
 
 class scatterer(object):
     def __init__(self,
                  diameter = 1.,
                  frequency = 1.,
                  refractive_index=None,
-                 dielectric_permittivity=None
+                 dielectric_permittivity=None,
                  ):
         self.diameter = diameter
         self.frequency = frequency
+        
         self.set_dielectric_properties(refractive_index,dielectric_permittivity)
         
-    def set_dielectric_properties(refractive_index,dielectric_permittivity)
+    def set_dielectric_properties(self,refractive_index,dielectric_permittivity):
         if (refractive_index is None):
             if (dielectric_permittivity is None):
-                self.refractive_index = np.array(complex(1.0,0.0))
-                self.dielectric_permittivity = ref_utils.n2eps(self.refractive_index)
+                self.refractive_index = None
+                self.dielectric_permittivity = None
             else:
                 self.dielectric_permittivity = dielectric_permittivity
                 self.refractive_index = ref_utils.eps2n(self.dielectric_permittivity)
@@ -46,8 +39,39 @@ class scatterer(object):
             self.dielectric_permittivity = ref_utils.n2eps(self.refractive_index)
         else:
             raise AttributeError('Both dielectric permittivity and refractive index has been defined')
-            
-            
-        
-    
 
+class Rayleigh(scatterer):
+    def __init__(self):
+        scatterer.__init__(self)
+        print('I am a Rayleigh instance')
+        raise NotImplementedError('Even though it is easy Rayleigh is not implemented yet')
+
+class Mie(scatterer):
+    def __init__(self):
+        scatterer.__init__(self)
+        print('I am a Mie instance')
+        raise NotImplementedError('Mie is not implemented yet')
+
+class T_Matrix(scatterer):
+    def __init__(self):
+        scatterer.__init__(self)
+        print('I am a T_Matrix instance')
+        raise NotImplementedError(scattering_model_name + ' is not implemented yet')
+
+class Liu_DB(scatterer):
+    def __init__(self):
+        scatterer.__init__(self)
+        print('I am a Liu_DB instance')
+        raise NotImplementedError(scattering_model_name + ' is not implemented yet')
+
+class Hong_DB(scatterer):
+    def __init__(self):
+        scatterer.__init__(self)
+        print('I am a Hong_DB instance')
+        raise NotImplementedError(scattering_model_name + ' is not implemented yet')
+
+class Leinonen_DB(scatterer):
+    def __init__(self):
+        scatterer.__init__(self)
+        print('I am a Leinonen_DB instance')
+        raise NotImplementedError(scattering_model_name + ' is not implemented yet')
