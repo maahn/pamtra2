@@ -1,0 +1,371 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module pyPamtraRadarSimulatorLib ! in 
+    interface  ! in :pyPamtraRadarSimulatorLib
+        module radar_simulator ! in :pyPamtraRadarSimulatorLib:radar_simulator.f90
+            subroutine simulate_radar(errorstatus,wavelength,particle_spectrum,pia,spectral_broadening,n_heights,radar_pnoise,radar_max_v,radar_min_v,radar_nfft,radar_nfft_aliased,radar_no_ave,radar_aliasing_nyquist_interv,radar_k2,seed,noise_turb_spectra) ! in :pyPamtraRadarSimulatorLib:radar_simulator.f90:radar_simulator
+                use report_module
+                use kinds
+                use constants
+                integer(kind=long_bn) intent(out) :: errorstatus
+                real(kind=dbl) intent(in) :: wavelength
+                real(kind=dbl) dimension(n_heights,radar_nfft_aliased),intent(in) :: particle_spectrum
+                real(kind=dbl) dimension(n_heights),intent(in),depend(n_heights) :: pia
+                real(kind=dbl) dimension(n_heights),intent(in),depend(n_heights) :: spectral_broadening
+                integer, optional,intent(in),check(shape(particle_spectrum,0)==n_heights),depend(particle_spectrum) :: n_heights=shape(particle_spectrum,0)
+                real(kind=dbl) dimension(n_heights),intent(in),depend(n_heights) :: radar_pnoise
+                real(kind=dbl) intent(in) :: radar_max_v
+                real(kind=dbl) intent(in) :: radar_min_v
+                integer intent(in) :: radar_nfft
+                integer, optional,intent(in),check(shape(particle_spectrum,1)==radar_nfft_aliased),depend(particle_spectrum) :: radar_nfft_aliased=shape(particle_spectrum,1)
+                integer intent(in) :: radar_no_ave
+                integer intent(in) :: radar_aliasing_nyquist_interv
+                real(kind=dbl) intent(in) :: radar_k2
+                integer intent(in) :: seed
+                real(kind=dbl) dimension(n_heights,radar_nfft),intent(out),depend(n_heights,radar_nfft) :: noise_turb_spectra
+            end subroutine simulate_radar
+            subroutine simulate_radar_one(errorstatus,wavelength,particle_spectrum,pia,spectral_broadening,radar_pnoise,radar_max_v,radar_min_v,radar_nfft,radar_nfft_aliased,radar_no_ave,radar_aliasing_nyquist_interv,radar_k2,seed,noise_turb_spectra) ! in :pyPamtraRadarSimulatorLib:radar_simulator.f90:radar_simulator
+                use report_module
+                use kinds
+                use random_module, only: get_random
+                use constants
+                integer(kind=long_bn) intent(out) :: errorstatus
+                real(kind=dbl) intent(in) :: wavelength
+                real(kind=dbl) dimension(radar_nfft_aliased),intent(in) :: particle_spectrum
+                real(kind=dbl) intent(in) :: pia
+                real(kind=dbl) intent(in) :: spectral_broadening
+                real(kind=dbl) intent(in) :: radar_pnoise
+                real(kind=dbl) intent(in) :: radar_max_v
+                real(kind=dbl) intent(in) :: radar_min_v
+                integer intent(in) :: radar_nfft
+                integer, optional,intent(in),check(len(particle_spectrum)>=radar_nfft_aliased),depend(particle_spectrum) :: radar_nfft_aliased=len(particle_spectrum)
+                integer intent(in) :: radar_no_ave
+                integer intent(in) :: radar_aliasing_nyquist_interv
+                real(kind=dbl) intent(in) :: radar_k2
+                integer intent(in) :: seed
+                real(kind=dbl) dimension(radar_nfft),intent(out),depend(radar_nfft) :: noise_turb_spectra
+            end subroutine simulate_radar_one
+        end module radar_simulator
+        module radar_spectral_broadening ! in :pyPamtraRadarSimulatorLib:radar_spectral_broadening.f90
+            subroutine estimate_spectralbroadening(errorstatus,edr,wind_uv,height,n_heights,beamwidth_deg,integration_time,wavelength,kolmogorov,specbroad) ! in :pyPamtraRadarSimulatorLib:radar_spectral_broadening.f90:radar_spectral_broadening
+                use report_module
+                use kinds
+                use constants, only: pi
+                integer(kind=long_bn) intent(out) :: errorstatus
+                real(kind=dbl) dimension(n_heights),intent(in) :: edr
+                real(kind=dbl) dimension(n_heights),intent(in),depend(n_heights) :: wind_uv
+                real(kind=dbl) dimension(n_heights),intent(in),depend(n_heights) :: height
+                integer, optional,intent(in),check(len(edr)>=n_heights),depend(edr) :: n_heights=len(edr)
+                real(kind=dbl) intent(in) :: beamwidth_deg
+                real(kind=dbl) intent(in) :: integration_time
+                real(kind=dbl) intent(in) :: wavelength
+                real(kind=dbl) intent(in) :: kolmogorov
+                real(kind=dbl) dimension(n_heights),intent(out),depend(n_heights) :: specbroad
+            end subroutine estimate_spectralbroadening
+            subroutine estimate_spectralbroadening_one(errorstatus,edr,wind_uv,height,beamwidth_deg,integration_time,wavelength,kolmogorov,specbroad) ! in :pyPamtraRadarSimulatorLib:radar_spectral_broadening.f90:radar_spectral_broadening
+                use report_module
+                use kinds
+                use constants, only: pi
+                integer(kind=long_bn) intent(out) :: errorstatus
+                real(kind=dbl) intent(in) :: edr
+                real(kind=dbl) intent(in) :: wind_uv
+                real(kind=dbl) intent(in) :: height
+                real(kind=dbl) intent(in) :: beamwidth_deg
+                real(kind=dbl) intent(in) :: integration_time
+                real(kind=dbl) intent(in) :: wavelength
+                real(kind=dbl) intent(in) :: kolmogorov
+                real(kind=dbl) intent(out) :: specbroad
+            end subroutine estimate_spectralbroadening_one
+        end module radar_spectral_broadening
+        module random_module ! in :pyPamtraRadarSimulatorLib:random_module.f90
+            use kinds
+            integer, optional :: counter=0
+            subroutine get_random(errorstatus,n,seedval,x_noise) ! in :pyPamtraRadarSimulatorLib:random_module.f90:random_module
+                use kinds
+                use report_module
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer intent(in) :: n
+                integer intent(in) :: seedval
+                real(kind=dbl) dimension(n),intent(out),depend(n) :: x_noise
+            end subroutine get_random
+        end module random_module
+        module radar_spectrum ! in :pyPamtraRadarSimulatorLib:radar_spectrum.f90
+            subroutine get_radar_spectrum(errorstatus,nbins,diameter_spec,back_spec,temp,press,atmo_wind_w,wavelength,rho_particle,vel_size_mod,mass,area,n_heights,radar_max_v,radar_min_v,radar_aliasing_nyquist_interv,radar_nfft,radar_nfft_aliased,radar_airmotion,radar_airmotion_model,radar_airmotion_vmin,radar_airmotion_vmax,radar_airmotion_linear_steps,radar_airmotion_step_vmin,radar_k2,particle_spec,vel_spec) ! in :pyPamtraRadarSimulatorLib:radar_spectrum.f90:radar_spectrum
+                use report_module
+                use kinds
+                use constants
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(shape(diameter_spec,1)==nbins),depend(diameter_spec) :: nbins=shape(diameter_spec,1)
+                real(kind=dbl) dimension(n_heights,nbins),intent(in) :: diameter_spec
+                real(kind=dbl) dimension(n_heights,nbins),intent(in),depend(n_heights,nbins) :: back_spec
+                real(kind=dbl) dimension(n_heights),intent(in),depend(n_heights) :: temp
+                real(kind=dbl) dimension(n_heights),intent(in),depend(n_heights) :: press
+                real(kind=dbl) dimension(n_heights),intent(in),depend(n_heights) :: atmo_wind_w
+                real(kind=dbl) intent(in) :: wavelength
+                real(kind=dbl) dimension(n_heights,nbins),intent(in),depend(n_heights,nbins) :: rho_particle
+                character*30 intent(in) :: vel_size_mod
+                real(kind=dbl) dimension(n_heights,nbins),intent(in),depend(n_heights,nbins) :: mass
+                real(kind=dbl) dimension(n_heights,nbins),intent(in),depend(n_heights,nbins) :: area
+                integer, optional,intent(in),check(shape(diameter_spec,0)==n_heights),depend(diameter_spec) :: n_heights=shape(diameter_spec,0)
+                real(kind=dbl) intent(in) :: radar_max_v
+                real(kind=dbl) intent(in) :: radar_min_v
+                integer intent(in) :: radar_aliasing_nyquist_interv
+                integer intent(in) :: radar_nfft
+                integer intent(in) :: radar_nfft_aliased
+                logical intent(in) :: radar_airmotion
+                character*8 intent(in) :: radar_airmotion_model
+                real(kind=dbl) intent(in) :: radar_airmotion_vmin
+                real(kind=dbl) intent(in) :: radar_airmotion_vmax
+                integer(kind=long_bn) intent(in) :: radar_airmotion_linear_steps
+                real(kind=dbl) intent(in) :: radar_airmotion_step_vmin
+                real(kind=dbl) intent(in) :: radar_k2
+                real(kind=dbl) dimension(n_heights,radar_nfft_aliased),intent(out),depend(n_heights,radar_nfft_aliased) :: particle_spec
+                real(kind=dbl) dimension(n_heights,nbins),intent(out),depend(n_heights,nbins) :: vel_spec
+            end subroutine get_radar_spectrum
+            subroutine get_radar_spectrum_one(errorstatus,nbins,diameter_spec,back_spec,temp,press,atmo_wind_w,wavelength,rho_particle,vel_size_mod,mass,area,radar_max_v,radar_min_v,radar_aliasing_nyquist_interv,radar_nfft,radar_nfft_aliased,radar_airmotion,radar_airmotion_model,radar_airmotion_vmin,radar_airmotion_vmax,radar_airmotion_linear_steps,radar_airmotion_step_vmin,radar_k2,particle_spec,vel_spec) ! in :pyPamtraRadarSimulatorLib:radar_spectrum.f90:radar_spectrum
+                use report_module
+                use kinds
+                use dia2vel
+                use constants
+                use rescale_spec
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(len(diameter_spec)>=nbins),depend(diameter_spec) :: nbins=len(diameter_spec)
+                real(kind=dbl) dimension(nbins),intent(in) :: diameter_spec
+                real(kind=dbl) dimension(nbins),intent(in),depend(nbins) :: back_spec
+                real(kind=dbl) intent(in) :: temp
+                real(kind=dbl) intent(in) :: press
+                real(kind=dbl) intent(in) :: atmo_wind_w
+                real(kind=dbl) intent(in) :: wavelength
+                real(kind=dbl) dimension(nbins),intent(in),depend(nbins) :: rho_particle
+                character*30 intent(in) :: vel_size_mod
+                real(kind=dbl) dimension(nbins),intent(in),depend(nbins) :: mass
+                real(kind=dbl) dimension(nbins),intent(in),depend(nbins) :: area
+                real(kind=dbl) intent(in) :: radar_max_v
+                real(kind=dbl) intent(in) :: radar_min_v
+                integer intent(in) :: radar_aliasing_nyquist_interv
+                integer intent(in) :: radar_nfft
+                integer intent(in) :: radar_nfft_aliased
+                logical intent(in) :: radar_airmotion
+                character*8 intent(in) :: radar_airmotion_model
+                real(kind=dbl) intent(in) :: radar_airmotion_vmin
+                real(kind=dbl) intent(in) :: radar_airmotion_vmax
+                integer(kind=long_bn) intent(in) :: radar_airmotion_linear_steps
+                real(kind=dbl) intent(in) :: radar_airmotion_step_vmin
+                real(kind=dbl) intent(in) :: radar_k2
+                real(kind=dbl) dimension(radar_nfft_aliased),intent(out),depend(radar_nfft_aliased) :: particle_spec
+                real(kind=dbl) dimension(nbins),intent(out),depend(nbins) :: vel_spec
+            end subroutine get_radar_spectrum_one
+        end module radar_spectrum
+        module rescale_spec ! in :pyPamtraRadarSimulatorLib:rescale_spectra.f90
+            subroutine rescale_spectra(errorstatus,nx1,nx2,sort,x1,y1,x2,y2) ! in :pyPamtraRadarSimulatorLib:rescale_spectra.f90:rescale_spec
+                use report_module
+                use kinds
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(len(x1)>=nx1),depend(x1) :: nx1=len(x1)
+                integer, optional,intent(in),check(len(x2)>=nx2),depend(x2) :: nx2=len(x2)
+                logical intent(in) :: sort
+                real(kind=dbl) dimension(nx1),intent(in) :: x1
+                real(kind=dbl) dimension(nx1),intent(in),depend(nx1) :: y1
+                real(kind=dbl) dimension(nx2),intent(in) :: x2
+                real(kind=dbl) dimension(nx2),intent(out),depend(nx2) :: y2
+            end subroutine rescale_spectra
+            subroutine average_spectra(errorstatus,nx12,nx2,x12_sorted,y12_sorted,x2,y_result) ! in :pyPamtraRadarSimulatorLib:rescale_spectra.f90:rescale_spec
+                use report_module
+                use kinds
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(len(x12_sorted)>=nx12),depend(x12_sorted) :: nx12=len(x12_sorted)
+                integer, optional,intent(in),check(len(x2)>=nx2),depend(x2) :: nx2=len(x2)
+                real(kind=dbl) dimension(nx12),intent(in) :: x12_sorted
+                real(kind=dbl) dimension(nx12),intent(in),depend(nx12) :: y12_sorted
+                real(kind=dbl) dimension(nx2),intent(in) :: x2
+                real(kind=dbl) dimension(nx2 - 1),intent(out),depend(nx2) :: y_result
+            end subroutine average_spectra
+            subroutine interpolate_spectra(errorstatus,nx1,nx2,x1,y1,x2,y2) ! in :pyPamtraRadarSimulatorLib:rescale_spectra.f90:rescale_spec
+                use report_module
+                use kinds
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,check(len(x1)>=nx1),depend(x1) :: nx1=len(x1)
+                integer, optional,check(len(x2)>=nx2),depend(x2) :: nx2=len(x2)
+                real(kind=dbl) dimension(nx1),intent(in) :: x1
+                real(kind=dbl) dimension(nx1),intent(in),depend(nx1) :: y1
+                real(kind=dbl) dimension(nx2),intent(in) :: x2
+                real(kind=dbl) dimension(nx2),intent(out),depend(nx2) :: y2
+            end subroutine interpolate_spectra
+            subroutine locate(xx,n,x,j) ! in :pyPamtraRadarSimulatorLib:rescale_spectra.f90:rescale_spec
+                use kinds
+                real(kind=dbl) dimension(n) :: xx
+                integer, optional,check(len(xx)>=n),depend(xx) :: n=len(xx)
+                real(kind=dbl) :: x
+                integer :: j
+            end subroutine locate
+        end module rescale_spec
+        module dia2vel ! in :pyPamtraRadarSimulatorLib:dia2vel.f90
+            subroutine dia2vel_heymsfield10_particles_ms_as(errorstatus,ndia,diaspec_si,rho_air_si,nu_si,mass_size_a_si,mass_size_b,area_size_a_si,area_size_b,velspec) ! in :pyPamtraRadarSimulatorLib:dia2vel.f90:dia2vel
+                use report_module
+                use kinds
+                use constants
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(len(diaspec_si)>=ndia),depend(diaspec_si) :: ndia=len(diaspec_si)
+                real(kind=dbl) dimension(ndia),intent(in) :: diaspec_si
+                real(kind=dbl) intent(in) :: rho_air_si
+                real(kind=dbl) intent(in) :: nu_si
+                real(kind=dbl) intent(in) :: mass_size_a_si
+                real(kind=dbl) intent(in) :: mass_size_b
+                real(kind=dbl) intent(in) :: area_size_a_si
+                real(kind=dbl) intent(in) :: area_size_b
+                real(kind=dbl) dimension(ndia),intent(out),depend(ndia) :: velspec
+            end subroutine dia2vel_heymsfield10_particles_ms_as
+            subroutine dia2vel_heymsfield10_particles(errorstatus,ndia,diaspec_si,rho_air_si,nu_si,mass,area,k,velspec) ! in :pyPamtraRadarSimulatorLib:dia2vel.f90:dia2vel
+                use report_module
+                use kinds
+                use constants
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(len(diaspec_si)>=ndia),depend(diaspec_si) :: ndia=len(diaspec_si)
+                real(kind=dbl) dimension(ndia),intent(in) :: diaspec_si
+                real(kind=dbl) intent(in) :: rho_air_si
+                real(kind=dbl) intent(in) :: nu_si
+                real(kind=dbl) dimension(ndia),intent(in),depend(ndia) :: mass
+                real(kind=dbl) dimension(ndia),intent(in),depend(ndia) :: area
+                real(kind=dbl) intent(in) :: k
+                real(kind=dbl) dimension(ndia),intent(out),depend(ndia) :: velspec
+            end subroutine dia2vel_heymsfield10_particles
+            subroutine dia2vel_khvorostyanov01_particles(errorstatus,ndia,diaspec_si,rho_air_si,nu_si,mass_si,area_si,velspec) ! in :pyPamtraRadarSimulatorLib:dia2vel.f90:dia2vel
+                use report_module
+                use kinds
+                use constants
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(len(diaspec_si)>=ndia),depend(diaspec_si) :: ndia=len(diaspec_si)
+                real(kind=dbl) dimension(ndia),intent(in) :: diaspec_si
+                real(kind=dbl) intent(in) :: rho_air_si
+                real(kind=dbl) intent(in) :: nu_si
+                real(kind=dbl) dimension(ndia),intent(in),depend(ndia) :: mass_si
+                real(kind=dbl) dimension(ndia),intent(in),depend(ndia) :: area_si
+                real(kind=dbl) dimension(ndia),intent(out),depend(ndia) :: velspec
+            end subroutine dia2vel_khvorostyanov01_particles
+            subroutine dia2vel_khvorostyanov01_spheres(errorstatus,ndia,diaspec,rho_air,my,rho_particle,velspec) ! in :pyPamtraRadarSimulatorLib:dia2vel.f90:dia2vel
+                use report_module
+                use kinds
+                use constants
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(len(diaspec)>=ndia),depend(diaspec) :: ndia=len(diaspec)
+                real(kind=dbl) dimension(ndia),intent(in) :: diaspec
+                real(kind=dbl) intent(in) :: rho_air
+                real(kind=dbl) intent(in) :: my
+                real(kind=dbl) dimension(ndia),intent(in),depend(ndia) :: rho_particle
+                real(kind=dbl) dimension(ndia),intent(out),depend(ndia) :: velspec
+            end subroutine dia2vel_khvorostyanov01_spheres
+            subroutine dia2vel_khvorostyanov01_drops(errorstatus,ndia,diaspec,rho_air,my,velspec) ! in :pyPamtraRadarSimulatorLib:dia2vel.f90:dia2vel
+                use report_module
+                use kinds
+                use constants
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(len(diaspec)>=ndia),depend(diaspec) :: ndia=len(diaspec)
+                real(kind=dbl) dimension(ndia),intent(in) :: diaspec
+                real(kind=dbl) intent(in) :: rho_air
+                real(kind=dbl) intent(in) :: my
+                real(kind=dbl) dimension(ndia),intent(out),depend(ndia) :: velspec
+            end subroutine dia2vel_khvorostyanov01_drops
+            subroutine dia2vel_foote69_rain(errorstatus,ndia,diaspec,rho_air,temp,velspec) ! in :pyPamtraRadarSimulatorLib:dia2vel.f90:dia2vel
+                use report_module
+                use kinds
+                use constants
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(len(diaspec)>=ndia),depend(diaspec) :: ndia=len(diaspec)
+                real(kind=dbl) dimension(ndia),intent(in) :: diaspec
+                real(kind=dbl) intent(in) :: rho_air
+                real(kind=dbl) intent(in) :: temp
+                real(kind=dbl) dimension(ndia),intent(out),depend(ndia) :: velspec
+            end subroutine dia2vel_foote69_rain
+            subroutine dia2vel_pavlos_cloud(errorstatus,ndia,diaspec,velspec) ! in :pyPamtraRadarSimulatorLib:dia2vel.f90:dia2vel
+                use report_module
+                use kinds
+                use constants
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(len(diaspec)>=ndia),depend(diaspec) :: ndia=len(diaspec)
+                real(kind=dbl) dimension(ndia),intent(in) :: diaspec
+                real(kind=dbl) dimension(ndia),intent(out),depend(ndia) :: velspec
+            end subroutine dia2vel_pavlos_cloud
+            subroutine dia2vel_metek_rain(errorstatus,ndia,diaspec,rho_air,temp,velspec) ! in :pyPamtraRadarSimulatorLib:dia2vel.f90:dia2vel
+                use report_module
+                use kinds
+                use constants
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(len(diaspec)>=ndia),depend(diaspec) :: ndia=len(diaspec)
+                real(kind=dbl) dimension(ndia),intent(in) :: diaspec
+                real(kind=dbl) intent(in) :: rho_air
+                real(kind=dbl) intent(in) :: temp
+                real(kind=dbl) dimension(ndia),intent(out),depend(ndia) :: velspec
+            end subroutine dia2vel_metek_rain
+            subroutine dia2vel_rogers_drops(errorstatus,ndia,diaspec,rho_air,velspec) ! in :pyPamtraRadarSimulatorLib:dia2vel.f90:dia2vel
+                use report_module
+                use kinds
+                use constants
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(len(diaspec)>=ndia),depend(diaspec) :: ndia=len(diaspec)
+                real(kind=dbl) dimension(ndia),intent(in) :: diaspec
+                real(kind=dbl) intent(in) :: rho_air
+                real(kind=dbl) dimension(ndia),intent(out),depend(ndia) :: velspec
+            end subroutine dia2vel_rogers_drops
+            subroutine dia2vel_rogers_graupel(errorstatus,ndia,diaspec,velspec) ! in :pyPamtraRadarSimulatorLib:dia2vel.f90:dia2vel
+                use report_module
+                use kinds
+                use constants
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(len(diaspec)>=ndia),depend(diaspec) :: ndia=len(diaspec)
+                real(kind=dbl) dimension(ndia),intent(in) :: diaspec
+                real(kind=dbl) dimension(ndia),intent(out),depend(ndia) :: velspec
+            end subroutine dia2vel_rogers_graupel
+            subroutine dia2vel_power_law(errorstatus,ndia,diaspec,vel_size_mod,velspec) ! in :pyPamtraRadarSimulatorLib:dia2vel.f90:dia2vel
+                use report_module
+                use kinds
+                use constants
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(len(diaspec)>=ndia),depend(diaspec) :: ndia=len(diaspec)
+                real(kind=dbl) dimension(ndia),intent(in) :: diaspec
+                character*30 intent(in) :: vel_size_mod
+                real(kind=dbl) dimension(ndia),intent(out),depend(ndia) :: velspec
+            end subroutine dia2vel_power_law
+            subroutine dia2vel_corrected_power_law(errorstatus,ndia,diaspec,rho_air,temp,vel_size_mod,velspec) ! in :pyPamtraRadarSimulatorLib:dia2vel.f90:dia2vel
+                use report_module
+                use kinds
+                use constants
+                integer(kind=long_bn) intent(out) :: errorstatus
+                integer, optional,intent(in),check(len(diaspec)>=ndia),depend(diaspec) :: ndia=len(diaspec)
+                real(kind=dbl) dimension(ndia),intent(in) :: diaspec
+                real(kind=dbl) intent(in) :: rho_air
+                real(kind=dbl) intent(in) :: temp
+                character*30 intent(in) :: vel_size_mod
+                real(kind=dbl) dimension(ndia),intent(out),depend(ndia) :: velspec
+            end subroutine dia2vel_corrected_power_law
+        end module dia2vel
+        module report_module ! in :pyPamtraRadarSimulatorLib:report_module.f90
+            use kinds
+            integer(kind=long_bn), parameter,optional :: info=3
+            integer(kind=long_bn), parameter,optional :: fatal=2
+            integer(kind=long_bn), parameter,optional :: nstatus=3
+            integer(kind=long_bn), optional :: verbose=0
+            integer(kind=long_bn), parameter,optional :: success=0
+            character(len=7), parameter,optional,dimension(4),depend(info,fatal,success,warning) :: status_text=(/'success','warning','fatal','info'/)
+            integer(kind=long_bn), parameter,optional :: warning=1
+            subroutine report(status,message,nameofroutine) ! in :pyPamtraRadarSimulatorLib:report_module.f90:report_module
+                integer(kind=long_bn) intent(in) :: status
+                character*(*) intent(in) :: message
+                character*(*) intent(in) :: nameofroutine
+            end subroutine report
+            subroutine assert_true(error,logic,message) ! in :pyPamtraRadarSimulatorLib:report_module.f90:report_module
+                integer intent(inout) :: error
+                logical intent(in) :: logic
+                character*(*) intent(in) :: message
+            end subroutine assert_true
+            subroutine assert_false(error,logic,message) ! in :pyPamtraRadarSimulatorLib:report_module.f90:report_module
+                integer intent(inout) :: error
+                logical intent(in) :: logic
+                character*(*) intent(in) :: message
+            end subroutine assert_false
+        end module report_module
+    end interface 
+end python module pyPamtraRadarSimulatorLib
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/
