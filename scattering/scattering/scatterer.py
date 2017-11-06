@@ -13,6 +13,8 @@ try:
 except:
     sys.path.append('../../refractive/')
     from refractive import utilities as ref_utils
+    
+light_speed = 299792458.
 
 class scatterer(object):
     def __init__(self,
@@ -23,28 +25,27 @@ class scatterer(object):
                  ):
         self.diameter = diameter
         self.frequency = frequency
+        self.wavelength = light_speed/(frequency*1.0e9)
+        self.size_parameter = scattering_utilities.size_parameter(0.5*self.diameter,self.wavelength)
         
         self.set_dielectric_properties(refractive_index,dielectric_permittivity)
         
     def set_dielectric_properties(self,refractive_index,dielectric_permittivity):
         if (refractive_index is None):
             if (dielectric_permittivity is None):
-                self.refractive_index = None
-                self.dielectric_permittivity = None
+                self.refractive_index = np.nan
+                self.dielectric_permittivity = np.nan
+                self.K2 = np.nan
             else:
                 self.dielectric_permittivity = dielectric_permittivity
                 self.refractive_index = ref_utils.eps2n(self.dielectric_permittivity)
+                self.K2 = ref_utils.K2(self.dielectric_permittivity)
         elif (dielectric_permittivity is None):
             self.refractive_index = refractive_index
             self.dielectric_permittivity = ref_utils.n2eps(self.refractive_index)
+            self.K2 = ref_utils.K2(self.dielectric_permittivity)
         else:
             raise AttributeError('Both dielectric permittivity and refractive index has been defined')
-
-class Rayleigh(scatterer):
-    def __init__(self):
-        scatterer.__init__(self)
-        print('I am a Rayleigh instance')
-        raise NotImplementedError('Even though it is easy Rayleigh is not implemented yet')
 
 class Mie(scatterer):
     def __init__(self):

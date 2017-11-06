@@ -3,6 +3,8 @@ This submodule implements useful functions that helps in the definition of the
 scatterer geometry and the conversion among diverse scattering frameworks
 """
 
+import numpy as np
+
 #class amplitude_matrix ??
 
 #class mueller_matrix ??
@@ -15,6 +17,8 @@ scatterer geometry and the conversion among diverse scattering frameworks
 #    """
 #    mueller =1.0
 #    return mueller
+
+size_parameter = lambda radius, wavelength: 2.0*np.pi*radius/wavelength
 
 class spheroid(object):
     def __init__(self):
