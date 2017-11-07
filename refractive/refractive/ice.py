@@ -77,6 +77,8 @@ def iwabuchi_yang_2011(temperatures,frequencies):
     ValueError
         If a negative frequency or temperature is passed as an argument
     """
+    raise NotImplementedError('Solve first possible copyright issue on the table')
+    
     if (frequencies < 0).any():
         raise ValueError('A negative frequency value has been passed')
     
