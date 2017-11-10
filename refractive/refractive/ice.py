@@ -77,7 +77,7 @@ def iwabuchi_yang_2011(temperatures,frequencies):
     ValueError
         If a negative frequency or temperature is passed as an argument
     """
-    raise NotImplementedError('Solve first possible copyright issue on the table')
+    #raise NotImplementedError('Solve first possible copyright issue on the table')
     
     if (frequencies < 0).any():
         raise ValueError('A negative frequency value has been passed')
@@ -130,7 +130,7 @@ def warren_brandt_2008(frequencies):
 
 def matzler_2006(temperatures,frequencies):
     """Ice complex relative dielectric constant according to Matzler (2006)
-    "Thermal Microwave Radiation: application to remote sensing"
+    "Thermal Microwave Radiation: application to remote sensing, Chapter 5, pp 456-460"
 
     Parameters
     ----------
@@ -152,9 +152,13 @@ def matzler_2006(temperatures,frequencies):
     """
 
     if (frequencies < 0).any():
-        raise ValueError('A negative frequency value has been passed')
+        raise ValueError('refractive: A negative frequency value has been passed')
     if (temperatures < 0).any():
-        raise ValueError('A negative temperature value has been passed')
+        raise ValueError('refractive: A negative temperature value has been passed')
+    if (( (frequencies < 0.01) + (frequencies >= 300.) ).any()):
+        raise ValueError('Matzler model for refractive index of ice is valid between 10 MHz and 300 GHz')
+    if (temperatures < 240.).any():
+        raise ValueError('Matzler model for refractive index of ice is only valid above 240 K')
 
     B1 = 0.0207
     b = 335.

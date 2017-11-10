@@ -52,9 +52,11 @@ def ellison(temperatures,frequencies):
     """
 
     if (frequencies < 0).any():
-        raise ValueError('A negative frequency value has been passed')
+        raise ValueError('refractive: A negative frequency value has been passed')
     if (temperatures < 0).any():
-        raise ValueError('A negative temperature value has been passed')
+        raise ValueError('refractive: A negative temperature value has been passed')
+    if (frequencies > 1000.0).any():
+        raise ValueError('Ellison model for dielectric property of fresh water is only valid up to 1 THz')
 
     a0 = 5.7230
     a1 = 2.2379e-2
