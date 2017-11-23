@@ -13,89 +13,90 @@ c = 2.99792458e8
 #INPUT
 diameters = np.linspace(0.001,0.025,50)
 
-from sys import argv
-script, diameters = argv
-diameters = np.array([float(diameters)])
+#from sys import argv
+#script, diameters = argv
 
-frequency = 94.0e9
-wavelength = c/frequency
-volume = 1.0e-9
+brandes = lambda D: 7.9e-5*D**2.1
+smalles = lambda D: 4.1e-5*D**2.5
 
-mass = 8.9e-2*(diameters)**2.1 
-volume = mass/0.917
+def backscattering(frequency, diameters, n):
+    #diameters = np.array([float(diameters)])
+    #frequency = 94.0e9
+    wavelength = c/frequency
+    volume = 1.0e-9
 
-# CONSTANTS FOR MY PARTICLES
-kappa = 0.190031
-beta  = 0.030681461
-gamma = 1.3002167
-zeta1 = 0.29466184
+    #mass = 8.9e-5*(diameters*1000.)**2.1
+    mass = min(brandes(diameters*1.0e3),smalles((diameters*1.0e3)))
+    volume = mass/917.
 
-# DEFAULT VALUES #
-verbose = 0
-T       = 268
-n       = complex(1.774618673, 0.001197613076)
-eps = n*n.conjugate()
+    # CONSTANTS FOR MY PARTICLES
+    kappa = 0.190031
+    beta  = 0.030681461
+    gamma = 1.3002167
+    zeta1 = 0.29466184
 
-N_diameters = len(diameters)
+    # DEFAULT VALUES #
 
-if (N_diameters > 1):
-    diameters = diameters[0]
-    N_diameters = 1
-    print('Currently working on scalars ...  I am just translating IDL')
+    T       = 268
+    #n       = complex(1.774618673, 0.001197613076)
+    eps = n*n.conjugate()
 
-### Now there is a fantastic IDL routine that check if parameter values are finite
+    #N_diameters = len(diameters)
 
-K = (eps-1)/(eps+2)
-K2 = (K*K.conjugate()).real
+    ### Now there is a fantastic IDL routine that check if parameter values are finite
 
-#wavenumber
-k = 2*np.pi/wavelength
+    K = (eps-1)/(eps+2)
+    K2 = (K*K.conjugate()).real
 
-#size parameter
-x = k*diameters
+    #wavenumber
+    k = 2*np.pi/wavelength
 
-#Factor resulting from Eq. 1 and Eq. 4 (all elements except PHI_SSRGA(x)) in Hogan et al., 2016 
-prefactor = 9.0*np.pi * k**4. * K2 * volume**2. / 16.
+    #size parameter
+    x = k*diameters
 
-term1 = np.cos(x) * ( (1.0+kappa/3.0) * (1.0/(2.0*x+np.pi) - 1.0/(2.0*x-np.pi)) - kappa * (1.0/(2.0*x+3.0*np.pi) - 1.0/(2.0*x-3.0*np.pi)) )
-term1 = term1**2.
+    #Factor resulting from Eq. 1 and Eq. 4 (all elements except PHI_SSRGA(x)) in Hogan et al., 2016 
+    prefactor = 9.0*np.pi * k**4. * K2 * volume**2. / 16.
+
+    term1 = np.cos(x) * ( (1.0+kappa/3.0) * (1.0/(2.0*x+np.pi) - 1.0/(2.0*x-np.pi)) - kappa * (1.0/(2.0*x+3.0*np.pi) - 1.0/(2.0*x-3.0*np.pi)) )
+    term1 = term1**2.
 
 
-# Initialize scattering variables
-c_bsc = 0.0 #backscattering cross section [m2]
-c_abs = 0.0 #absorption cross section [m2]
-c_sca = 0.0 #scattering cross section [m2]
+    # Initialize scattering variables
+    c_bsc = 0.0 #backscattering cross section [m2]
+    c_abs = 0.0 #absorption cross section [m2]
+    c_sca = 0.0 #scattering cross section [m2]
 
-#--- define scattering angles for phase function (we could also make it a keyword in the future)
-theta = (np.arange(201.0)) * (180./200.)
-theta_rad = theta * np.pi/180.
+    #--- define scattering angles for phase function (we could also make it a keyword in the future)
+    theta = (np.arange(201.0)) * (180./200.)
+    theta_rad = theta * np.pi/180.
 
-n_theta = len(theta)
-d_theta_rad = theta_rad[1] - theta_rad[0]
+    n_theta = len(theta)
+    d_theta_rad = theta_rad[1] - theta_rad[0]
 
-ph_func = np.ndarray(n_theta)
+    ph_func = np.ndarray(n_theta)
 
-#**** ABSORPTION: TODO: figure it out how to calculate absorption, and in particulare Kxyz
-# c_abs = 3.*k*volume*(-1.*Kxyz).imag #Hogan et al., 2016, Eq. 8
+    #**** ABSORPTION: TODO: figure it out how to calculate absorption, and in particulare Kxyz
+    # c_abs = 3.*k*volume*(-1.*Kxyz).imag #Hogan et al., 2016, Eq. 8
 
-#**** BACKSCATTERING:
-#Initialize the summation in the second term in the braces of Eq. 12
-thesum = 0.
+    #**** BACKSCATTERING:
+    #Initialize the summation in the second term in the braces of Eq. 12
+    thesum = 0.
+    
+    #-- Decide how many terms are needed
+    jmax = int(5.*x/np.pi + 1.0)
 
-#-- Decide how many terms are needed
-jmax = int(5.*x/np.pi + 1.0)
-
-#-- Evaluate summation
-for j in range(jmax):
-    if j == 1:
-        zeta=zeta1
-    else:
-        zeta=1.
-    thesum = thesum + zeta * (2.0*(j+1))**(-1.*gamma) * np.sin(x)**2. * ( (1.0/(2.0*x+2.0*np.pi*(j+1))**2.) + (1.0/(2.0*x-2.0*np.pi*(j+1))**2.))
-
-#-- Put the terms together
-c_bsc = prefactor*(term1 + beta*thesum)
-print(c_bsc)
+    #-- Evaluate summation
+    for j in range(jmax):
+        if j == 1:
+            zeta=zeta1
+        else:
+            zeta=1.
+        thesum = thesum + zeta * (2.0*(j+1))**(-1.*gamma) * np.sin(x)**2. * ( (1.0/(2.0*x+2.0*np.pi*(j+1))**2.) + (1.0/(2.0*x-2.0*np.pi*(j+1))**2.))
+    
+    #-- Put the terms together
+    c_bsc = prefactor*(term1 + beta*thesum)
+    print(mass, c_bsc)
+    return [c_bsc, mass]
 
 ############################################################
 #**** SCATTERING PHASE FUNCTION AND SCATTERING CROSS SECTION
