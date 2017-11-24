@@ -40,13 +40,18 @@ warren_ice_table = warren_ice_table.iloc[::-1] # reverse order
 warren_ice_eps = (warren_ice_table.mr.values+1j*warren_ice_table.mi.values)**2
 warren_ice_interpolated = interpolate.interp1d(warren_ice_table.index.values,warren_ice_eps,assume_sorted=True)
 
-iwabuchi_ice_table = pd.read_csv(module_path+'/iwabuchi_yang_ice.dat',comment='#',delim_whitespace=True,header=None)
-iwabuchi_ice_table['f'] = 299792.458/iwabuchi_ice_table.loc[:,0] # wl is microns, should return GHz
-iwabuchi_ice_table.set_index('f',inplace=True)
-iwabuchi_ice_table = iwabuchi_ice_table.iloc[::-1]
-iwabuchi_ice_eps = (iwabuchi_ice_table.values[:,1:13]+1j*iwabuchi_ice_table.values[:,13:])**2
-iwabuchi_ice_interp_real = interpolate.interp2d(np.arange(160.,275.,10.),iwabuchi_ice_table.index.values,iwabuchi_ice_eps.real) # unfortunately, current version of scipy interp2d does not handle complex values
-iwabuchi_ice_interp_imag = interpolate.interp2d(np.arange(160.,275.,10.),iwabuchi_ice_table.index.values,iwabuchi_ice_eps.imag)
+iwabuchi_ice_table = pd.read_csv(module_path+'/iwabuchi_ice_eps.dat',index_col=0,dtype=np.float64,comment='#')
+#iwabuchi_ice_table['f'] = 299792.458/iwabuchi_ice_table.loc[:,0] # wl is microns, should return GHz
+iwabuchi_ice_table.index.name='f'
+#iwabuchi_ice_table.set_index('f',inplace=True)
+#iwabuchi_ice_table = iwabuchi_ice_table.iloc[::-1]
+##iwabuchi_ice_table_eps = iwabuchi_ice_table.values[:,0:12]+1j*iwabuchi_ice_table.values[:,12:]
+#iwabuchi_ice_eps = (iwabuchi_ice_table.values[:,1:13]+1j*iwabuchi_ice_table.values[:,13:])**2
+#iwabuchi_ice_interp_real = interpolate.interp2d(np.arange(160.,275.,10.),iwabuchi_ice_table.index.values,iwabuchi_ice_eps.real) # unfortunately, current version of scipy interp2d does not handle complex values
+#iwabuchi_ice_interp_imag = interpolate.interp2d(np.arange(160.,275.,10.),iwabuchi_ice_table.index.values,iwabuchi_ice_eps.imag)
+iwabuchi_ice_interp_real = interpolate.interp2d(np.arange(160.,275.,10.),iwabuchi_ice_table.index.values,iwabuchi_ice_table.values[:,0:12])
+iwabuchi_ice_interp_imag = interpolate.interp2d(np.arange(160.,275.,10.),iwabuchi_ice_table.index.values,iwabuchi_ice_table.values[:,12:])
+
 
 def iwabuchi_yang_2011(temperatures,frequencies):
     """
@@ -77,7 +82,6 @@ def iwabuchi_yang_2011(temperatures,frequencies):
     ValueError
         If a negative frequency or temperature is passed as an argument
     """
-    #raise NotImplementedError('Solve first possible copyright issue on the table')
     
     if (frequencies < 0).any():
         raise ValueError('A negative frequency value has been passed')
