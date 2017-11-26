@@ -125,9 +125,10 @@ def turner_kneifel_cadeddu(temperatures, frequencies):
 
     # Compute the imaginary permittivitity coefficient (Eq 5)
     eps2 = 2.0*np.pi*frq*(term1_p1 + term2_p1)
-    epsilon = complex(eps1, eps2)
+    #epsilon = complex(eps1, eps2)
+    return eps1 + 1j*eps2
 
-    return epsilon
+    #return epsilon
 
 #    # Compute the mass absorption coefficient (Eq 1)
 #    RE = (epsilon-1)/(epsilon+2)
@@ -223,6 +224,8 @@ def eps(Temperatures,Frequencies,model="ellison"):
     """
     if (model == "ellison"):
         return ellison(np.array(Temperatures),np.array(Frequencies))
+    if (model == 'Turner'):
+        return turner_kneifel_cadeddu(np.array(Temperatures),np.array(Frequencies))
     else:
         print("I do not recognize the ice refractive index specification, falling back to ellison")
         return ellison(np.array(Temperatures),np.array(Frequencies))
