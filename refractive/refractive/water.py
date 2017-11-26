@@ -28,6 +28,112 @@ A very basic non-negative value check is performed on the data
 
 import numpy as np
 
+def turner_kneifel_cadeddu(temperatures, frequencies):
+    """ The "Turner-Kneifel-Cadeddu" liquid water absorption model (JTECH 2016).
+    
+        SPECIAL MODEL FOR SUPERCOOLED LIQUID WATER
+    
+    It was built using both laboratory observations (primarily at warm temperatures) and 
+    field data observed by MWRs at multiple frequencies at supercool temperatures. The field
+    data were published in Kneifel et al. JAMC 2014.  The strength of the TKC model is the 
+    use of an optimal estimation framework to determine the empirical coefficients of the 
+    double-Debye model.  A full description of this model is given in 
+
+		Turner, D.D., S. Kneifel, and M.P. Cadeddu, 2016: An improved liquid
+		water absorption model in the microwave for supercooled liquid clouds.
+		J. Atmos. Oceanic Technol., 33(1), pp.33-44, doi:10.1175/JTECH-D-15-0074.1.
+
+ 	Note that the model is designed to operate over the frequency range from 0.5 to 500
+    GHz, and temperatures from -40 degC to +50 degC; only for freshwater (no salinity)
+    
+    Parameters
+    ----------
+    temperatures : float
+        nd array of temperatures [kelvin]
+    frequencies : float
+        nd array of frequencies [GHz]
+     
+    Returns
+    -------
+    nd - complex
+        Relative dielectric constant of ice at the requested frequencies and temperatures
+
+    Raises
+    ------
+    ValueError
+        If a negative frequency or temperature is passed as an argument
+    ValueError
+        If frequency or temperature out of the limits of validity of the model is passed as an argument
+
+    """
+    if (frequencies < 0).any():
+        raise ValueError('refractive: A negative frequency value has been passed')
+    if (temperatures < 0).any():
+        raise ValueError('refractive: A negative temperature value has been passed')
+    if (frequencies > 500.0).any():
+        raise ValueError('Ellison model for dielectric property of fresh water is only valid up to 1 THz')
+    
+    #function forward_tkc, $		; Returns the liquid mass absorption, in m2 kg-1
+  	#freq, $				; Input frequency (scalar float), in GHz
+    temp = temperatures - 273.15	#; Input cloud temperature (scalar float), in degC
+	#epsilon=epsilon		#; Optional output (complex): the permittivity value
+
+    # Convert the frequency from GHz to Hz
+    frq = frequencies*1.0e9
+    #Some constants
+    cl = 299792458.0	# ;speed of light in vacuum
+
+	# Empirical coefficients for the TKC model. The first 4 are a1, b1, c1, and d1, 
+	# the next four are a2, b2, c2, and d2, and the last one is tc.
+    coef = [8.111e+01, 4.434e-03, 1.302e-13, 6.627e+02,
+            2.025e+00, 1.073e-02, 1.012e-14, 6.089e+02, 1.342e+02]
+
+	# This helps to understand how things work below
+    a_1 = coef[0]
+    b_1 = coef[1]
+    c_1 = coef[2]
+    d_1 = coef[3]
+    
+    a_2 = coef[4]
+    b_2 = coef[5]
+    c_2 = coef[6]
+    d_2 = coef[7]
+    
+    t_c = coef[8]
+    
+    # Compute the static dielectric permittivity (Eq 6)
+    eps_s = 87.9144 - 0.404399*temp + 9.58726e-4*temp**2. - 1.32802e-6*temp**3.
+
+    # Compute the components of the relaxation terms (Eqs 9 and 10)
+        # First Debye component
+    delta_1 = a_1 * np.exp(-b_1 * temp)
+    tau_1   = c_1 * np.exp(d_1 / (temp + t_c))
+        # Second Debye component
+    delta_2 = a_2 * np.exp(-b_2 * temp)
+    tau_2   = c_2 * np.exp(d_2 / (temp + t_c))
+
+    # Compute the relaxation terms (Eq 7) for the two Debye components
+    term1_p1 = (tau_1**2.*delta_1)/(1.0 + (2.0*np.pi*frq*tau_1)**2.)
+    term2_p1 = (tau_2**2.*delta_2)/(1.0 + (2.0*np.pi*frq*tau_2)**2.)
+
+    # Compute the real permittivitity coefficient (Eq 4)
+    eps1 = eps_s - ((2.*np.pi*frq)**2.)*(term1_p1 + term2_p1)
+    
+    # Compute the relaxation terms (Eq 8) for the two Debye components
+    term1_p1 = (tau_1 * delta_1) / (1. + (2.*np.pi*frq*tau_1)**2.)
+    term2_p1 = (tau_2 * delta_2) / (1. + (2.*np.pi*frq*tau_2)**2.)
+
+    # Compute the imaginary permittivitity coefficient (Eq 5)
+    eps2 = 2.0*np.pi*frq*(term1_p1 + term2_p1)
+    epsilon = complex(eps1, eps2)
+
+    return epsilon
+
+#    # Compute the mass absorption coefficient (Eq 1)
+#    RE = (epsilon-1)/(epsilon+2)
+#    alpha = 6.d*np.pi*IMAGINARY(RE)*frq*1d-3/cl
+#    return,alpha
+
 def ellison(temperatures,frequencies):
     """Water complex relative dielectric constant according to Ellison (2005)
     "..." TODO: put the extensive correct reference here
@@ -48,13 +154,17 @@ def ellison(temperatures,frequencies):
     ------
     ValueError
         If a negative frequency or temperature is passed as an argument
+    ValueError
+        If frequency or temperature out of the limits of validity of the model is passed as an argument
 
     """
 
     if (frequencies < 0).any():
         raise ValueError('refractive: A negative frequency value has been passed')
     if (temperatures < 0).any():
-        raise ValueError('refractive: A negative temperature value has been passed')
+        raise ValueError('refractive: A negative absolute temperature value has been passed')
+    if (temperatures < 273.15).any():
+        raise ValueError('refractive: A subfreeze temperature value has been passed consider to use Turner Kneifel Cadeddu model')
     if (frequencies > 1000.0).any():
         raise ValueError('Ellison model for dielectric property of fresh water is only valid up to 1 THz')
 
