@@ -12,7 +12,7 @@ The python script is callable as
     $ python water.py Temperature Frequency
 
 and returns the complex refractive index of water at the requested
-Temperature [Kelvin] and Frequency [GHz]
+Temperature [Kelvin] and Frequency [Hz]
 
 Notes
 -----
@@ -21,8 +21,10 @@ Notes
     shape allowing element-wise application of the functions or one of
     the two must be a scalar which will be spread across the nd computations
 
-Temperatures should be provided in Kelvin and frequencies in GHz
-A very basic non-negative value check is performed on the data
+Temperatures should be provided in Kelvin and frequencies in Hz
+The specific called algorithm check for arguments values to be within the
+limits of validity of the dielectric model and raises ValueError in case
+they are not respected
 
 """
 
@@ -49,9 +51,9 @@ def turner_kneifel_cadeddu(temperatures, frequencies):
     Parameters
     ----------
     temperatures : float
-        nd array of temperatures [kelvin]
+        nd array of temperatures [Kelvin]
     frequencies : float
-        nd array of frequencies [GHz]
+        nd array of frequencies [Hz]
      
     Returns
     -------
@@ -70,18 +72,13 @@ def turner_kneifel_cadeddu(temperatures, frequencies):
         raise ValueError('refractive: A negative frequency value has been passed')
     if (temperatures < 0).any():
         raise ValueError('refractive: A negative temperature value has been passed')
-    if (frequencies > 500.0).any():
+    if (frequencies > 500.0e9).any():
         raise ValueError('Ellison model for dielectric property of fresh water is only valid up to 1 THz')
     
-    #function forward_tkc, $		; Returns the liquid mass absorption, in m2 kg-1
-  	#freq, $				; Input frequency (scalar float), in GHz
     temp = temperatures - 273.15	#; Input cloud temperature (scalar float), in degC
-	#epsilon=epsilon		#; Optional output (complex): the permittivity value
 
-    # Convert the frequency from GHz to Hz
-    frq = frequencies*1.0e9
     #Some constants
-    cl = 299792458.0	# ;speed of light in vacuum
+    #cl = 299792458.0	# ;speed of light in vacuum
 
 	# Empirical coefficients for the TKC model. The first 4 are a1, b1, c1, and d1, 
 	# the next four are a2, b2, c2, and d2, and the last one is tc.
@@ -113,27 +110,21 @@ def turner_kneifel_cadeddu(temperatures, frequencies):
     tau_2   = c_2 * np.exp(d_2 / (temp + t_c))
 
     # Compute the relaxation terms (Eq 7) for the two Debye components
-    term1_p1 = (tau_1**2.*delta_1)/(1.0 + (2.0*np.pi*frq*tau_1)**2.)
-    term2_p1 = (tau_2**2.*delta_2)/(1.0 + (2.0*np.pi*frq*tau_2)**2.)
+    term1_p1 = (tau_1**2.*delta_1)/(1.0 + (2.0*np.pi*frequencies*tau_1)**2.)
+    term2_p1 = (tau_2**2.*delta_2)/(1.0 + (2.0*np.pi*frequencies*tau_2)**2.)
 
     # Compute the real permittivitity coefficient (Eq 4)
-    eps1 = eps_s - ((2.*np.pi*frq)**2.)*(term1_p1 + term2_p1)
+    eps1 = eps_s - ((2.*np.pi*frequencies)**2.)*(term1_p1 + term2_p1)
     
     # Compute the relaxation terms (Eq 8) for the two Debye components
-    term1_p1 = (tau_1 * delta_1) / (1. + (2.*np.pi*frq*tau_1)**2.)
-    term2_p1 = (tau_2 * delta_2) / (1. + (2.*np.pi*frq*tau_2)**2.)
+    term1_p1 = (tau_1 * delta_1) / (1. + (2.*np.pi*frequencies*tau_1)**2.)
+    term2_p1 = (tau_2 * delta_2) / (1. + (2.*np.pi*frequencies*tau_2)**2.)
 
     # Compute the imaginary permittivitity coefficient (Eq 5)
-    eps2 = 2.0*np.pi*frq*(term1_p1 + term2_p1)
+    eps2 = 2.0*np.pi*frequencies*(term1_p1 + term2_p1)
     #epsilon = complex(eps1, eps2)
     return eps1 + 1j*eps2
 
-    #return epsilon
-
-#    # Compute the mass absorption coefficient (Eq 1)
-#    RE = (epsilon-1)/(epsilon+2)
-#    alpha = 6.d*np.pi*IMAGINARY(RE)*frq*1d-3/cl
-#    return,alpha
 
 def ellison(temperatures,frequencies):
     """Water complex relative dielectric constant according to Ellison (2005)
@@ -142,9 +133,9 @@ def ellison(temperatures,frequencies):
     Parameters
     ----------
     temperatures : float
-        nd array of temperatures [kelvin]
+        nd array of temperatures [Kelvin]
     frequencies : float
-        nd array of frequencies [GHz]
+        nd array of frequencies [Hz]
 
     Returns
     -------
@@ -166,7 +157,7 @@ def ellison(temperatures,frequencies):
         raise ValueError('refractive: A negative absolute temperature value has been passed')
     if (temperatures < 273.15).any():
         raise ValueError('refractive: A subfreeze temperature value has been passed consider to use Turner Kneifel Cadeddu model')
-    if (frequencies > 1000.0).any():
+    if (frequencies > 1000.0e9).any():
         raise ValueError('Ellison model for dielectric property of fresh water is only valid up to 1 THz')
 
     a0 = 5.7230
@@ -187,8 +178,8 @@ def ellison(temperatures,frequencies):
     e1=a0+T*(a1+T*a2)              #a0+a1*T+a2*T*T
     ni1=(45.0+T)/(a3+T*(a4+T*a5))  #(a3+a4*T+a5*T*T)
     ni2=(45.0+T)/(a8+T*(a9+T*a10)) #(a8+a9*T+a10*T*T)
-    A1=frequencies/ni1
-    A2=frequencies/ni2
+    A1=frequencies*1.0e-9/ni1
+    A2=frequencies*1.0e-9/ni2
     eps1=(es-e1)/(1+A1*A1)+(e1-einf)/(1+A2*A2)+einf
     eps2=(es*A1-e1*A1)/(1+A1*A1)+(e1*A2-einf*A2)/(1+A2*A2)
     return eps1 + 1j*eps2
@@ -205,9 +196,9 @@ def eps(Temperatures,Frequencies,model="ellison"):
     Parameters
     ----------
     temperatures : float
-        nd array of temperatures [kelvin]
+        nd array of temperatures [Kelvin]
     frequencies : float
-        nd array of frequencies [GHz]
+        nd array of frequencies [Hz]
     model : string
         dielectric model name default to Ellison (2005)
 
@@ -236,9 +227,9 @@ def n(Temperatures,Frequencies,model="ellison"):
     Parameters
     ----------
     temperatures : float
-        nd array of temperatures [kelvin]
+        nd array of temperatures [Kelvin]
     frequencies : float
-        nd array of frequencies [GHz]
+        nd array of frequencies [Hz]
     model : string
         dielectric model name default to Ellison (2005)
 

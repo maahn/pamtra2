@@ -13,7 +13,7 @@ The python script is callable as
     $ python ice.py Temperature Frequency
 
 and returns the complex refractive index of ice at the requested
-Temperature [Kelvin] and Frequency [GHz]
+Temperature [Kelvin] and Frequency [Hz]
 
 Notes
 -----
@@ -22,8 +22,10 @@ Notes
     shape allowing element-wise application of the functions or one of
     the two must be a scalar which will be spread across the nd computations
 
-Temperatures should be provided in Kelvin and frequencies in GHz
-A very basic non-negative value check is performed on the data
+Temperatures should be provided in Kelvin and frequencies in Hz
+The specific called algorithm check for arguments values to be within the
+limits of validity of the dielectric model and raises ValueError in case
+they are not respected
 
 """
 
@@ -34,24 +36,16 @@ from scipy import interpolate
 from os import path
 module_path = path.split(path.abspath(__file__))[0]
 warren_ice_table = pd.read_csv(module_path+'/IOP_2008_ASCIItable.dat',delim_whitespace=True,names=['wl','mr','mi'])
-warren_ice_table['f'] = 299792.458/warren_ice_table.wl # wl is microns, should return GHz
+warren_ice_table['f'] = 299792.458e9/warren_ice_table.wl # wl is microns, should return Hz
 warren_ice_table.set_index('f',inplace=True)
 warren_ice_table = warren_ice_table.iloc[::-1] # reverse order
 warren_ice_eps = (warren_ice_table.mr.values+1j*warren_ice_table.mi.values)**2
 warren_ice_interpolated = interpolate.interp1d(warren_ice_table.index.values,warren_ice_eps,assume_sorted=True)
 
 iwabuchi_ice_table = pd.read_csv(module_path+'/iwabuchi_ice_eps.dat',index_col=0,dtype=np.float64,comment='#')
-#iwabuchi_ice_table['f'] = 299792.458/iwabuchi_ice_table.loc[:,0] # wl is microns, should return GHz
 iwabuchi_ice_table.index.name='f'
-#iwabuchi_ice_table.set_index('f',inplace=True)
-#iwabuchi_ice_table = iwabuchi_ice_table.iloc[::-1]
-##iwabuchi_ice_table_eps = iwabuchi_ice_table.values[:,0:12]+1j*iwabuchi_ice_table.values[:,12:]
-#iwabuchi_ice_eps = (iwabuchi_ice_table.values[:,1:13]+1j*iwabuchi_ice_table.values[:,13:])**2
-#iwabuchi_ice_interp_real = interpolate.interp2d(np.arange(160.,275.,10.),iwabuchi_ice_table.index.values,iwabuchi_ice_eps.real) # unfortunately, current version of scipy interp2d does not handle complex values
-#iwabuchi_ice_interp_imag = interpolate.interp2d(np.arange(160.,275.,10.),iwabuchi_ice_table.index.values,iwabuchi_ice_eps.imag)
 iwabuchi_ice_interp_real = interpolate.interp2d(np.arange(160.,275.,10.),iwabuchi_ice_table.index.values,iwabuchi_ice_table.values[:,0:12])
 iwabuchi_ice_interp_imag = interpolate.interp2d(np.arange(160.,275.,10.),iwabuchi_ice_table.index.values,iwabuchi_ice_table.values[:,12:])
-
 
 def iwabuchi_yang_2011(temperatures,frequencies):
     """
@@ -68,9 +62,9 @@ def iwabuchi_yang_2011(temperatures,frequencies):
     Parameters
     ----------
     temperatures : float
-        nd array of temperatures [kelvin] which will be ignored
+        nd array of temperatures [Kelvin] which will be ignored
     frequencies : float
-        nd array of frequencies [GHz]
+        nd array of frequencies [Hz]
 
     Returns
     -------
@@ -114,7 +108,7 @@ def warren_brandt_2008(frequencies):
     Parameters
     ----------
     frequencies : float
-        nd array of frequencies [GHz]
+        nd array of frequencies [Hz]
 
     Returns
     -------
@@ -139,9 +133,9 @@ def matzler_2006(temperatures,frequencies):
     Parameters
     ----------
     temperatures : float
-        nd array of temperatures [kelvin]
+        nd array of temperatures [Kelvin]
     frequencies : float
-        nd array of frequencies [GHz]
+        nd array of frequencies [Hz]
 
     Returns
     -------
@@ -159,10 +153,12 @@ def matzler_2006(temperatures,frequencies):
         raise ValueError('refractive: A negative frequency value has been passed')
     if (temperatures < 0).any():
         raise ValueError('refractive: A negative temperature value has been passed')
-    if (( (frequencies < 0.01) + (frequencies >= 300.) ).any()):
+    if (( (frequencies < 0.01e9) + (frequencies >= 300.0e9) ).any()):
         raise ValueError('Matzler model for refractive index of ice is valid between 10 MHz and 300 GHz')
     if (temperatures < 240.).any():
         raise ValueError('Matzler model for refractive index of ice is only valid above 240 K')
+
+    freqs = frequencies*1.0e-9
 
     B1 = 0.0207
     b = 335.
@@ -173,9 +169,9 @@ def matzler_2006(temperatures,frequencies):
     theta = 300./temperatures-1.
     alpha =(0.00504+0.0062*theta)*np.exp(-22.1*theta)
     deltabeta=np.exp(-9.963+0.0372*(temperatures-273.16))
-    betaM = B1*np.exp(b/temperatures)/(temperatures*((np.exp(b/temperatures)-1)*(np.exp(b/temperatures)-1)))+B2*frequencies*frequencies
+    betaM = B1*np.exp(b/temperatures)/(temperatures*((np.exp(b/temperatures)-1)*(np.exp(b/temperatures)-1)))+B2*freqs*freqs
     beta  = betaM+deltabeta
-    eps2  = alpha/frequencies + beta*frequencies
+    eps2  = alpha/freqs + beta*freqs
     return eps1 + 1j*eps2
 
 #######################################################################################################
@@ -186,9 +182,9 @@ def eps(temperatures,frequencies,model="Matzler_2006"):
     Parameters
     ----------
     temperatures : float
-        nd array of temperatures [kelvin]
+        nd array of temperatures [Kelvin]
     frequencies : float
-        nd array of frequencies [GHz]
+        nd array of frequencies [Hz]
     model : string
         dielectric model name default to Matzler (2006)
 
@@ -219,9 +215,9 @@ def n(temperatures,frequencies,model="Matzler_2006"):
     Parameters
     ----------
     temperatures : float
-        nd array of temperatures [kelvin]
+        nd array of temperatures [Kelvin]
     frequencies : float
-        nd array of frequencies [GHz]
+        nd array of frequencies [Hz]
     model : string
         dielectric model name default to Matzler (2006)
 

@@ -2,17 +2,35 @@
 This module computes snow dielectric properties as a homogeneous mixture of ice and air
 or maybe even other stuff ...
 
+The module can be also used as a standalone python script.
 
+Example
+-------
+The python script is callable as
+
+    $ python snow.py Temperature Frequency Density
+
+and returns the complex refractive index of snow at the requested
+Temperature [Kelvin], Frequency [Hz] and density [kg/m**3]
+
+Notes
+-----
+    It is possible to call the functions implemented in this module using
+    nd-arrays. The function arguments must either have exactly the same
+    shape allowing element-wise application of the functions or one of
+    the two must be a scalar which will be spread across the nd computations
+
+Temperatures should be provided in Kelvin, frequencies in Hz and density in kg/m**3
+The dielectric module checks for arguments values to be within the
+limits of validity of the dielectric model and raises ValueError in case
+they are not respected
 """
 
 import numpy as np
 from . import ice 
 from . import mixing
-# from . import water
 
-#Ice density in [mg/mm^3] [g/cm^3] [kg/dm^3]
-ice_density = 0.9167
-
+ice_density = 916.7 # kg/m**3
 
 def n(temperatures,frequencies,densities,model_mix='bruggeman',model_ice='Matzler_2006'):
     """ Effective refractive index of snow according to the specified models for ice
@@ -22,11 +40,11 @@ def n(temperatures,frequencies,densities,model_mix='bruggeman',model_ice='Matzle
     Parameters
     ----------
     temperatures : float
-        nd array of temperatures [kelvin]
+        nd array of temperatures [Kelvin]
     frequencies : float
-        nd array of frequencies [GHz]
+        nd array of frequencies [Hz]
     densities: float
-        nd array of effective densities [g/cm**3]
+        nd array of effective densities [kg/m**3]
     model_mix : string
         Effective Medium Approximation model name default to bruggeman
     model_ice : string
@@ -48,11 +66,11 @@ def eps(temperatures,frequencies,densities,model_mix='bruggeman',model_ice='Matz
     Parameters
     ----------
     temperatures : float
-        nd array of temperatures [kelvin]
+        nd array of temperatures [Kelvin]
     frequencies : float
-        nd array of frequencies [GHz]
+        nd array of frequencies [Hz]
     densities: float
-        nd array of effective densities [g/cm**3]
+        nd array of effective densities [kg/m**3]
     model_mix : string
         Effective Medium Approximation model name default to bruggeman
     model_ice : string
@@ -69,3 +87,9 @@ def eps(temperatures,frequencies,densities,model_mix='bruggeman',model_ice='Matz
     eps_ice = ice.eps(temperatures,frequencies)
     eps_air = complex(1.0,0.0)+0.0*eps_ice
     return mixing.eps([eps_ice,eps_air],[fraction,1.0-fraction],model=model_mix)
+
+#######################################################################################################
+
+if __name__ == "__main__":
+    import sys
+    n(float(sys.argv[1]),float(sys.argv[2]),argv[3])

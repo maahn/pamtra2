@@ -6,6 +6,28 @@ and refractive index is derived as sqrt(eps), hence this modules is implemented
 to always take eps as arguments of both the eps and n functions for
 computational efficiency
 
+This module works using just unitless quantities. Which is amazing by itself
+but also solves a lot of implementation problems :)
+
+The module can be also used as a standalone python script.
+
+Example
+-------
+The python script is callable as
+
+    $ python mixing.py refractive_indices volume_fractions
+
+and returns the complex refractive index of the mixture
+
+Notes
+-----
+    It is possible to call the functions implemented in this module using
+    nd-arrays. The function arguments must either have exactly the same
+    shape allowing element-wise application of the functions or one of
+    the two must be a scalar which will be spread across the nd computations
+
+Refractive indexes should be complex values.
+
 """
 
 import numpy as np
@@ -77,8 +99,6 @@ def sihvola(eps,mix,ni=0.85):
     A.H. Sihvola 'Self-Consistency Aspects of Dielectric Mixing Theories'
     IEEE Trans. Geos. Rem. Sens. vol 27, n 4, 1989
     """
-#    print('Sihvola EMA is not yet implemented fallback to Bruggeman')
-#    return bruggeman(eps,mix)
     raise NotImplementedError
     
 ################################################################################
@@ -99,8 +119,14 @@ def eps(dielectric_permittivity,volume_fractions,model='bruggeman',ni=0.85):
         return bruggeman(dielectric_permittivity,volume_fractions)
     elif model == 'Sihvola':
         return sihvola(dielectric_permittivity,volume_fractions,ni=ni)
-    elif model == 'Maxwell_garnett':
+    elif model == 'Maxwell_Garnett':
         return maxwell_garnett(dielectric_permittivity,volume_fractions)
     else:
         print('Unknown model, fallback to Bruggeman')
         return bruggeman(dielectric_permittivity,volume_fractions)
+
+#######################################################################################################
+
+if __name__ == "__main__":
+    import sys
+    n(float(sys.argv[1]),float(sys.argv[2]))
