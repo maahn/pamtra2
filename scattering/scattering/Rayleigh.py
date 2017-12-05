@@ -13,9 +13,7 @@ class Rayleigh(scatterer):
     def __init__(self):
         scatterer.__init__(self)
         print('I am a Rayleigh instance')
+        self.geometric_cross_section = np.pi*self.diameter*self.diameter*0.25
+        
         prefactor = np.pi**5 * self.K2 / self.wavelength**4
         self.back_spec = prefactor*self.diameter**6
-
-#  K2 = np.asarray(K2)
-#  diameter = np.asarray(diameter)
-#back_spec =  prefactor[:,np.newaxis] * diameter**6

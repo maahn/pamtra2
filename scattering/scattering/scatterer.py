@@ -17,6 +17,9 @@ except:
 light_speed = 299792458.
 
 class scatterer(object):
+    """ Parent scatterer class from which every scattering method inherits
+    
+    """
     def __init__(self,
                  diameter = 1.,
                  frequency = 1.,
@@ -25,7 +28,7 @@ class scatterer(object):
                  ):
         self.diameter = diameter
         self.frequency = frequency
-        self.wavelength = light_speed/(frequency*1.0e9)
+        self.wavelength = light_speed/frequency
         self.size_parameter = scattering_utilities.size_parameter(0.5*self.diameter,self.wavelength)
         
         self.set_dielectric_properties(refractive_index,dielectric_permittivity)
@@ -45,7 +48,7 @@ class scatterer(object):
             self.dielectric_permittivity = ref_utils.n2eps(self.refractive_index)
             self.K2 = ref_utils.K2(self.dielectric_permittivity)
         else:
-            raise AttributeError('Both dielectric permittivity and refractive index has been defined')
+            raise AttributeError('Both dielectric permittivity and refractive index have been defined')
 
 class Mie(scatterer):
     def __init__(self):

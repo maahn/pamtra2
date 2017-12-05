@@ -15,6 +15,24 @@ eps2n = lambda eps: np.sqrt(eps)
 
 n2eps = lambda n: n*n
 
+def K(eps):
+    """ Rayleigh complex dielectric factor
+    This is basically the K complex factor that defines the Radar dielectric
+    factor |K|**2. It is useful in Rayleigh theory to define absorption cross
+    section from its imaginary part
+    
+    Parameters
+    ----------
+    eps : complex
+        nd array of complex relative dielectric constants
+
+    Returns
+    -------
+    nd - float
+        Rayleigh complex dielectric factor K
+    """
+    return (eps-1.0)/(eps+2.0)
+
 def K2(eps):
     """ Radar dielectric factor |K|**2
 
@@ -26,8 +44,8 @@ def K2(eps):
     Returns
     -------
     nd - float
-        Radar dielectric factor |K|**2
+        Radar dielectric factor |K|**2 real
 
     """
-    K = (eps-1.0)/(eps+2.0)
-    return K*K.conj()
+    K_complex = (eps-1.0)/(eps+2.0)
+    return (K_complex*K_complex.conj()).real
