@@ -29,11 +29,18 @@ class scatterer(object):
         self.diameter = diameter
         self.frequency = frequency
         self.wavelength = light_speed/frequency
+        self.wavenumber = 2.0*np.pi/self.wavelength 
         self.size_parameter = scattering_utilities.size_parameter(0.5*self.diameter,self.wavelength)
         
         self.set_dielectric_properties(refractive_index,dielectric_permittivity)
         
+        
+        
+        
     def set_dielectric_properties(self,refractive_index,dielectric_permittivity):
+        """
+        Convenient setter of the dielectric properties of the scatterer instance
+        """
         if (refractive_index is None):
             if (dielectric_permittivity is None):
                 self.refractive_index = np.nan
