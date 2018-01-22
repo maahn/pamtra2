@@ -190,7 +190,7 @@ def pamtra_water(Temperatures,Frequencies):
 
 #######################################################################################################
 
-def eps(Temperatures,Frequencies,model="ellison"):
+def eps(Temperatures,Frequencies,model="Ellison"):
     """Water complex relative dielectric constant according to the requested model
 
     Parameters
@@ -213,15 +213,15 @@ def eps(Temperatures,Frequencies,model="ellison"):
         If a negative frequency or temperature is passed as an argument
 
     """
-    if (model == "ellison"):
+    if (model == "Ellison"):
         return ellison(np.array(Temperatures),np.array(Frequencies))
     if (model == 'Turner'):
         return turner_kneifel_cadeddu(np.array(Temperatures),np.array(Frequencies))
     else:
-        print("I do not recognize the ice refractive index specification, falling back to ellison")
+        print("I do not recognize the ice refractive index specification, falling back to Ellison")
         return ellison(np.array(Temperatures),np.array(Frequencies))
 
-def n(Temperatures,Frequencies,model="ellison"):
+def n(Temperatures,Frequencies,model="Ellison"):
     """Water complex refractive index according to the requested model
 
     Parameters

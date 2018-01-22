@@ -78,8 +78,8 @@ def bruggeman(eps, mix):
     """
     f1 = mix[0]/sum(mix)
     f2 = mix[1]/sum(mix)
-    e1 = eps[0] #m[0]**2
-    e2 = eps[1] #m[1]**2
+    e1 = eps[0]
+    e2 = eps[1]
     a = -2*(f1+f2)
     b = (2*f1*e1 - f1*e2 + 2*f2*e2 - f2*e1)
     c = (f1+f2)*e1*e2
@@ -103,7 +103,7 @@ def sihvola(eps,mix,ni=0.85):
     
 ################################################################################
 
-def n(refractive_indices,volume_fractions,model='bruggeman',ni=0.85):
+def n(refractive_indices,volume_fractions,model='Bruggeman',ni=0.85):
     if model == 'Bruggeman':
         return np.sqrt(bruggeman(refractive_indices**2,volume_fractions))
     elif model == 'Sihvola':
@@ -114,7 +114,7 @@ def n(refractive_indices,volume_fractions,model='bruggeman',ni=0.85):
         print('Unknown model, fallback to Bruggeman')
         return np.sqrt(bruggeman(refractive_indices**2,volume_fractions))
         
-def eps(dielectric_permittivity,volume_fractions,model='bruggeman',ni=0.85):
+def eps(dielectric_permittivity,volume_fractions,model='Bruggeman',ni=0.85):
     if model == 'Bruggeman':
         return bruggeman(dielectric_permittivity,volume_fractions)
     elif model == 'Sihvola':
