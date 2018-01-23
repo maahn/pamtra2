@@ -5,8 +5,6 @@ Spyder Editor
 This is a temporary script file.
 """
 
-
-
 from pytmatrix import tmatrix
 from pytmatrix import tmatrix_aux
 from pytmatrix import refractive
@@ -38,13 +36,13 @@ for th in np.linspace(0.0,180):
     scatt.thet = th
     [[S11,S12],[S21,S22]] = scatt.get_S()
     sig = scatter.sca_xsect(scatt)
-    ax.scatter(th,1e6*sig,c='m')
-    #ax.scatter(th,S11,c='b')
-    #ax.scatter(th,S12,c='r')
-    #ax.scatter(th,S21,c='g',marker='x')
-    #ax.scatter(th,S22,c='k')
-#ax.set_ylim([-0.0015,0.0015])
-#ax.set_ylim([-0.001355,-0.00135])
+#    ax.scatter(th,1e6*sig,c='m')
+    ax.scatter(th,S11,c='b')
+    ax.scatter(th,S12,c='r')
+    ax.scatter(th,S21,c='g',marker='x')
+    ax.scatter(th,S22,c='k')
+ax.set_ylim([-0.0015,0.0015])
+ax.set_ylim([-0.001355,-0.00135])
 
 plt.figure()
 ax = plt.gca()

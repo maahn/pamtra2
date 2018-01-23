@@ -28,7 +28,7 @@ class amplitude_matrix(object):
     def S4(self):
         return self.matrix[1,0]
         
-    def to_mueller(self)
+    def to_mueller(self):
         return amplitude2mueller(self)
 
 class scattering_matrix(object):

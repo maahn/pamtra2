@@ -22,36 +22,49 @@ class scatterer(object):
     """
     def __init__(self,
                  diameter = 1.,
-                 frequency = 1.,
+                 frequency = None,
+                 wavelength = None,
                  refractive_index=None,
                  dielectric_permittivity=None,
                  ):
         self.diameter = diameter
-        self.frequency = frequency
-        self.wavelength = light_speed/frequency
-        self.wavenumber = 2.0*np.pi/self.wavelength 
+        
+        self.set_electromagnetic_wave(wavelength, frequency)
+        self.wavenumber = 2.0*np.pi/self.wavelength
         self.size_parameter = scattering_utilities.size_parameter(0.5*self.diameter,self.wavelength)
         
         self.set_dielectric_properties(refractive_index,dielectric_permittivity)
         
         
+    def set_electromagnetic_wave(self, wavelength,frequency):
+        """ Convenient setter of the properties of the incoming electromagnetic wave
         
-        
-    def set_dielectric_properties(self,refractive_index,dielectric_permittivity):
         """
-        Convenient setter of the dielectric properties of the scatterer instance
+        if (wavelength is None):
+            if (frequency is None):
+                raise AttributeError('Either frequency or wavelength must be set')
+            else:
+                self.frequency = frequency
+                self.wavelength = light_speed/frequency
+        elif (frequency is None):
+            self.wavelength = wavelength
+            self.frequency = light_speed/wavelength
+        else:
+            raise AttributeError('Both frequency and wavelength have been defined')
+                
+        
+    def set_dielectric_properties(self, refractive_index, dielectric_permittivity):
+        """ Convenient setter of the dielectric properties of the scatterer instance
         """
         if (refractive_index is None):
             if (dielectric_permittivity is None):
-                self.refractive_index = np.nan
-                self.dielectric_permittivity = np.nan
-                self.K2 = np.nan
+                raise AttributeError('Dielectric permittivity or refractive index should be defined')
             else:
-                self.dielectric_permittivity = dielectric_permittivity
+                self.dielectric_permittivity = np.array(dielectric_permittivity)
                 self.refractive_index = ref_utils.eps2n(self.dielectric_permittivity)
                 self.K2 = ref_utils.K2(self.dielectric_permittivity)
         elif (dielectric_permittivity is None):
-            self.refractive_index = refractive_index
+            self.refractive_index = np.array(refractive_index)
             self.dielectric_permittivity = ref_utils.n2eps(self.refractive_index)
             self.K2 = ref_utils.K2(self.dielectric_permittivity)
         else:
