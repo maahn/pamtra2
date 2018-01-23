@@ -6,7 +6,7 @@ This module implements the scatterer class and its scattering model specific sub
 
 import numpy as np
 import sys
-from . import scattering_utilities
+from . import scattering_utilities as scatt_utils
 
 try:
     from refractive import utilities as ref_utils
@@ -26,15 +26,21 @@ class scatterer(object):
                  wavelength = None,
                  refractive_index=None,
                  dielectric_permittivity=None,
+                 theta_inc = 0.0,
+                 phi_inc = 0.0,
+                 theta_sca = 0.0,
+                 phi_sca = 0.0
                  ):
         self.diameter = diameter
         
         self.set_electromagnetic_wave(wavelength, frequency)
         self.wavenumber = 2.0*np.pi/self.wavelength
-        self.size_parameter = scattering_utilities.size_parameter(0.5*self.diameter,self.wavelength)
+        self.size_parameter = scatt_utils.size_parameter(0.5*self.diameter,self.wavelength)
         
         self.set_dielectric_properties(refractive_index,dielectric_permittivity)
         
+        self.set_scattering_geometry([theta_inc,phi_inc,theta_sca,phi_sca])
+       
         
     def set_electromagnetic_wave(self, wavelength,frequency):
         """ Convenient setter of the properties of the incoming electromagnetic wave
@@ -69,6 +75,22 @@ class scatterer(object):
             self.K2 = ref_utils.K2(self.dielectric_permittivity)
         else:
             raise AttributeError('Both dielectric permittivity and refractive index have been defined')
+            
+    def set_scattering_geometry(self,geometry):
+        """ Convenient setter of the scattering geometry that takes as input
+        a 4-element array containing all 4 incident and scattering angles
+            
+        """
+        self.theta_inc = geometry[0]
+        self.phi_inc = geometry[1]
+        self.theta_sca = geometry[2]
+        self.phi_sca = geometry[3]
+        self.scatt_angle = scatt_utils.scattering_angle(self.theta_inc,
+                                                        self.phi_inc,
+                                                        self.theta_sca,
+                                                        self.phi_sca)
+
+
 
 class Mie(scatterer):
     def __init__(self):

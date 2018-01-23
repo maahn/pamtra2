@@ -7,10 +7,14 @@ import numpy as np
 
 class amplitude_matrix(object):
     """ Complex 2x2 amplitude matrix as defined in Bohren and Huffman
+    | S2   S3 |
+    |         |
+    | S4   S1 |
+    
     
     """
     def __init__(self,S):
-        self.matrix = S+1.0j # ensure it is complex valued
+        self.matrix = S+0.0j # ensure it is complex valued
 
     @property
     def S1(self):
@@ -32,7 +36,7 @@ class amplitude_matrix(object):
         return amplitude2mueller(self)
 
 class scattering_matrix(object):
-    """ Complex 2x2 amplitude matrix as defined in Bohren and Huffman
+    """ Real 4x4 scattering matrix as defined in Bohren and Huffman
     
     """
 
@@ -41,8 +45,7 @@ class scattering_matrix(object):
 
 
 def amplitude2mueller(ampl):
-    """
-    This function implement the conversion between complex 2x2 amplitude matrix
+    """ This function implement the conversion between complex 2x2 amplitude matrix
     to the real 4x4 scattering Mueller matrix according to Bohren Huffman pp..
     
     """
@@ -83,9 +86,6 @@ class spheroid(object):
     def mass(self):
         raise NotImplementedError
 
-    def mass(self):
-        raise NotImplementedError
-
     def volume(self):
         raise NotImplementedError
 
@@ -94,3 +94,16 @@ class spheroid(object):
 
     def effective_volume_diameter(self):
         raise NotImplementedError
+
+def scattering_angle(theta_inc,phi_inc,theta_sca,phi_sca):
+    """ Calculates the scattering angle in radians given the full set of four
+    angles that defines the scattering geometry from the incident and the
+    scattered wave directions
+    
+    The reference frame is assumed to be set with the polar angle theta
+    measured from the vertical axis z, and the azimuth angle phi measured from
+    the axis x???
+    
+    """
+    acos_th = np.sin(theta_inc)*np.sin(theta_sca)*np.cos(phi_inc-phi_sca) + np.cos(theta_inc)*np.cos(theta_sca)
+    return np.arccos(acos_th)
