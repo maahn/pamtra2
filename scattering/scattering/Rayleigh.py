@@ -5,7 +5,7 @@ Rayleigh spherical scatterer object and member functions
 import numpy as np
 import sys
 
-from .scatterer import scatterer
+from .scatterer import Scatterer
 
 try:
     from refractive import utilities as ref_utils
@@ -13,9 +13,10 @@ except:
     sys.path.append('../../refractive/')
     from refractive import utilities as ref_utils
 
-class Rayleigh(scatterer):
+class Rayleigh(Scatterer):
     """
-    This is Rayleigh for spheres
+    This is class implement the Rayleigh model of scattering for a sphere
+    No check is performed to the actual validity of the Rayleigh approximation
     """
     def __init__(self,
                  diameter = 1.0e-3,
@@ -27,7 +28,8 @@ class Rayleigh(scatterer):
                  phi_inc = 0.0,
                  theta_sca = 0.0,
                  phi_sca = 0.0):
-        scatterer.__init__(self,
+        
+        Scatterer.__init__(self,
                            diameter = diameter,
                            frequency = frequency,
                            refractive_index=refractive_index,
@@ -47,7 +49,7 @@ class Rayleigh(scatterer):
         
         self.S1 = -1.5j*self.size_parameter**3.0
         self.S2 = self.S1*np.cos(self.scatt_angle)
+        self.S3 = 0.0
+        self.S4 = 0.0
         
         
-        #prefactor = np.pi**5 * self.K2 / self.wavelength**4
-        #self.back_spec = prefactor*self.diameter**6
