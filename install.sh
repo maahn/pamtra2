@@ -20,3 +20,7 @@ cd ../
 cd refractive
 python setup.py install
 cd ../
+
+cd scattering
+python setup.py install
+cd ../

@@ -37,9 +37,9 @@ if __name__ == "__main__":
     
     setup(configuration=configuration,
         packages = ['refractive'],        
-        # package_data = {
-        #     'pyPamtra2': ['file'],
-        # },
+        package_data = {
+            'refractive': ['*.dat'],
+        },
         platforms = ['any'],
         requires = ['numpy'])
 

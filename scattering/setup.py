@@ -10,11 +10,11 @@ def read(fname):
 
 def configuration(parent_package='',top_path=None):
     
-    config = Configuration('refractive', parent_package, top_path,
+    config = Configuration('scattering', parent_package, top_path,
         version = '0.1',
         author  = "Pamtra Team",
         author_email = "dori@uni-koeln.de",
-        description = "complex refractive index of ice and water",
+        description = "complex scattering index of ice and water",
         license = "GPL v3",
         python_requires='>=3.5',
         url = 'https://github.com/maahn/pyPamtra2',
@@ -36,7 +36,9 @@ def configuration(parent_package='',top_path=None):
 if __name__ == "__main__":
     
     setup(configuration=configuration,
-        packages = ['refractive'],        
+        packages = [
+        'scattering',
+        ],        
         # package_data = {
         #     'pyPamtra2': ['file'],
         # },
