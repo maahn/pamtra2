@@ -55,7 +55,7 @@ class Scatterer(object):
         self.set_electromagnetic_wave(wavelength, frequency)
         self.wavenumber = 2.0*np.pi/self.wavelength
         self.size_parameter = scatt_utils.size_parameter(0.5*diameter,
-                                                         wavelength)
+                                                         self.wavelength)
         
         self.set_dielectric_properties(refractive_index,
                                        dielectric_permittivity)
