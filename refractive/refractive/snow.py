@@ -32,7 +32,7 @@ from . import mixing
 
 ice_density = 916.7 # kg/m**3
 
-def n(temperatures,frequencies,densities,model_mix='bruggeman',model_ice='Matzler_2006'):
+def n(temperatures,frequencies,densities,model_mix='Bruggeman',model_ice='Matzler_2006'):
     """ Effective refractive index of snow according to the specified models for ice
         dielectric properties, effective medium approximation function and effective
         density of the snowflake
@@ -46,7 +46,7 @@ def n(temperatures,frequencies,densities,model_mix='bruggeman',model_ice='Matzle
     densities: float
         nd array of effective densities [kg/m**3]
     model_mix : string
-        Effective Medium Approximation model name default to bruggeman
+        Effective Medium Approximation model name default to Bruggeman
     model_ice : string
         dielectric model name default to Matzler (2006)
         
@@ -58,7 +58,7 @@ def n(temperatures,frequencies,densities,model_mix='bruggeman',model_ice='Matzle
     """
     return np.sqrt(eps(temperatures,frequencies,densities,model_mix=model_mix,model_ice=model_ice))
 
-def eps(temperatures,frequencies,densities,model_mix='bruggeman',model_ice='Matzler_2006'):
+def eps(temperatures,frequencies,densities,model_mix='Bruggeman',model_ice='Matzler_2006'):
     """ Effective complex relative dielectric constant of snow according to the specified
         models for ice dielectric properties, effective medium approximation function and
         effective density of the snowflake
@@ -72,10 +72,10 @@ def eps(temperatures,frequencies,densities,model_mix='bruggeman',model_ice='Matz
     densities: float
         nd array of effective densities [kg/m**3]
     model_mix : string
-        Effective Medium Approximation model name default to bruggeman
+        Effective Medium Approximation model name default to Bruggeman
     model_ice : string
         dielectric model name default to Matzler (2006)
-        
+            
     Returns
     -------
     nd - complex

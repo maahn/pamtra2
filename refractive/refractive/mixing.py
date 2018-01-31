@@ -111,7 +111,7 @@ def n(refractive_indices,volume_fractions,model='Bruggeman',ni=0.85):
     elif model == 'Maxwell_Garnett':
         return np.sqrt(maxwell_garnett(refractive_indices**2,volume_fractions))
     else:
-        print('Unknown model, fallback to Bruggeman')
+        print('Unknown model "%s", fallback to Bruggeman'%(model))
         return np.sqrt(bruggeman(refractive_indices**2,volume_fractions))
         
 def eps(dielectric_permittivity,volume_fractions,model='Bruggeman',ni=0.85):
@@ -122,7 +122,7 @@ def eps(dielectric_permittivity,volume_fractions,model='Bruggeman',ni=0.85):
     elif model == 'Maxwell_Garnett':
         return maxwell_garnett(dielectric_permittivity,volume_fractions)
     else:
-        print('Unknown model, fallback to Bruggeman')
+        print('Unknown model "%s", fallback to Bruggeman'%(model))
         return bruggeman(dielectric_permittivity,volume_fractions)
 
 #######################################################################################################
