@@ -46,40 +46,68 @@ DEFAULT_RADAR_PROPERTIES =  SettingsSection({
   "smoothSpectrum": True, # Smooth spectrum before estimating moments
   })
 
+DEFAULT_HYDROMETEOR_PROPERTIES = SettingsSection({
+  'type':None,
+  'refractiveIndexModel':None,
+  'refractiveIndexMix_snow':None,
+})
+
+DEFAULT_HYDROMETEOR_PROPERTIES_BY_TYPE = {
+  'liquid': SettingsSection({
+            'refractiveIndexModel':"Ellison",
+            'refractiveIndexMix_snow':None,
+          }),
+  'ice': SettingsSection({
+            'refractiveIndexModel':"Matzler_2006",
+            'refractiveIndexMix_snow':None,
+          }),
+  'snow': SettingsSection({
+            'refractiveIndexModel':"Matzler_2006",
+            'refractiveIndexMix_snow':"Bruggeman",
+          }),
+  }
+
+
 DEFAULT_GENERAL = SettingsSection({
   'verbosity' : 0,
   })
-
 
 DEFAULT_SETTINGS = SettingsSection({
   'general' : DEFAULT_GENERAL,
   'fallVelocityRelation' : 'khvorostyanov01_spheres',#'heymsfield10_particles', #move
   'radarProperties':SettingsSection({}),
+  'hydrometeorProperties':SettingsSection({}),
   'radarSimulator':DEFAULT_RADAR_SIMULATOR,
 })
 
 
 
 class Settings(SettingsSection):
-    def __init__(self,arg):
+    def __init__(self,*args):
       """
       Create PyPamtra2 Settings
 
-      if type(arg) is str: load settings from JSON file
-      if type(arg) is dict: get settings from arguments
-      if type(arg) is lift of frequencies: populate settings with default values including radar defualt for each frequency.
+      if type(args[0]) is str: load settings from JSON file
+      if type(args[0]) is dict: get settings from arguments
+      if list of frequencies,list of hydrometeors: populate 
+      settings with default values including radar defualt for each frequency 
+      and hydrometeor default for each hydrometeor.
       """
-      if isinstance(arg, dict):
-        super().__init__(arg)
-      elif isinstance(arg, str):
-        with open(arg, 'r') as jsonfile:
+      if isinstance(args[0], dict):
+        super().__init__(args[0])
+      elif isinstance(args[0], str):
+        with open(args[0], 'r') as jsonfile:
           settings = json.load(jsonfile,object_hook=SettingsSection)
         super().__init__(settings)
       else:
         super().__init__(deepcopy(DEFAULT_SETTINGS))
-        for freq in arg:
+        freqs,hydrometeors = args
+        for freq in freqs:
           self['radarProperties'][freq] = deepcopy(DEFAULT_RADAR_PROPERTIES)
           self['radarProperties'][freq].freeze()
+        for hydrometeor in hydrometeors:
+          self['hydrometeorProperties'][hydrometeor] = deepcopy(DEFAULT_HYDROMETEOR_PROPERTIES)
+          self['hydrometeorProperties'][hydrometeor].freeze()
 
       for k in self.keys():
         try:

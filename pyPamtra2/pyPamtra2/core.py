@@ -10,6 +10,7 @@ import json
 
 import pyPamtraRadarSimulator
 import pyPamtraRadarMoments
+import refractive
 
 from . import configuration
 from . import helpers
@@ -40,7 +41,7 @@ class pyPamtra2(object):
     self.hydrometeors =hydrometeors
     self.nHydro =len(hydrometeors) 
     self.nHydroBins =nHydroBins 
-    self.frequencies=frequencies
+    self.frequencies=np.array(frequencies)
     self.activePolarisations =activePolarisations 
     self.nFFT =nFFT 
     self.nPeaks =nPeaks 
@@ -48,7 +49,7 @@ class pyPamtra2(object):
     self.dopplerVelBins = range(nFFT)
 
     if settings is None:
-      self.settings = configuration.Settings(self.frequencies)
+      self.settings = configuration.Settings(self.frequencies,self.hydrometeors)
     else:
       self.settings = configuration.Settings(settings)
 
@@ -153,6 +154,7 @@ class pyPamtra2(object):
     hydroIndex,
     diameters,
     psd,
+    hydroType = 'liquid',
     useLogSizeSpacing = False,
     psdNormalized = False,
     psdFuncArgs = [],
@@ -161,18 +163,23 @@ class pyPamtra2(object):
     mass_size_b=3.,
     area_size_a=np.pi,
     area_size_b=2.,
+    hydrometeorProperties = {},
     ):
     """
     diameters : array_like
       if len == 2 from Dmin to Dmax
-    mass and area defaults to properties of liquid water
+    mass and area default to properties of liquid water
     """
 
     assert self.nHydroBins >0, 'First use addHydrometeorBinDimension to create hydrometeor bin dimension.'
+    assert hydroType in ['liquid','ice','snow']
 
     if isinstance(hydroIndex,str):
+      hydroName = deepcopy(hydroIndex)
       hydroIndex = self.hydrometeors.index(hydroIndex)
-
+    else:
+      hydroIndex = deepcopy(hydroIndex)
+      hydroName = self.hydrometeors[hydroIndex]
 
 
     if len(diameters) ==2 and not useLogSizeSpacing:
@@ -199,6 +206,13 @@ class pyPamtra2(object):
     self.data.hydroRho.values[...,hydroIndex,:] = constants.rhoWater
     self.data.hydroMass.values[...,hydroIndex,:] = (self.data.hydroSize.values[...,hydroIndex,:]/2.)**3 * np.pi * 4./3. * constants.rhoWater
     self.data.hydroCrossSectionArea.values[...,hydroIndex,:] = (self.data.hydroSize.values[...,hydroIndex,:]/2.)**2 * np.pi
+
+    self.settings['hydrometeorProperties'][hydroName]['type'] = hydroType
+    self.settings['hydrometeorProperties'][hydroName].update(
+      configuration.DEFAULT_HYDROMETEOR_PROPERTIES_BY_TYPE[hydroType]
+      )
+    for key,value in hydrometeorProperties.items():
+      self.settings['hydrometeorProperties'][hydroName][key] = value
 
     return
 
@@ -229,23 +243,59 @@ class pyPamtra2(object):
     return
 
 
-  def getRefractiveIndex(self,method='fixed'):
+  def getRefractiveIndex(self,):
 
     """
-    Add more sophistacted methods here
-
-    Replace K2 by refractive index!
+    Relies on the settings refractiveIndexModel and refractiveIndexMix_snow in hydrometeorProperties
     """
 
-    assert method == 'fixed'
-
-    coordsND = self.additionalDimList + [self._tmp.layer, self._tmp.frequency,self._tmp.activePolarisation, self._tmp.hydrometeor]
+    coordsND = self.additionalDimList + [self._tmp.layer, self._tmp.frequency,self._tmp.hydrometeor, self._tmp.hydroBin]
     shapeND = tuple(map(len,coordsND))
     if 'K2' not in self._tmp.keys():
       self._tmp['K2'] = xr.DataArray(np.zeros(shapeND)*np.nan,coords=coordsND,attrs={'unit':'-'})
+    if 'eps' not in self._tmp.keys():
+      self._tmp['eps'] = xr.DataArray(np.zeros(shapeND).astype(np.complex)*np.nan,coords=coordsND,attrs={'unit':'-'})
 
-    for ff, freq in enumerate(self.frequencies):
-      self._tmp['K2'].values[...,ff,:,:] = self.settings['radarProperties'][freq]['k2']
+    Temperatures  = self.data['temperature'].values
+    Frequencies = self.frequencies * 1e9
+
+    for ff, freq in enumerate(Frequencies):
+      for hh, hydroName in enumerate(self.hydrometeors):
+
+        if self.settings['hydrometeorProperties'][hydroName]['type'] == 'liquid':
+          eps = refractive.water.eps(
+            Temperatures,
+            freq,
+            model=self.settings['hydrometeorProperties'][hydroName]['refractiveIndexModel'],
+            )[...,np.newaxis]
+        elif self.settings['hydrometeorProperties'][hydroName]['type'] == 'ice':
+          eps = refractive.ice.eps(
+            Temperatures,
+            freq,
+            model=self.settings['hydrometeorProperties'][hydroName]['refractiveIndexModel'],
+            )[...,np.newaxis]
+        elif self.settings['hydrometeorProperties'][hydroName]['type'] == 'snow':
+          Densities = self.data['hydroRho'].sel(hydrometeor=hydroName).values
+          eps = decorators.NDto2DtoND(
+            referenceIn=2,
+            noOfInDimsToKeep=1, 
+            convertInputs=[0,2],
+            convertOutputs=[0],
+            verbosity=self.settings['general']['verbosity'],
+            )(
+            refractive.snow.eps
+            )(
+            Temperatures[...,np.newaxis], # new dimension becasue densities has hydro bin dims 
+            freq,
+            Densities,
+            model_ice=self.settings['hydrometeorProperties'][hydroName]['refractiveIndexModel'],
+            model_mix=self.settings['hydrometeorProperties'][hydroName]['refractiveIndexMix_snow'],
+           )
+        else:
+          raise KeyError("self.settings['hydrometeorProperties'][%s]['type'] must be in ['liquid','ice','snow'] but is %s"%(hydroName,self.settings['hydrometeorProperties'][hydroName]['type']))
+
+        self._tmp['eps'].isel(hydrometeor=hh,frequency=ff).values[:] = eps
+    self._tmp['K2'].values[:] = refractive.utilities.K2(self._tmp['eps'].values)
 
     return
 
