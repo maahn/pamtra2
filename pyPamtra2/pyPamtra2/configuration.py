@@ -4,13 +4,14 @@
 
 from copy import deepcopy
 import json
-
+import numpy as np
+from . import constants
 
 
 class SettingsSection(dict):
 
     """
-    Like a dict, but with .freez() method and .__frozen attribute. If frozen, no more
+    Like a dict, but with .freeze() method and .__frozen attribute. If frozen, no more
     keys can be added.
     """
 
@@ -46,24 +47,34 @@ DEFAULT_RADAR_PROPERTIES =  SettingsSection({
   "smoothSpectrum": True, # Smooth spectrum before estimating moments
   })
 
-DEFAULT_HYDROMETEOR_PROPERTIES = SettingsSection({
-  'type':None,
-  'refractiveIndexModel':None,
-  'refractiveIndexMix_snow':None,
-})
 
 DEFAULT_HYDROMETEOR_PROPERTIES_BY_TYPE = {
   'liquid': SettingsSection({
             'refractiveIndexModel':"Ellison",
-            'refractiveIndexMix_snow':None,
-          }),
+            # 'refractiveIndexMix_snow':None,
+            # 'massSizeA_snow' : None,
+            # 'massSizeB_snow' : None,
+            # 'areaSizeA_snow' : None,
+            # 'areaSizeB_snow' : None,
+            # 'maxDensity_snow'  :  None,
+            }),
   'ice': SettingsSection({
             'refractiveIndexModel':"Matzler_2006",
-            'refractiveIndexMix_snow':None,
-          }),
+            # 'refractiveIndexMix_snow':None,
+            # 'massSizeA_snow' : None,
+            # 'massSizeB_snow' : None,
+            # 'areaSizeA_snow' : None,
+            # 'areaSizeB_snow' : None,
+            # 'maxDensity_snow'  :  None,
+            }),
   'snow': SettingsSection({
             'refractiveIndexModel':"Matzler_2006",
             'refractiveIndexMix_snow':"Bruggeman",
+            'massSizeA_snow' : 0.0121,
+            'massSizeB_snow' : 1.9,
+            'areaSizeA_snow' : np.pi,
+            'areaSizeB_snow' : 2.,
+            'maxDensity_snow'  :  constants.rhoIce,
           }),
   }
 
@@ -103,11 +114,11 @@ class Settings(SettingsSection):
         super().__init__(deepcopy(DEFAULT_SETTINGS))
         freqs,hydrometeors = args
         for freq in freqs:
-          self['radarProperties'][freq] = deepcopy(DEFAULT_RADAR_PROPERTIES)
-          self['radarProperties'][freq].freeze()
+          self['radarProperties'][repr(freq)] = deepcopy(DEFAULT_RADAR_PROPERTIES)
+          self['radarProperties'][repr(freq)].freeze()
         for hydrometeor in hydrometeors:
-          self['hydrometeorProperties'][hydrometeor] = deepcopy(DEFAULT_HYDROMETEOR_PROPERTIES)
-          self['hydrometeorProperties'][hydrometeor].freeze()
+          self['hydrometeorProperties'][hydrometeor] = {}
+          # self['hydrometeorProperties'][hydrometeor].freeze()
 
       for k in self.keys():
         try:

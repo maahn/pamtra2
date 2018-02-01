@@ -7,6 +7,7 @@ from copy import deepcopy
 import numpy as np
 import xarray as xr
 import json
+from functools import lru_cache
 
 import pyPamtraRadarSimulator
 import pyPamtraRadarMoments
@@ -151,7 +152,7 @@ class pyPamtra2(object):
 
   def addHydrometeorProperties(
     self,
-    hydroIndex,
+    hydroIndexName,
     diameters,
     psd,
     hydroType = 'liquid',
@@ -159,10 +160,6 @@ class pyPamtra2(object):
     psdNormalized = False,
     psdFuncArgs = [],
     psdFuncKwArgs = {},
-    mass_size_a=np.pi * 4./3. * constants.rhoWater,
-    mass_size_b=3.,
-    area_size_a=np.pi,
-    area_size_b=2.,
     hydrometeorProperties = {},
     ):
     """
@@ -174,12 +171,20 @@ class pyPamtra2(object):
     assert self.nHydroBins >0, 'First use addHydrometeorBinDimension to create hydrometeor bin dimension.'
     assert hydroType in ['liquid','ice','snow']
 
-    if isinstance(hydroIndex,str):
-      hydroName = deepcopy(hydroIndex)
-      hydroIndex = self.hydrometeors.index(hydroIndex)
+    if isinstance(hydroIndexName,str):
+      hydroName = hydroIndexName
+      hydroIndex = self.hydrometeors.index(hydroIndexName)
     else:
-      hydroIndex = deepcopy(hydroIndex)
-      hydroName = self.hydrometeors[hydroIndex]
+      hydroIndex = hydroIndexName
+      hydroName = self.hydrometeors[hydroIndexName]
+
+    self.settings['hydrometeorProperties'][hydroName]['type'] = hydroType
+    self.settings['hydrometeorProperties'][hydroName].update(
+      configuration.DEFAULT_HYDROMETEOR_PROPERTIES_BY_TYPE[hydroType]
+      )
+    for key,value in hydrometeorProperties.items():
+      self.settings['hydrometeorProperties'][hydroName][key] = value
+
 
 
     if len(diameters) ==2 and not useLogSizeSpacing:
@@ -202,20 +207,34 @@ class pyPamtra2(object):
       self.data.hydroPSD.values[...,hydroIndex,:] = self.data.hydroPSD.values[...,hydroIndex,:]/np.gradient(self.data.hydroSize.values[...,hydroIndex,:],axis=-1)
 
 
-
-    self.data.hydroRho.values[...,hydroIndex,:] = constants.rhoWater
-    self.data.hydroMass.values[...,hydroIndex,:] = (self.data.hydroSize.values[...,hydroIndex,:]/2.)**3 * np.pi * 4./3. * constants.rhoWater
-    self.data.hydroCrossSectionArea.values[...,hydroIndex,:] = (self.data.hydroSize.values[...,hydroIndex,:]/2.)**2 * np.pi
-
-    self.settings['hydrometeorProperties'][hydroName]['type'] = hydroType
-    self.settings['hydrometeorProperties'][hydroName].update(
-      configuration.DEFAULT_HYDROMETEOR_PROPERTIES_BY_TYPE[hydroType]
-      )
-    for key,value in hydrometeorProperties.items():
-      self.settings['hydrometeorProperties'][hydroName][key] = value
+    self._addHydrometeorDensityMassArea(hydroIndex)
 
     return
 
+  def _addHydrometeorDensityMassArea(self,hydroIndex):
+
+    hydroName = self.hydrometeors[hydroIndex]
+    hydroType = self.settings['hydrometeorProperties'][hydroName]['type']
+
+    if hydroType == 'liquid':
+      self.data.hydroRho.values[...,hydroIndex,:] = constants.rhoWater
+      self.data.hydroMass.values[...,hydroIndex,:] = (self.data.hydroSize.values[...,hydroIndex,:]/2.)**3 * np.pi * 4./3. * constants.rhoWater
+      self.data.hydroCrossSectionArea.values[...,hydroIndex,:] = (self.data.hydroSize.values[...,hydroIndex,:]/2.)**2 * np.pi
+    elif hydroType == 'ice':
+      self.data.hydroRho.values[...,hydroIndex,:] = constants.rhoIce
+      self.data.hydroMass.values[...,hydroIndex,:] = (self.data.hydroSize.values[...,hydroIndex,:]/2.)**3 * np.pi * 4./3. * constants.rhoIce
+      self.data.hydroCrossSectionArea.values[...,hydroIndex,:] = (self.data.hydroSize.values[...,hydroIndex,:]/2.)**2 * np.pi
+    elif hydroType == 'snow':
+      self.data.hydroMass.values[...,hydroIndex,:] = (self.data.hydroSize.values[...,hydroIndex,:]/2.)**self.settings['hydrometeorProperties'][hydroName]['massSizeB_snow'] * self.settings['hydrometeorProperties'][hydroName]['massSizeA_snow']
+      self.data.hydroRho.values[...,hydroIndex,:] = self.data.hydroMass.values[...,hydroIndex,:] / ((self.data.hydroSize.values[...,hydroIndex,:]/2.)**3 * np.pi * 4./3.)
+      self.data.hydroCrossSectionArea.values[...,hydroIndex,:] = (self.data.hydroSize.values[...,hydroIndex,:]/2.)**self.settings['hydrometeorProperties'][hydroName]['areaSizeB_snow'] * self.settings['hydrometeorProperties'][hydroName]['areaSizeA_snow']
+      self.data.hydroRho[...,hydroIndex,:].values[
+        self.data.hydroRho.values[...,hydroIndex,:]>self.settings['hydrometeorProperties'][hydroName]['maxDensity_snow']
+        ] = self.settings['hydrometeorProperties'][hydroName]['maxDensity_snow']
+    else:
+      ValueError("hydroType %s not in ['liquid','ice','snow']"%(hydroType))
+
+    return
 
   def getSpectralBroadening(self,method='pyPamtraRadarSimulator'):
 
@@ -235,8 +254,8 @@ class pyPamtra2(object):
         self.data.eddyDissipationRate.values[:],
         self.data.horizontalWind.values[:],
         self.data.height.values[:],
-        self.settings['radarProperties'][freq]['fwhrBeamwidthDeg'],
-        self.settings['radarProperties'][freq]['integrationTime'],
+        self.settings['radarProperties'][repr(freq)]['fwhrBeamwidthDeg'],
+        self.settings['radarProperties'][repr(freq)]['integrationTime'],
         freq,
       )
       self._tmp.specBroadening.values[...,ff] = specBroadening
@@ -346,7 +365,7 @@ class pyPamtra2(object):
 
     return 
 
-
+  
   def getRadarSpectrum(self):
 
     """
@@ -383,8 +402,8 @@ class pyPamtra2(object):
               self._tmp.specBroadening.values[...,ff],
               freq,
               fallVelocityRelation =self.settings['fallVelocityRelation'],
-              radarMaxV =self.settings['radarProperties'][freq]['maxV'],
-              radarMinV =self.settings['radarProperties'][freq]['minV'],
+              radarMaxV =self.settings['radarProperties'][repr(freq)]['maxV'],
+              radarMinV =self.settings['radarProperties'][repr(freq)]['minV'],
               radarAliasingNyquistInterv = self.settings['radarSimulator']['aliasingNyquistInterv'],
               radarNFFT = len(self.dopplerVelBins),
 # to do: add non uniform beamfilling to pamtra again. 
@@ -394,9 +413,9 @@ class pyPamtra2(object):
               # radarAirmotionVmax = +4.0,
               # radarAirmotionLinearSteps = 30,
               # radarAirmotionStepVmin = 0.5,
-              radarPNoise1000 = 10**(0.1*self.settings['radarProperties'][freq]['pNoise1000']),
-              radarK2 =self.settings['radarProperties'][freq]['k2'], # dielectric constant |K|2 (always for liquid water by convention) for the radar equation
-              radarNAve = self.settings['radarProperties'][freq]['nAve'],
+              radarPNoise1000 = 10**(0.1*self.settings['radarProperties'][repr(freq)]['pNoise1000']),
+              radarK2 =self.settings['radarProperties'][repr(freq)]['k2'], # dielectric constant |K|2 (always for liquid water by convention) for the radar equation
+              radarNAve = self.settings['radarProperties'][repr(freq)]['nAve'],
               seed  = self.settings['radarSimulator']['randomSeed'],
               verbosity = self.settings['general']['verbosity']
                   )
@@ -452,16 +471,16 @@ class pyPamtra2(object):
 
       output =  pyPamtraRadarMoments.calc_radarMoments(
         self.results.radar_spectrum.values[...,ff,:] ,
-        maxV = self.settings['radarProperties'][freq]['maxV'],
-        minV = self.settings['radarProperties'][freq]['minV'],
-        noAve = self.settings['radarProperties'][freq]['nAve'],
+        maxV = self.settings['radarProperties'][repr(freq)]['maxV'],
+        minV = self.settings['radarProperties'][repr(freq)]['minV'],
+        noAve = self.settings['radarProperties'][repr(freq)]['nAve'],
         # noiseDistanceFactor = 0,
         specNoiseMax = None,
         specNoiseMean = None,
         nPeaks = len(self.results.dopplerPeak),
         # peakMinBins = 2,
         peakMinSnr = -10,
-        smoothSpectrum = self.settings['radarProperties'][freq]['smoothSpectrum'],
+        smoothSpectrum = self.settings['radarProperties'][repr(freq)]['smoothSpectrum'],
         # useWiderPeak = False,
         verbose = self.settings['general']['verbosity'],
         )
