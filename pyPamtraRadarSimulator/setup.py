@@ -53,7 +53,7 @@ def configuration(parent_package='',top_path=None):
             'pyPamtraRadarSimulator/pyPamtraRadarSimulatorLib/rho_air.f90',
                  ],
         library_dirs = ['../dfftpack/'],
-        libraries = ['dfftpack','lapack'],
+        libraries = ['dfftpack','fftw3','lapack'],
         **kw)
 
     return config

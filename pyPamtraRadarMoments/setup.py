@@ -49,7 +49,7 @@ def configuration(parent_package='',top_path=None):
                  'pyPamtraRadarMoments/pyPamtraRadarMomentsLib/calc_moments.f90',
                  ],
         library_dirs = ['../dfftpack/'],
-        libraries = ['dfftpack','lapack'],
+        libraries = ['dfftpack','fftw3','lapack'],
         **kw)
 
     return config
