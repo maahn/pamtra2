@@ -1,9 +1,6 @@
 #! /usr/bin/env bash 
 set -e
 
-cd dfftpack 
-make  
-cd ../
 
 cd pyPamtraRadarSimulator
 python setup.py install
