@@ -52,8 +52,8 @@ def configuration(parent_package='',top_path=None):
             'pyPamtraRadarSimulator/pyPamtraRadarSimulatorLib/radar_spectrum.f90',
             'pyPamtraRadarSimulator/pyPamtraRadarSimulatorLib/rho_air.f90',
                  ],
-        library_dirs = ['../dfftpack/'],
-        libraries = ['dfftpack','fftw3','lapack'],
+        library_dirs = ['~/.local/lib/','/usr/local/lib/'],
+        libraries = ['fftw3','lapack'],
         **kw)
 
     return config
