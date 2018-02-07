@@ -48,8 +48,8 @@ def configuration(parent_package='',top_path=None):
                  'pyPamtraRadarMoments/pyPamtraRadarMomentsLib/smooth_savitzky_golay.f90',
                  'pyPamtraRadarMoments/pyPamtraRadarMomentsLib/calc_moments.f90',
                  ],
-        library_dirs = ['../dfftpack/'],
-        libraries = ['dfftpack','fftw3','lapack'],
+        library_dirs = ['/usr/local/lib/'],
+        libraries = ['fftw3','lapack'],
         **kw)
 
     return config
