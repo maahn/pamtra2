@@ -9,7 +9,7 @@ Example
 -------
 The python script is callable as
 
-    $ python water.py Temperature Frequency
+    $ python water.py temperature frequency
 
 and returns the complex refractive index of water at the requested
 Temperature [Kelvin] and Frequency [Hz]
@@ -184,13 +184,13 @@ def ellison(temperatures,frequencies):
     eps2=(es*A1-e1*A1)/(1+A1*A1)+(e1*A2-einf*A2)/(1+A2*A2)
     return eps1 + 1j*eps2
 
-def pamtra_water(Temperatures,Frequencies):
-    return ellison(np.array(Temperatures),np.array(Frequencies))
+def pamtra_water(temperatures,frequencies):
+    return ellison(np.array(temperatures),np.array(frequencies))
 # PLACEHOLDER FOR WHAT PAMTRA IS CURRENTLY COMPUTING
 
 #######################################################################################################
 
-def eps(Temperatures,Frequencies,model="Ellison"):
+def eps(temperatures,frequencies,model="Ellison"):
     """Water complex relative dielectric constant according to the requested model
 
     Parameters
@@ -214,14 +214,14 @@ def eps(Temperatures,Frequencies,model="Ellison"):
 
     """
     if (model == "Ellison"):
-        return ellison(np.array(Temperatures),np.array(Frequencies))
+        return ellison(np.array(temperatures),np.array(frequencies))
     if (model == 'Turner'):
-        return turner_kneifel_cadeddu(np.array(Temperatures),np.array(Frequencies))
+        return turner_kneifel_cadeddu(np.array(temperatures),np.array(frequencies))
     else:
         print("I do not recognize the ice refractive index specification, falling back to Ellison")
-        return ellison(np.array(Temperatures),np.array(Frequencies))
+        return ellison(np.array(temperatures),np.array(frequencies))
 
-def n(Temperatures,Frequencies,model="Ellison"):
+def n(temperatures,frequencies,model="Ellison"):
     """Water complex refractive index according to the requested model
 
     Parameters
@@ -244,7 +244,7 @@ def n(Temperatures,Frequencies,model="Ellison"):
         If a negative frequency or temperature is passed as an argument
 
     """
-    return np.sqrt(eps(np.array(Temperatures),np.array(Frequencies),model))
+    return np.sqrt(eps(np.array(temperatures),np.array(frequencies),model))
 
 #######################################################################################################
 

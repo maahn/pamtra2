@@ -41,5 +41,5 @@ if __name__ == "__main__":
             'refractive': ['*.dat'],
         },
         platforms = ['any'],
-        requires = ['numpy'])
+        requires = ['numpy','scipy'])
 
