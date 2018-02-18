@@ -7,12 +7,12 @@ echo "TYPICAL command: ./install.sh -p python3 -f --user"
 echo "This will install the pyPamtra2 subpackages under /$HOME/.local/lib/python3.X/ which is already in your PYTHONPATH on most unix systems"
 echo "This script is not robust enough to accept any parameter. Anything different from -p -f cause the script to freeze"
 
+PYTHON='python'
+
 POSITIONAL=()
 while [[ $# -gt 0 ]]
 do
 key="$1"
-
-PYTHON='python'
 
 case $key in
     -p|--python)

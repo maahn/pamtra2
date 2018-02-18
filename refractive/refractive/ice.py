@@ -163,7 +163,7 @@ def matzler_2006(temperatures,frequencies):
     B1 = 0.0207
     b = 335.
     B2 = 1.16e-11
-    c = 299792458.
+#    c = 299792458.
 
     eps1  = 3.1884+(temperatures-273)*9.1e-4
     theta = 300./temperatures-1.

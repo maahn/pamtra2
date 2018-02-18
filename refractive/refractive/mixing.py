@@ -51,8 +51,7 @@ def maxwell_garnett(eps, mix):
         eps: Tuple of complex
             dielectric permittivity of the media
         mix: Tuple of float
-            the volume fractions of the media, len(mix)==len(m)
-            (if sum(mix)!=1, these are taken relative to sum(mix))
+            the volume fractions of the media
 
     Returns:
     ----------
@@ -69,13 +68,27 @@ def maxwell_garnett(eps, mix):
 def bruggeman(eps, mix):
     """Bruggeman EMA for the refractive index.
 
-    For instructions, see mg_refractive in this module, except this routine
-    only works for two components.
-    
     'D.A.G. Bruggeman, Ann. Phys. 24, 636 (1935)'
+
+    Parameters
+    ----------
+        eps: Tuple of complex
+            dielectric permittivity of the media
+        mix: Tuple of float
+            the volume fractions of the media, len(mix)==len(m)
+            (if sum(mix)!=1, these are taken relative to sum(mix))
+
+    Returns:
+    ----------
+        The Bruggeman approximation for the complex refractive index of 
+        the effective medium
+
+    The first element of the eps and mix tuples is taken as the matrix and the
+    second as the inclusion.
     
     Bruggeman model has the advantage with respect to MG of beeing symmetric
     """
+
     f1 = mix[0]/sum(mix)
     f2 = mix[1]/sum(mix)
     e1 = eps[0]
@@ -98,9 +111,110 @@ def sihvola(eps,mix,ni=0.85):
     
     A.H. Sihvola 'Self-Consistency Aspects of Dielectric Mixing Theories'
     IEEE Trans. Geos. Rem. Sens. vol 27, n 4, 1989
+
+    Parameters
+    ----------
+        eps: Tuple of complex
+            dielectric permittivity of the media
+        mix: Tuple of float
+            the volume fractions of the media
+
+    Returns:
+    ----------
+        The Sihvola approximation for the complex refractive index of 
+        the effective medium
+
+    The first element of the eps and mix tuples is taken as the matrix and the
+    second as the inclusion.
+
+    Sihvola model with default ni=0.85 is found to give best results in terms
+    of computed scattering properties of snow [Petty 20...] and it is symmetric
+    with respect to the order of inclusions and matrix
+
+    WARNING: Routine copied from original pamtra fortran code, not sure it is correct!
+
     """
-    raise NotImplementedError
+#    raise NotImplementedError
+
+    b = eps[1].real + 2.0*eps[0] - 2.0*ni*eps[0] - mix*(eps[1].real - eps[0])*(1.0 + ni)
+
+    a = eps[0]*(eps[1].real + (2.0 - ni)*eps[0] + mix*(2.0 - ni)*(eps[1] - eps[0]).real)
+
+    em_real = (np.sqrt(b**2+4.0*ni*a) - b)/(2.0*ni)
+
+    em_imag = eps[1].imag*(-1.0*(em_real - eps[0]) + mix*(em_real + 2.0*eps[0] + ni*(em_real - eps[0])))/ ((eps[1].real + 2.0*eps[0] + 2.0*ni*(em_real - eps[0])) - mix*(1.0 + ni)*(eps[1].real - eps[0]))
+
+    return complex(em_real, em_imag)
+
+def sihvola_paper(eps,mix,ni=0.85):
+    """Sihvola EMA for the refractive index.
+
+    At the moment this routine only works for two components. Further
+    developments are needed to make it work for more components
+
+    The original formulation is defaulted to ni=0.85 which has been found to be
+    the best for many snow applications. Also, the analitic solution for Sihvola
+    modified EMA is way too complicated to be written and computed efficiently:
+    a numerically converging solution is applied instead.
     
+    A.H. Sihvola 'Self-Consistency Aspects of Dielectric Mixing Theories'
+    IEEE Trans. Geos. Rem. Sens. vol 27, n 4, 1989
+
+    Parameters
+    ----------
+        eps: Tuple of complex
+            dielectric permittivity of the media
+        mix: Tuple of float
+            the volume fractions of the media
+
+    Returns:
+    ----------
+        The Sihvola approximation for the complex refractive index of 
+        the effective medium
+
+    The first element of the eps and mix tuples is taken as the matrix and the
+    second as the inclusion.
+
+    Sihvola model with default ni=0.85 is found to give best results in terms
+    of computed scattering properties of snow [Petty 20...] and it is symmetric
+    with respect to the order of inclusions and matrix
+
+    WARNING: Routine copied from original pamtra fortran code, not sure it is correct!
+
+    From eq 4.XX in Sihvola paper
+    (eeff-e0)/(eeff+2e0+v(eeff-e0))=f(e1-e0)/(e1+2e0+v(eeff-e0))
+
+    Rearrange terms
+    (eeff-e0)*(e1+2e0+v(eeff-e0)) = f(e1-e0)*(eeff+2e0+v(eeff-e0))
+
+    Resolve brakets and unfold the unknow eeff
+    eeff*e1 + eeff*2e0 + eeff**2*v - eeff*v*e0 - e0e1 -2*e0*e1 - v*e0*eeff + v*e0**2 = 
+        = f*e1*eeff + 2*f*e1*e0 + f*e1*v*eeff - f*e1*v*e0 - f*e0*eeff - 2*f*e0**2 - f*e0*v*eeff + f*v*e0**2
+
+
+    Solve the 2nd order equation in eeff 
+    a*eeff**2 + b*eeff + c = 0
+    with the following parameters
+
+    a = v
+    b = e1 +2e0 -v*e0 -v*e0 -f*e1 -f*e1*v +f*e0 -f*e0*v
+    c = -e0e1 -2*e0*e1 +v*e0**2 -2*f*e1*e0 +f*e1*v*e0 +2*f*e0**2 -f*v*e0**2
+
+    """
+
+    v = ni
+    e1 = eps[1] 
+    e0 = eps[0]
+    f = mix
+
+    a = v
+    b = e1 +2.0*e0 -v*e0 -v*e0 -f*e1 -f*e1*v +f*e0 -f*e0*v
+    c = -e0*e1 -2*e0*e1 +v*e0**2 -2*f*e1*e0 +f*e1*v*e0 +2*f*e0**2 -f*v*e0**2
+
+    return (-b + np.sqrt(b**2.0-4.0*a*c))/(2.0*a),(-b - np.sqrt(b**2.0-4.0*a*c))/(2.0*a)
+
+    raise NotImplementedError
+
 ################################################################################
 
 def n(refractive_indices,volume_fractions,model='Bruggeman',ni=0.85):
