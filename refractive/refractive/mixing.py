@@ -188,7 +188,7 @@ def sihvola_paper(eps,mix,ni=0.85):
     (eeff-e0)*(e1+2e0+v(eeff-e0)) = f(e1-e0)*(eeff+2e0+v(eeff-e0))
 
     Resolve brakets and unfold the unknow eeff
-    eeff*e1 + eeff*2e0 + eeff**2*v - eeff*v*e0 - e0e1 -2*e0*e1 - v*e0*eeff + v*e0**2 = 
+    eeff*e1 + eeff*2e0 + eeff**2*v - eeff*v*e0 - e0e1 -2*e0**2 - v*e0*eeff + v*e0**2 = 
         = f*e1*eeff + 2*f*e1*e0 + f*e1*v*eeff - f*e1*v*e0 - f*e0*eeff - 2*f*e0**2 - f*e0*v*eeff + f*v*e0**2
 
 
@@ -208,10 +208,11 @@ def sihvola_paper(eps,mix,ni=0.85):
     f = mix
 
     a = v
-    b = e1 +2.0*e0 -v*e0 -v*e0 -f*e1 -f*e1*v +f*e0 -f*e0*v
-    c = -e0*e1 -2*e0*e1 +v*e0**2 -2*f*e1*e0 +f*e1*v*e0 +2*f*e0**2 -f*v*e0**2
+    b = e1 +2.0*e0 -2.0*v*e0 -f*e1 -f*e1*v +f*e0 -f*e0*v
+    c = -e0*e1 -2.0*e0**2.0 +v*e0**2 -2.0*f*e1*e0 +f*e1*v*e0 +2.0*f*e0**2.0 -f*v*e0**2.0
 
-    return (-b + np.sqrt(b**2.0-4.0*a*c))/(2.0*a),(-b - np.sqrt(b**2.0-4.0*a*c))/(2.0*a)
+    #return (-b + np.sqrt(b**2.0-4.0*a*c))/(2.0*a),(-b - np.sqrt(b**2.0-4.0*a*c))/(2.0*a)
+    return 0.5*(-e0*f*v - e0*f + 2.0*e0*v - 2.0*e0 + e1*f*v + e1*f - e1 - np.sqrt(e0**2*f**2*v**2 + 2.0*e0**2*f**2*v + e0**2*f**2 - 8.0*e0**2*f*v + 4.0*e0**2*f + 4.0*e0**2 - 2.0*e0*e1*f**2*v**2 - 4.0*e0*e1*f**2*v - 2.0*e0*e1*f**2 + 10.0*e0*e1*f*v - 2.0*e0*e1*f + 4.0*e0*e1 + e1**2*f**2*v**2 + 2.0*e1**2*f**2*v + e1**2*f**2 - 2.0*e1**2*f*v - 2.0*e1**2*f + e1**2))/v, 0.5*(-e0*f*v - e0*f + 2.0*e0*v - 2.0*e0 + e1*f*v + e1*f - e1 + np.sqrt(e0**2*f**2*v**2 + 2.0*e0**2*f**2*v + e0**2*f**2 - 8.0*e0**2*f*v + 4.0*e0**2*f + 4.0*e0**2 - 2.0*e0*e1*f**2*v**2 - 4.0*e0*e1*f**2*v - 2.0*e0*e1*f**2 + 10.0*e0*e1*f*v - 2.0*e0*e1*f + 4.0*e0*e1 + e1**2*f**2*v**2 + 2.0*e1**2*f**2*v + e1**2*f**2 - 2.0*e1**2*f*v - 2.0*e1**2*f + e1**2))/v
 
     raise NotImplementedError
 
