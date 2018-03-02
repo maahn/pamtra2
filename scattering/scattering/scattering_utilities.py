@@ -1,6 +1,4 @@
-""" scattering.scatterer.py
-    This submodule implements useful functions that helps in the definition of 
-    the scatterer geometry and the conversion among scattering frameworks
+""" scattering.scattering_utilities.py
 
     Copyright (C) 2017 - 2018 Davide Ori dori@uni-koeln.de
     Institute for Geophysics and Meteorology - University of Cologne
@@ -17,8 +15,10 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
 
+This submodule implements useful functions that helps in the definition of the
+scatterer geometry and the conversion among diverse scattering frameworks
+"""
 
 import numpy as np
 

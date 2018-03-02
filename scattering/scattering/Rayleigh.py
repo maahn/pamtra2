@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """ scattering.Rayleigh.py
-    Rayleigh spherical scatterer object and member functions
+
     Copyright (C) 2017 - 2018 Davide Ori dori@uni-koeln.de
     Institute for Geophysics and Meteorology - University of Cologne
 
@@ -16,6 +16,9 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Rayleigh spherical scatterer object and member functions
+
 """
 
 import numpy as np

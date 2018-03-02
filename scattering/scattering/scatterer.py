@@ -1,8 +1,4 @@
 """ scattering.scatterer.py
-    This module implements the scatterer class which is the parent class for
-    all of the specific scattering models.
-    The parent scatterer class is intended to provide an abstraction layer or a
-    common interface to the various scattering models.
 
     Copyright (C) 2017 - 2018 Davide Ori dori@uni-koeln.de
     Institute for Geophysics and Meteorology - University of Cologne
@@ -19,6 +15,13 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+This module implements the scatterer class which is the parent class for
+all of the specific scattering models.
+The parent scatterer class is intended to provide an abstraction layer or a
+common interface to the various scattering models.
+
 """
 
 import numpy as np
