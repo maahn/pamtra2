@@ -57,7 +57,7 @@ setup(name = 'pyPamtraScattering',
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
-Mie = Extension("scattering.Mie",
+cMie = Extension("scattering.cMie",
                 sources=["Mie/cython/cMie.pyx",
                          "Mie/src/cMie.c"],
                 extra_compile_args=["-O3", "-ffast-math", "-Wall", "-lm", "-fPIC", "-std=c99"],
@@ -65,7 +65,7 @@ Mie = Extension("scattering.Mie",
 
 setup(
     cmdclass = {'build_ext': build_ext},
-    ext_modules = [Mie]
+    ext_modules = [cMie]
     )
 
 # Build the fortran modules with f2py

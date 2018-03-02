@@ -208,7 +208,7 @@ def sihvola_paper(eps,mix,ni=0.85):
     f = mix
 
     a = v
-    b = e1 +2.0*e0 -2.0*v*e0 -f*e1 -f*e1*v +f*e0 -f*e0*v
+    b = -e1 +2.0*e0 -2.0*v*e0 +f*e1 +f*e1*v -f*e0 -f*e0*v
     c = -e0*e1 -2.0*e0**2.0 +v*e0**2 -2.0*f*e1*e0 +f*e1*v*e0 +2.0*f*e0**2.0 -f*v*e0**2.0
 
     #return (-b + np.sqrt(b**2.0-4.0*a*c))/(2.0*a),(-b - np.sqrt(b**2.0-4.0*a*c))/(2.0*a)
