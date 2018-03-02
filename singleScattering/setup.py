@@ -27,11 +27,11 @@ from distutils.core import setup
 
 # Build the main package, with script etc...
 # ==========================================
-setup(name = 'pyPamtraScattering',
+setup(name = 'singleScattering',
       description = 'Set of utilities to compute the scattering properties of particles',
       author      = 'Davide Ori',
       author_email = 'dori@uni-koeln.de',
-      packages    = ['scattering'],
+      packages    = ['singleScattering'],
       license = 'GPL v3', 
       python_requires='>=3.5', 
       #scripts = ["scripts/myscript.py"],
@@ -57,7 +57,7 @@ setup(name = 'pyPamtraScattering',
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
-cMie = Extension("scattering.cMie",
+cMie = Extension("singleScattering.cMie",
                 sources=["Mie/cython/cMie.pyx",
                          "Mie/src/cMie.c"],
                 extra_compile_args=["-O3", "-ffast-math", "-Wall", "-lm", "-fPIC", "-std=c99"],
