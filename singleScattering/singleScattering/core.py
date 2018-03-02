@@ -1,2 +1,2 @@
-import scattering.cMie#.mie as mie
-from scattering.cMie import mie as mie
+import singleScattering.cMie#.mie as mie
+from singleScattering.cMie import mie as mie

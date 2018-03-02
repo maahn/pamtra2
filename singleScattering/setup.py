@@ -19,6 +19,7 @@
 
 import os
 import sys
+import numpy
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -60,6 +61,7 @@ from Cython.Distutils import build_ext
 cMie = Extension("singleScattering.cMie",
                 sources=["Mie/cython/cMie.pyx",
                          "Mie/src/cMie.c"],
+                include_dirs=[numpy.get_include()],
                 extra_compile_args=["-O3", "-ffast-math", "-Wall", "-lm", "-fPIC", "-std=c99"],
                 language='c')
 

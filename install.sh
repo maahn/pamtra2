@@ -44,10 +44,10 @@ cd pyPamtra2
 $PYTHON setup.py install $FLAGS
 cd ../
 
-cd refractive
+cd refractiveIndex
 $PYTHON setup.py install $FLAGS
 cd ../
 
-cd scattering
+cd singleScattering
 $PYTHON setup.py install $FLAGS
 cd ../
