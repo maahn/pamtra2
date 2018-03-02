@@ -29,10 +29,10 @@ import sys
 from . import scattering_utilities as scatt_utils
 
 try:
-    from refractive import utilities as ref_utils
+    from refractiveIndex import utilities as ref_utils
 except:
-    sys.path.append('../../refractive/')
-    from refractive import utilities as ref_utils
+    sys.path.append('../../refractiveIndex/')
+    from refractiveIndex import utilities as ref_utils
     
 light_speed = 299792458.
 
@@ -169,12 +169,6 @@ class Scatterer(object):
                                                         self.phi_sca)
 
 
-
-class Mie(Scatterer):
-    def __init__(self):
-        Scatterer.__init__(self)
-        print('I am a Mie instance')
-        raise NotImplementedError('Mie is not implemented yet')
 
 class T_Matrix(Scatterer):
     def __init__(self):

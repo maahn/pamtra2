@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-""" scattering.Rayleigh.py
+""" scattering.Mie.py
 
     Copyright (C) 2017 - 2018 Davide Ori dori@uni-koeln.de
     Institute for Geophysics and Meteorology - University of Cologne
@@ -17,12 +17,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Rayleigh spherical scatterer object and member functions
+Mie spherical scatterer object and member functions
 
 """
-
-import numpy as np
-import sys
 
 from .scatterer import Scatterer
 
@@ -32,10 +29,9 @@ except:
     sys.path.append('../../refractiveIndex/')
     from refractiveIndex import utilities as ref_utils
 
-class Rayleigh(Scatterer):
+class Mie(Scatterer):
     """
-    This is class implement the Rayleigh model of scattering for a sphere
-    No check is performed to the actual validity of the Rayleigh approximation
+    This is class implement the Mie model of scattering for a sphere
     """
     def __init__(self,
                  diameter = 1.0e-3,
@@ -58,17 +54,6 @@ class Rayleigh(Scatterer):
                            theta_sca = theta_sca,
                            phi_sca = phi_sca)
 
-        self.geometric_cross_section = np.pi*self.diameter*self.diameter*0.25
-        self.K = ref_utils.K(self.dielectric_permittivity)
-        
-        self.Cabs = 4.0*self.size_parameter*self.K.imag*self.geometric_cross_section
-        self.Csca = 8.0*self.size_parameter**4.0*self.K2*self.geometric_cross_section
-        self.Cext = self.Cabs + self.Csca
-        self.Cbck = 4.0*self.size_parameter**4*self.K2*self.geometric_cross_section
-        
-        self.S1 = -1.5j*self.size_parameter**3.0
-        self.S2 = self.S1*np.cos(self.scatt_angle)
-        self.S3 = 0.0
-        self.S4 = 0.0
-        
-        
+        print('I am a Mie instance')
+        raise NotImplementedError('Mie is not implemented yet')
+
