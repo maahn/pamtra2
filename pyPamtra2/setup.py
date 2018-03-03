@@ -37,7 +37,7 @@ def configuration(parent_package='',top_path=None):
 if __name__ == "__main__":
     
     setup(configuration=configuration,
-        packages = ['pyPamtra2'],        
+        packages = ['pyPamtra2','pyPamtra2.hydrometeors'],        
         # package_data = {
         #     'pyPamtra2': ['file'],
         # },

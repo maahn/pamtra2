@@ -5,6 +5,7 @@ from builtins import super
 from collections import OrderedDict
 import numpy as np
 import xarray as xr
+from copy import deepcopy
 
 from . import decorators
 
@@ -25,4 +26,13 @@ def rayleigh(diameter,K2,frequency):
 
   return back_spec
 
+
+
+def concatDicts(d1,d2):
+  """
+  concatenate two (ordered) dicts
+  """
+  dMerged = deepcopy(d1)
+  dMerged.update(d2)
+  return dMerged
 

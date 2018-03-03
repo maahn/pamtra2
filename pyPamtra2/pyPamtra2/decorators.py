@@ -2,8 +2,21 @@
 from functools import wraps
 from copy import deepcopy
 import numpy as np
+import pickle
 
-
+class MemoizeMutable:
+    def __init__(self, fn):
+        self.fn = fn
+        self.memo = {}
+    def __call__(self, *args, **kwds):
+        import pickle
+        str = pickle.dumps(args, 1)+pickle.dumps(kwds, 1)
+        if not self.memo.has_key(str): 
+            print ("miss")  # DEBUG INFO
+            self.memo[str] = self.fn(*args, **kwds)
+        else:
+            print ("hit" ) # DEBUG INFO
+        return self.memo[str]
 
 
 def NDto2DtoND(referenceIn=0,noOfInDimsToKeep=1, convertInputs=[0],convertOutputs=[0],verbosity=0):
