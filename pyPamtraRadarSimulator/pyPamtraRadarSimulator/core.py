@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -
+  # -*- coding: utf-8 -
 # (c) M. Maahn, 2017
 
 from __future__ import division, absolute_import, print_function
 
 import numpy as np
 
-from pyPamtra2 import decorators, constants
+from pamtra2 import decorators, constants
 from . import pyPamtraRadarSimulatorLib
 
 

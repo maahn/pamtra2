@@ -2,7 +2,7 @@
 # (c) M. Maahn, 2017
 
 from . import pyPamtraRadarMomentsLib
-from pyPamtra2 import decorators
+from pamtra2 import decorators
 
 import numpy as np
 

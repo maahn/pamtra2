@@ -36,6 +36,8 @@ class properties(object):
         self.density = density
         self.crossSectionArea =crossSectionArea
         
+        self.frequencies = []
+
         self.index = np.where(parent.profile.hydrometeor.values==name)[0][0]
         self._parent = parent
 
@@ -47,13 +49,25 @@ class properties(object):
                     sizeBin =range(self.nBins)
                 )
             )
-            self.discreteProperties = xr.Dataset(coords=self.discretePropertiesCoords)
+            self.discretePropertiesCoordsExt = deepcopy(self.discretePropertiesCoords)
+            self.discretePropertiesCoordsExt.update(
+                OrderedDict(
+                    frequency =self.frequencies
+                )
+            )
+            self.discreteProperties = xr.Dataset(coords=self.discretePropertiesCoordsExt)
         else:
             self.discreteProperties = discreteProperties
-            self.discretePropertiesCoords = OrderedDict(discreteProperties.coords)
+            self.discretePropertiesCoordsExt = OrderedDict(discreteProperties.coords)
+            self.discretePropertiesCoords = deepcopy(self.discretePropertiesCoordsExt)
+            self.discretePropertiesCoords.pop('frequency')
 
         return
-    
+        
+    @property
+    def nFrequencies():
+        return len(self.frequencies)
+
     def sel(self,**indexers):
         """
         Select subset by name
@@ -276,7 +290,67 @@ class properties(object):
                 
         return self.discreteProperties['mass']       
 
+    def _calculateRefractiveIndex(self):
+        
+        if 'maximumDimension' not in self.discreteProperties.variables:
+            raise RuntimeError('Estimate maximum dimension first!')
+        
+        self.discreteProperties['refractiveIndex'] = xr.DataArray(
+            np.zeros(self.discreteProperties['maximumDimension'].shape + (self.nFrequencies,),dtype=np.complex),
+            coords = self.discretePropertiesCoordsExt.values(),
+            dims = self.discretePropertiesCoordsExt.keys(),
+            attrs = {'unit' : '?'}
+        )
+        
+        #some random number for now
+        self.discreteProperties['refractiveIndex'][:] = 1.77701000 +2.18657774e-05j
+
+        if np.any(np.isnan(self.discreteProperties['maximumDimension'].values)):
+            raise ValueError('found NAN in discreteProperties.maximumDimension')
+                
+        return self.discreteProperties['refractiveIndex']        
+
+    def _calculateSingleScattering(self):
+        
+        if 'maximumDimension' not in self.discreteProperties.variables:
+            raise RuntimeError('Estimate maximum dimension first!')
+        
+        self.discreteProperties['backScatteringCrossSection'] = xr.DataArray(
+            np.zeros(self.discreteProperties['maximumDimension'].shape + (self.nFrequencies,)),
+            coords = self.discretePropertiesCoordsExt.values(),
+            dims = self.discretePropertiesCoordsExt.keys(),
+            attrs = {'unit' : 'm^2'}
+        )
+        
+        #some random number for now
+        self.discreteProperties['backScatteringCrossSection'][:] = 1.77701000 +2.18657774e-05j
+
+        if np.any(np.isnan(self.discreteProperties['maximumDimension'].values)):
+            raise ValueError('found NAN in discreteProperties.maximumDimension')
+                
+        return self.discreteProperties['backScatteringCrossSection']        
+
+
+    def addScatteringProperties(
+        refractiveIndex = None,
+        singleScattering = None,
+        ):
+
+    self.refractiveIndex = refractiveIndex
+    self.singleScattering = singleScattering
+
+    return
+
+    def calculateScatteringProperties(self):
+
+        if self.refractiveIndex is not None:
+            self._calculateRefractiveIndex()
+        if self.singleScattering is not None:
+            self._calculateSingleScattering()
+
+        return self.discreteProperties
     
+
     def calculateProperties(self):
 
         self._calculateHydroMaxDim()

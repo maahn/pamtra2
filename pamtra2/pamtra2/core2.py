@@ -726,7 +726,7 @@ class foo(object):
       self.results['quality'].values[...,ff,:] = quality
 
       #Store used settings in result object
-      self.results.attrs['pyPamtra2 Settings'] = json.dumps(self.settings)
+      self.results.attrs['pamtra2 Settings'] = json.dumps(self.settings)
 
     return
 

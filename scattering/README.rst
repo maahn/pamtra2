@@ -3,9 +3,9 @@ scattering - single scattering properties of particles
 
 
 This is the python module scattering.
-This module is part of the larger pyPamtra2 software suite for the simulation of consistent radiative transfer between active and passive observations mainly at microwave frequencies.
+This module is part of the larger pamtra2 software suite for the simulation of consistent radiative transfer between active and passive observations mainly at microwave frequencies.
 The module computes the single scattering properties of hydrometeor models using diverse electromagnetic scattering simulators.
-The functionalities of this module can be used outside of pyPamtra2 in any other application.
+The functionalities of this module can be used outside of pamtra2 in any other application.
 
 The general idea of the module is that it is possible to construct an abstraction layer between radiative transfer codes and single
 scattering models. Regardless of the single scattering solution employed the resulting products can be geralized in terms of cross sections

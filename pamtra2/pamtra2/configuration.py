@@ -96,7 +96,7 @@ DEFAULT_SETTINGS = SettingsSection({
 class Settings(SettingsSection):
     def __init__(self,*args):
       """
-      Create PyPamtra2 Settings
+      Create pamtra2 Settings
 
       if type(args[0]) is str: load settings from JSON file
       if type(args[0]) is dict: get settings from arguments

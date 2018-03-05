@@ -84,7 +84,7 @@ class pamtra2(object):
     mass = None,
     density = None,
     crossSectionArea = None,
-):
+  ):
 
     self.hydroIndex  = self.nHydrometeors
 
@@ -110,3 +110,15 @@ class pamtra2(object):
         )
 
     return self.hydrometeors[name]
+
+  def addInstrument(
+    name,
+    frequencies = [],
+    )
+
+    self.frequencies = frequencies
+    self.instrumentName = name
+
+    for hh in self.hydrometeors.keys():
+      self.hydrometeors[hh].frequencies = frequencies
+

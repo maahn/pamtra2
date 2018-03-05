@@ -17,8 +17,8 @@ def configuration(parent_package='',top_path=None):
         description = "complex scattering index of ice and water",
         license = "GPL v3",
         python_requires='>=3.5',
-        url = 'https://github.com/maahn/pyPamtra2',
-        download_url = 'https://github.com/maahn/pyPamtra2/releases/download/0.1/pyPamtra2-0.1.zip',
+        url = 'https://github.com/maahn/pamtra2',
+        download_url = 'https://github.com/maahn/pamtra2/releases/download/0.1/pamtra2-0.1.zip',
         long_description = read('README.rst'),
         classifiers = [
             "Development Status :: 3 - Alpha",
@@ -40,7 +40,7 @@ if __name__ == "__main__":
         'scattering',
         ],        
         # package_data = {
-        #     'pyPamtra2': ['file'],
+        #     'pamtra2': ['file'],
         # },
         platforms = ['any'],
         requires = ['numpy'])

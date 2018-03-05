@@ -10,15 +10,15 @@ def read(fname):
 
 def configuration(parent_package='',top_path=None):
     
-    config = Configuration('pyPamtra2', parent_package, top_path,
+    config = Configuration('pamtra2', parent_package, top_path,
         version = '0.1',
         author  = "Pamtra Team",
         author_email = "maximilian.maahn@colorado.edu",
         description = "atmospheric microwace passive and active instrument simulator",
         license = "GPL v3",
         python_requires='>=3.5',
-        url = 'https://github.com/maahn/pyPamtra2',
-        download_url = 'https://github.com/maahn/pyPamtra2/releases/download/0.1/pyPamtra2-0.1.zip',
+        url = 'https://github.com/maahn/pamtra2',
+        download_url = 'https://github.com/maahn/pamtra2/releases/download/0.1/pamtra2-0.1.zip',
         long_description = read('README.rst'),
         classifiers = [
             "Development Status :: 3 - Alpha",
@@ -37,9 +37,9 @@ def configuration(parent_package='',top_path=None):
 if __name__ == "__main__":
     
     setup(configuration=configuration,
-        packages = ['pyPamtra2','pyPamtra2.hydrometeors'],        
+        packages = ['pamtra2','pamtra2.hydrometeors'],        
         # package_data = {
-        #     'pyPamtra2': ['file'],
+        #     'pamtra2': ['file'],
         # },
         platforms = ['any'],
         requires = ['numpy', 'scipy','xarray','json'])

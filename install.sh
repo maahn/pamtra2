@@ -1,7 +1,6 @@
 #! /usr/bin/env bash 
 set -e
 
-
 cd pyPamtraRadarSimulator
 python setup.py install
 cd ../
@@ -10,7 +9,7 @@ cd pyPamtraRadarMoments
 python setup.py install
 cd ../
 
-cd pyPamtra2
+cd pamtra2
 python setup.py install
 cd ../
 

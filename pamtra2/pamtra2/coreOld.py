@@ -22,7 +22,7 @@ from . import sizeDistributions
 __version__ = '0.1'
 
 
-class pyPamtra2(object):
+class pamtra2(object):
 
   def  __init__(
     self,
@@ -497,7 +497,7 @@ class pyPamtra2(object):
       self.results['quality'].values[...,ff,:] = quality
 
       #Store used settings in result object
-      self.results.attrs['pyPamtra2 Settings'] = json.dumps(self.settings)
+      self.results.attrs['pamtra2 Settings'] = json.dumps(self.settings)
 
     return
 
