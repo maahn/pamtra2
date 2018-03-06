@@ -78,8 +78,8 @@ class pamtra2(object):
     name = None, #or None, then str(index)
     kind = None, #liquid, ice
     nBins = None,
-    maximumDimension = None,
-    psd = None,
+    sizeCenter = None,
+    sizeDistribution = None,
     aspectRatio = None,
     mass = None,
     density = None,
@@ -101,8 +101,8 @@ class pamtra2(object):
         name = name, #or None, then str(index)
         kind = kind, #liquid, ice
         nBins = nBins,
-        maximumDimension = maximumDimension,
-        psd = psd,
+        sizeCenter = sizeCenter,
+        sizeDistribution = sizeDistribution,
         aspectRatio = aspectRatio,
         mass = mass,
         density = density,
@@ -114,7 +114,7 @@ class pamtra2(object):
   def addInstrument(
     name,
     frequencies = [],
-    )
+    ):
 
     self.frequencies = frequencies
     self.instrumentName = name

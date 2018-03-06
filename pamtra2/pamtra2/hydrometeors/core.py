@@ -4,6 +4,7 @@ from copy import deepcopy
 import numpy as np
 import xarray as xr
 import toolz
+import inspect
 
 from .density import softEllipsoid
 
@@ -17,8 +18,8 @@ class properties(object):
         name = None, #or None, then str(index)
         kind = None, #liquid, ice
         nBins = None,
-        maximumDimension = None,
-        psd = None,
+        sizeCenter = None,
+        sizeDistribution = None,
         aspectRatio = None,
         mass = None,
         density = None,
@@ -29,8 +30,8 @@ class properties(object):
         self.name =name
         self.kind = kind
         self.nBins = nBins
-        self.maximumDimension =maximumDimension
-        self.psd =psd
+        self.sizeCenter =sizeCenter
+        self.sizeDistribution =sizeDistribution
         self.aspectRatio = aspectRatio
         self.mass = mass
         self.density = density
@@ -83,8 +84,8 @@ class properties(object):
         name = self.name, #or None, then str(index)
         kind = self.kind, #liquid, ice
         nBins = self.nBins,
-        maximumDimension = self.maximumDimension,
-        psd = self.psd,
+        sizeCenter = self.sizeCenter,
+        psd = self.sizeDistribution,
         aspectRatio = self.aspectRatio,
         mass = self.mass,
         density = self.density,
@@ -109,8 +110,8 @@ class properties(object):
         name = self.name, #or None, then str(index)
         kind = self.kind, #liquid, ice
         nBins = self.nBins,
-        maximumDimension = self.maximumDimension,
-        psd = self.psd,
+        sizeCenter = self.sizeCenter,
+        psd = self.sizeDistribution,
         aspectRatio = self.aspectRatio,
         mass = self.mass,
         density = self.density,
@@ -144,7 +145,7 @@ class properties(object):
                     pass
         return arr
     
-    def _arrayOrFunc(self,thisDesription,*args):
+    def _arrayOrFunc(self,thisDesription,**fixedKwargs):
         
         thisShape = tuple()
         for val in self.discretePropertiesCoords.values():
@@ -162,13 +163,37 @@ class properties(object):
                 func = thisDesription[0]
                 kwargs = {}
             # print(func, kwargs)
+
+            #inspect function to get the required arguments
+            funcArgs, funcVarargs, funcKeywords, funcDefaults = inspect.getargspec(func)
+            
+            if funcDefaults is None:
+                funcDefaults = {}
+            else:
+                funcDefaults = dict(zip(funcArgs[-len(funcDefaults):],funcDefaults))
+
+            #where do we find the required data?
+            kw4Func = {}
+            for k in funcArgs:
+                if k in kwargs.keys():
+                    kw4Func[k] = kwargs[k]
+                elif k in self.discreteProperties.keys():
+                    kw4Func[k] = self.discreteProperties[k]
+                elif k in self._parent.profile.keys():
+                    kw4Func[k] = self._parent.profile[k]
+                elif k in fixedKwargs.keys():
+                    kw4Func[k] = fixedKwargs[k]
+                elif k in funcDefaults.keys():
+                    kw4Func[k] = funcDefaults[k]
+                else:
+                    raise KeyError('Did not find %s in provided kwargs or discreteProperties'
+                        ' or profile or functions\'s defaultArgs'%k )
+
             #by transposing we comply with the broadcasting rules and save a loop
             # use .T instead of np.transpose, becasue of xr
-            args = list(map(lambda arr: np.asarray(self._selectHydro(arr)).T, args))
-            # print(args)
-            kwargs = toolz.valmap(lambda arr: np.asarray(self._selectHydro(arr)).T, kwargs)
+            kw4Func = toolz.valmap(lambda arr: np.asarray(self._selectHydro(arr)).T, kw4Func)
             # print(kwargs)
-            thisProperty[:] = func(*args, **kwargs).T
+            thisProperty[:] = func(**kw4Func).T
         else:
             print('not callable',thisDesription)
             thisProperty[:] = thisDesription
@@ -176,25 +201,25 @@ class properties(object):
         return thisProperty
     
     def _calculateHydroMaxDim(self):
-        maximumDimension = self._arrayOrFunc(self.maximumDimension,self.nBins)
-        self.discreteProperties['maximumDimension'] = xr.DataArray(
-            maximumDimension,
+        sizeCenter = self._arrayOrFunc(self.sizeCenter,nBins=self.nBins)
+        self.discreteProperties['sizeCenter'] = xr.DataArray(
+            sizeCenter,
             coords = self.discretePropertiesCoords.values(),
             dims = self.discretePropertiesCoords.keys(),
             attrs = {'unit' : 'm'}
         )
         
-        if np.any(np.isnan(self.discreteProperties['maximumDimension'].values)):
-            raise ValueError('found NAN in discreteProperties.maximumDimension')
+        if np.any(np.isnan(self.discreteProperties['sizeCenter'].values)):
+            raise ValueError('found NAN in discreteProperties.sizeCenter')
         
-        return self.discreteProperties['maximumDimension']
+        return self.discreteProperties['sizeCenter']
     
     def _calculateHydroPsd(self):
         
-        if 'maximumDimension' not in self.discreteProperties.variables:
+        if 'sizeCenter' not in self.discreteProperties.variables:
             raise RuntimeError('Estimate maximum dimension first!')
         
-        particleSizeDistribution = self._arrayOrFunc(self.psd,self.discreteProperties['maximumDimension'].values)
+        particleSizeDistribution = self._arrayOrFunc(self.sizeDistribution)
         self.discreteProperties['particleSizeDistribution'] = xr.DataArray(
             particleSizeDistribution,
             coords = self.discretePropertiesCoords.values(),
@@ -202,17 +227,17 @@ class properties(object):
             attrs = {'unit' : 'm^(-4)'}
         )
         
-        if np.any(np.isnan(self.discreteProperties['maximumDimension'].values)):
-            raise ValueError('found NAN in discreteProperties.maximumDimension')
+        if np.any(np.isnan(self.discreteProperties['sizeCenter'].values)):
+            raise ValueError('found NAN in discreteProperties.sizeCenter')
                 
         return self.discreteProperties['particleSizeDistribution']    
     
     def _calculateHydroAR(self):
         
-        if 'maximumDimension' not in self.discreteProperties.variables:
+        if 'sizeCenter' not in self.discreteProperties.variables:
             raise RuntimeError('Estimate maximum dimension first!')
         
-        aspectRatio = self._arrayOrFunc(self.aspectRatio,self.discreteProperties['maximumDimension'].values)
+        aspectRatio = self._arrayOrFunc(self.aspectRatio)
         self.discreteProperties['aspectRatio'] = xr.DataArray(
             aspectRatio,
             coords = self.discretePropertiesCoords.values(),
@@ -220,18 +245,18 @@ class properties(object):
             attrs = {'unit' : 'm^(-4)'}
         )
         
-        if np.any(np.isnan(self.discreteProperties['maximumDimension'].values)):
-            raise ValueError('found NAN in discreteProperties.maximumDimension')
+        if np.any(np.isnan(self.discreteProperties['sizeCenter'].values)):
+            raise ValueError('found NAN in discreteProperties.sizeCenter')
                 
         return self.discreteProperties['aspectRatio']       
     
 
     def _calculateHydroArea(self):
         
-        if 'maximumDimension' not in self.discreteProperties.variables:
+        if 'sizeCenter' not in self.discreteProperties.variables:
             raise RuntimeError('Estimate maximum dimension first!')
         
-        crossSectionArea = self._arrayOrFunc(self.crossSectionArea,self.discreteProperties['maximumDimension'].values)
+        crossSectionArea = self._arrayOrFunc(self.crossSectionArea)
         self.discreteProperties['crossSectionArea'] = xr.DataArray(
             crossSectionArea,
             coords = self.discretePropertiesCoords.values(),
@@ -239,38 +264,34 @@ class properties(object):
             attrs = {'unit' : 'm^2'}
         )
         
-        if np.any(np.isnan(self.discreteProperties['maximumDimension'].values)):
-            raise ValueError('found NAN in discreteProperties.maximumDimension')
+        if np.any(np.isnan(self.discreteProperties['sizeCenter'].values)):
+            raise ValueError('found NAN in discreteProperties.sizeCenter')
                 
         return self.discreteProperties['crossSectionArea']        
 
     def _calculateHydroMassDensity(self):
-        if 'maximumDimension' not in self.discreteProperties.variables:
+        if 'sizeCenter' not in self.discreteProperties.variables:
             raise RuntimeError('Estimate maximum dimension first!')
         
+        #for softEllipsoids, we have to estimate mass FIRST before we can look at density
         if self.density[0] is softEllipsoid:
             print ('softsphere!')
             mass = self._arrayOrFunc(
                 self.mass,
-                self.discreteProperties['maximumDimension'].values,
                 )
             density = self._arrayOrFunc(
                 self.density,
-                self.discreteProperties['maximumDimension'].values,
-                self.discreteProperties['aspectRatio'].values,
-                mass,
+                mass =mass,
                 )
+        #for solid ellispoids, it is density first. 
         else:
             print ('NOT softsphere!')
             density = self._arrayOrFunc(
                 self.density,
-                self.discreteProperties['maximumDimension'].values,
                 )
             mass = self._arrayOrFunc(
                 self.mass,
-                self.discreteProperties['maximumDimension'].values,
-                self.discreteProperties['aspectRatio'].values,
-                density,
+                density = density,
                 )
 
         self.discreteProperties['mass'] = xr.DataArray(
@@ -285,18 +306,18 @@ class properties(object):
             dims = self.discretePropertiesCoords.keys(),
             attrs = {'unit' : 'kg/m^3'}
         )
-        if np.any(np.isnan(self.discreteProperties['maximumDimension'].values)):
-            raise ValueError('found NAN in discreteProperties.maximumDimension')
+        if np.any(np.isnan(self.discreteProperties['sizeCenter'].values)):
+            raise ValueError('found NAN in discreteProperties.sizeCenter')
                 
         return self.discreteProperties['mass']       
 
     def _calculateRefractiveIndex(self):
         
-        if 'maximumDimension' not in self.discreteProperties.variables:
+        if 'sizeCenter' not in self.discreteProperties.variables:
             raise RuntimeError('Estimate maximum dimension first!')
         
         self.discreteProperties['refractiveIndex'] = xr.DataArray(
-            np.zeros(self.discreteProperties['maximumDimension'].shape + (self.nFrequencies,),dtype=np.complex),
+            np.zeros(self.discreteProperties['sizeCenter'].shape + (self.nFrequencies,),dtype=np.complex),
             coords = self.discretePropertiesCoordsExt.values(),
             dims = self.discretePropertiesCoordsExt.keys(),
             attrs = {'unit' : '?'}
@@ -305,18 +326,18 @@ class properties(object):
         #some random number for now
         self.discreteProperties['refractiveIndex'][:] = 1.77701000 +2.18657774e-05j
 
-        if np.any(np.isnan(self.discreteProperties['maximumDimension'].values)):
-            raise ValueError('found NAN in discreteProperties.maximumDimension')
+        if np.any(np.isnan(self.discreteProperties['sizeCenter'].values)):
+            raise ValueError('found NAN in discreteProperties.sizeCenter')
                 
         return self.discreteProperties['refractiveIndex']        
 
     def _calculateSingleScattering(self):
         
-        if 'maximumDimension' not in self.discreteProperties.variables:
+        if 'sizeCenter' not in self.discreteProperties.variables:
             raise RuntimeError('Estimate maximum dimension first!')
         
         self.discreteProperties['backScatteringCrossSection'] = xr.DataArray(
-            np.zeros(self.discreteProperties['maximumDimension'].shape + (self.nFrequencies,)),
+            np.zeros(self.discreteProperties['sizeCenter'].shape + (self.nFrequencies,)),
             coords = self.discretePropertiesCoordsExt.values(),
             dims = self.discretePropertiesCoordsExt.keys(),
             attrs = {'unit' : 'm^2'}
@@ -325,8 +346,8 @@ class properties(object):
         #some random number for now
         self.discreteProperties['backScatteringCrossSection'][:] = 1.77701000 +2.18657774e-05j
 
-        if np.any(np.isnan(self.discreteProperties['maximumDimension'].values)):
-            raise ValueError('found NAN in discreteProperties.maximumDimension')
+        if np.any(np.isnan(self.discreteProperties['sizeCenter'].values)):
+            raise ValueError('found NAN in discreteProperties.sizeCenter')
                 
         return self.discreteProperties['backScatteringCrossSection']        
 
@@ -336,10 +357,10 @@ class properties(object):
         singleScattering = None,
         ):
 
-    self.refractiveIndex = refractiveIndex
-    self.singleScattering = singleScattering
+        self.refractiveIndex = refractiveIndex
+        self.singleScattering = singleScattering
 
-    return
+        return
 
     def calculateScatteringProperties(self):
 
