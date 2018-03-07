@@ -1,17 +1,36 @@
+# -*- coding: utf-8 -*-
 """ scattering.Rayleigh.py
+
+    Copyright (C) 2017 - 2018 Davide Ori dori@uni-koeln.de
+    Institute for Geophysics and Meteorology - University of Cologne
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 Rayleigh spherical scatterer object and member functions
 
 """
+
 import numpy as np
 import sys
 
 from .scatterer import Scatterer
 
 try:
-    from refractive import utilities as ref_utils
+    from refractiveIndex import utilities as ref_utils
 except:
-    sys.path.append('../../refractive/')
-    from refractive import utilities as ref_utils
+    sys.path.append('../../refractiveIndex/')
+    from refractiveIndex import utilities as ref_utils
 
 class Rayleigh(Scatterer):
     """

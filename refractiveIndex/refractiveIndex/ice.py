@@ -1,6 +1,22 @@
 # -*- coding: utf-8 -*-
 """ refractive.ice module.
 
+    Copyright (C) 2017 - 2018 Davide Ori dori@uni-koeln.de
+    Institute for Geophysics and Meteorology - University of Cologne
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 This module provides a list of ice refractive index models to compute the
 dielectric properties of ice according to the requested frequencies and
 temeperatures.
@@ -163,7 +179,7 @@ def matzler_2006(temperatures,frequencies):
     B1 = 0.0207
     b = 335.
     B2 = 1.16e-11
-    c = 299792458.
+#    c = 299792458.
 
     eps1  = 3.1884+(temperatures-273)*9.1e-4
     theta = 300./temperatures-1.

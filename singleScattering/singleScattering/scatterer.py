@@ -1,8 +1,24 @@
 """ scattering.scatterer.py
 
+    Copyright (C) 2017 - 2018 Davide Ori dori@uni-koeln.de
+    Institute for Geophysics and Meteorology - University of Cologne
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
 This module implements the scatterer class which is the parent class for
 all of the specific scattering models.
-
 The parent scatterer class is intended to provide an abstraction layer or a
 common interface to the various scattering models.
 
@@ -13,10 +29,10 @@ import sys
 from . import scattering_utilities as scatt_utils
 
 try:
-    from refractive import utilities as ref_utils
+    from refractiveIndex import utilities as ref_utils
 except:
-    sys.path.append('../../refractive/')
-    from refractive import utilities as ref_utils
+    sys.path.append('../../refractiveIndex/')
+    from refractiveIndex import utilities as ref_utils
     
 light_speed = 299792458.
 
@@ -153,12 +169,6 @@ class Scatterer(object):
                                                         self.phi_sca)
 
 
-
-class Mie(Scatterer):
-    def __init__(self):
-        Scatterer.__init__(self)
-        print('I am a Mie instance')
-        raise NotImplementedError('Mie is not implemented yet')
 
 class T_Matrix(Scatterer):
     def __init__(self):

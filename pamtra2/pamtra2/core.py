@@ -10,18 +10,17 @@ from . import hydrometeors
 # import json
 # from functools import lru_cache
 
-__version__ = 0.1
-
+__version__ = 0.2
 
 class profile (xr.Dataset):
 
-  def __init__(self, nLayer,additionalDims={}):
+  def __init__(self, nLayer,hydrometeors,additionalDims={}):
     
 
     coordsGeom = {**additionalDims, 'layer': range(nLayer)}
 
     coordsGeom = helpers.concatDicts(additionalDims,{'layer' : range(nLayer)})
-    cordsHydro = OrderedDict(hydrometeor = [])
+    cordsHydro = OrderedDict(hydrometeor = hydrometeors)
     coordsGeomHydro = helpers.concatDicts(coordsGeom,cordsHydro)
     coordsAll = helpers.concatDicts(coordsGeomHydro,OrderedDict())
 
@@ -37,7 +36,7 @@ class profile (xr.Dataset):
       ('hydrometeorWaterContent','kg/m^3',coordsGeomHydro,np.float64),
       ('hydrometeorEffectiveRadius','m',coordsGeomHydro,np.float64),
       ('hydrometeorNtot','1/m^3',coordsGeomHydro,np.float64),
-      ('hydrometeor','-',cordsHydro,'S128'),
+      # ('hydrometeor','-',cordsHydro,'S128'),
     ]:
         thisShape = tuple(map(len,coords.values()))
         self[var] = xr.DataArray(
@@ -46,16 +45,20 @@ class profile (xr.Dataset):
               dims = coords.keys(),
               attrs={'unit':unit},
               )
+
     return 
 
 
 class pamtra2(object):
 
-  def __init__(self,nLayer,additionalDims={}):
-    self.profile = profile(nLayer,additionalDims)
+  def __init__(self,nLayer,hydrometeors,additionalDims={}):
+    self.profile = profile(nLayer,hydrometeors,additionalDims)
     self.additionalDims = additionalDims
 
     self.hydrometeors = OrderedDict()
+    for hh in hydrometeors:
+      self.hydrometeors[hh] = None
+
     self.instruments = OrderedDict()
 
     return
@@ -73,9 +76,9 @@ class pamtra2(object):
     return len(self.profile.layer)
 
 
-  def addHydrometeor(
+  def describeHydrometeor(
     self,
-    name = None, #or None, then str(index)
+    name,
     kind = None, #liquid, ice
     nBins = None,
     sizeCenter = None,
@@ -85,16 +88,6 @@ class pamtra2(object):
     density = None,
     crossSectionArea = None,
   ):
-
-    self.hydroIndex  = self.nHydrometeors
-
-    if name is None:
-      name = str(self.hydroIndex  )
-
-    if name in self.profile.hydrometeor:
-      raise ValueError("hydrometeor must be unique")
-
-    self.profile = self.profile.reindex(hydrometeor=list(self.hydrometeors.keys())+[name],copy=False)
 
     self.hydrometeors[name] = hydrometeors.properties(
         self,
