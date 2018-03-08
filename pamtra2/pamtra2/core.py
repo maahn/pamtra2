@@ -14,7 +14,12 @@ __version__ = 0.2
 
 class profile (xr.Dataset):
 
-  def __init__(self, nLayer,hydrometeors,additionalDims={}):
+  def __init__(self, 
+    nLayer,
+    hydrometeors,
+    hydrometeorBulkProperties = ['waterContent'],
+    additionalDims={}
+    ):
     
 
     coordsGeom = {**additionalDims, 'layer': range(nLayer)}
@@ -26,18 +31,24 @@ class profile (xr.Dataset):
 
     super().__init__(coords=coordsAll)
     
-    for var,unit,coords,dtype in [
+    arrayVars = [
       ('height','m',coordsGeom,np.float64),
       ('temperature','K',coordsGeom,np.float64),
       ('pressure','Pa',coordsGeom,np.float64),
       ('relativeHumidity','%',coordsGeom,np.float64),
       ('horizontalWind','m/s',coordsGeom,np.float64),
       ('verticalWind','m/s',coordsGeom,np.float64),
-      ('hydrometeorWaterContent','kg/m^3',coordsGeomHydro,np.float64),
-      ('hydrometeorEffectiveRadius','m',coordsGeomHydro,np.float64),
-      ('hydrometeorNtot','1/m^3',coordsGeomHydro,np.float64),
+      # ('waterContent','kg/m^3',coordsGeomHydro,np.float64),
+      # ('effectiveRadius','m',coordsGeomHydro,np.float64),
+      # ('hydrometeorNtot','1/m^3',coordsGeomHydro,np.float64),
       # ('hydrometeor','-',cordsHydro,'S128'),
-    ]:
+    ]
+    for hydrometeorBulkPropertiy in hydrometeorBulkProperties:
+      arrayVars.append(
+        (hydrometeorBulkPropertiy,'SI',coordsGeomHydro,np.float64)
+        )
+
+    for var,unit,coords,dtype in arrayVars:
         thisShape = tuple(map(len,coords.values()))
         self[var] = xr.DataArray(
               (np.zeros(thisShape)*np.nan).astype(dtype),
@@ -51,10 +62,22 @@ class profile (xr.Dataset):
 
 class pamtra2(object):
 
-  def __init__(self,nLayer,hydrometeors,additionalDims={}):
-    self.profile = profile(nLayer,hydrometeors,additionalDims)
-    self.additionalDims = additionalDims
+  def __init__(
+    self,
+    nLayer,
+    hydrometeors,
+    hydrometeorBulkProperties = ['waterContent'],
+    additionalDims={}
+    ):
 
+    self.profile = profile(
+      nLayer,
+      hydrometeors,
+      hydrometeorBulkProperties,
+      additionalDims
+      )
+    self.additionalDims = additionalDims
+    self.hydrometeorBulkProperties = hydrometeorBulkProperties
     self.hydrometeors = OrderedDict()
     for hh in hydrometeors:
       self.hydrometeors[hh] = None

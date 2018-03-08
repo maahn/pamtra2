@@ -67,7 +67,7 @@ def exponentialField(sizeCenter,temperature,lambd):
   return exponential(sizeCenter,N0,lambd)
 
 
-def exponentialFieldWC(sizeCenter,temperature,WC,massSizeA,massSizeB):
+def exponentialFieldWC(sizeCenter,temperature,waterContent,massSizeA,massSizeB):
   """
   classical exponential distribution. N0 is estimated using 
   Field et al. (2005 QJRM, end of page 2008 + end of page 2009
@@ -77,7 +77,7 @@ def exponentialFieldWC(sizeCenter,temperature,WC,massSizeA,massSizeB):
   """
 
   N0 = _exponentialField(temperature)
-  lambd = _exponentialWC2Lambda(N0,WC,massSizeA,massSizeB)
+  lambd = _exponentialWC2Lambda(N0,waterContent,massSizeA,massSizeB)
   return exponential(sizeCenter,N0,lambd)
 
 def exponentialFieldReff(sizeCenter,temperature,effectiveRadius):
@@ -94,7 +94,7 @@ def exponentialFieldReff(sizeCenter,temperature,effectiveRadius):
 def exponentialN0WC(
   sizeCenter,
   N0,
-  WC,
+  waterContent,
   massSizeA=mass.powerLawLiquidPrefactor,
   massSizeB=mass.powerLawLiquidExponent,
   ):
@@ -102,7 +102,7 @@ def exponentialN0WC(
   classical exponential distribution constrained with N0 and LWC.
   """
 
-  lambd = _exponentialWC2Lambda(N0,WC,massSizeA,massSizeB)
+  lambd = _exponentialWC2Lambda(N0,waterContent,massSizeA,massSizeB)
   return exponential(sizeCenter,N0,lambd)
 
 
