@@ -45,7 +45,7 @@ class T_Matrix(Scatterer):
                  theta_inc = 0.0,
                  phi_inc = 0.0,
                  theta_sca = 0.0,
-                 phi_sca = 0.0
+                 phi_sca = 0.0,
                  aspect_ratio=0.0):
         
         Scatterer.__init__(self,
