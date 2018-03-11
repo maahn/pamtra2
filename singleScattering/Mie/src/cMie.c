@@ -32,13 +32,13 @@
    __typeof__ (b) _b = (b); \
    _a < _b ? _a : _b; })
 
-void Mie(double x, double complex m) {
-//    int N = Nmax(x,m);
-    double Theta[MAXTHETA];
-    double complex S1[MAXTHETA], S2[MAXTHETA];
+int Mie(double x, double complex m, int nt, double Theta[], double complex S1[],double complex S2[]) {
+    //double Theta[MAXTHETA];
+    //double complex S1[MAXTHETA], S2[MAXTHETA];
     double Qext, Qabs, Qsca, Qbk;
-    int nt = 0;
+    //int nt = 0;
     int Nmax = calc_Mie(x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, S1, S2);
+    return Nmax;
 }
 
 int Nmax(double x, double complex m) {
@@ -157,9 +157,13 @@ int calc_Mie(double x, double complex m, int nTheta, double Theta[], double *Qex
   // scattering parameters                                               //
   //*********************************************************************//
 
+    calc_scatt_prop();
+
     x2 = x*x;
     anP1 = calc_an(1, x, Ha[1][1], m, PsiXL[1], ZetaXL[1], PsiXL[0], ZetaXL[0]);
     bnP1 = calc_bn(1, x, Hb[1][1], m, PsiXL[1], ZetaXL[1], PsiXL[0], ZetaXL[0]);
+
+    
 
     for (n=1; n<=maxN; n++) {
         an = anP1;
@@ -195,3 +199,45 @@ int calc_Mie(double x, double complex m, int nTheta, double Theta[], double *Qex
     printf("%+.5e, %+.5e, %+.5e, %+.5e\n", *Qext, *Qsca, *Qabs, *Qbk);
     return maxN;
 }
+
+
+void calc_scatt_prop(double x, double complex m) {
+    printf("sto calcolando\n");}
+/*    double x2 = x*x;
+    double anP1 = calc_an(1, x, Ha[1][1], m, PsiXL[1], ZetaXL[1], PsiXL[0], ZetaXL[0]);
+    double bnP1 = calc_bn(1, x, Hb[1][1], m, PsiXL[1], ZetaXL[1], PsiXL[0], ZetaXL[0]);
+
+    
+
+    for (n=1; n<=maxN; n++) {
+        an = anP1;
+        bn = bnP1;
+
+        anP1 = calc_an(n+1, x, Ha[n+1][1], m, PsiXL[n+1], ZetaXL[n+1], PsiXL[n], ZetaXL[n]);
+        bnP1 = calc_bn(n+1, x, Hb[n+1][1], m, PsiXL[n+1], ZetaXL[n+1], PsiXL[n], ZetaXL[n]);
+
+    // Equation (27)
+        *Qext = *Qext + (double)(2*n + 1)*(creal(an) + creal(bn));
+    // Equation (28)
+        *Qsca = *Qsca + (double)(2*n + 1)*(creal(an)*creal(an) + cimag(an)*cimag(an) + creal(bn)*creal(bn) + cimag(bn)*cimag(bn));
+    // Equation (33) inner sum
+        Qbktmp = Qbktmp + (double)((2*n + 1)*(1 - 2*(n % 2))) * (an - bn);
+*/
+    //****************************************************//
+    // Calculate Pi_n and Tau_n for all values of Theta   //
+    // Equations (26a) - (26c)                            //
+    //****************************************************//
+/*        for (t=0; t<nTheta; t++) {
+            Pi[n][t] = ( (n==1) ? 1.0 : (((double)(2*n - 1)*cos(Theta[t])*Pi[n-1][t] - (double)n*Pi[n-2][t])/((double)(n-1))));
+            Tau[n][t] = (double)n*cos(Theta[t])*Pi[n][t] - (double)(n+1)*Pi[n-1][t];
+
+            S1[t] = S1[t] + calc_S1_n(n, an, bn, Pi[n][t], Tau[n][t]);
+            S2[t] = S2[t] + calc_S2_n(n, an, bn, Pi[n][t], Tau[n][t]);
+        }
+    }
+
+    *Qext = 2*(*Qext)/x2;                                 // Equation (27)
+    *Qsca = 2*(*Qsca)/x2;                                 // Equation (28)
+    *Qabs = *Qext - *Qsca;                                // Equation (30)
+    *Qbk = (creal(Qbktmp)*creal(Qbktmp) + cimag(Qbktmp)*cimag(Qbktmp))/x2;    // Equation (33) last norm and xl
+}*/

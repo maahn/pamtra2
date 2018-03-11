@@ -18,7 +18,7 @@
 
 #include <complex.h>
 
-void Mie(double x, double complex m);
+int Mie(double x, double complex m, int nt, double Theta[], double complex S1[],double complex S2[]);
 
 int Nmax(double x, double complex m);
 
@@ -31,3 +31,5 @@ double complex calc_S1_n(int n, double complex an, double complex bn, double Pin
 double complex calc_S2_n(int n, double complex an, double complex bn, double Pin, double Taun);
 
 int calc_Mie(double x, double complex m, int nTheta, double Theta[], double *Qext, double *Qsca, double *Qabs, double *Qbk, double complex S1[], double complex S2[]);
+
+void calc_scatt_prop();
