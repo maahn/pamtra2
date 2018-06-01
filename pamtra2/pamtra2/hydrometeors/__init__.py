@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from . import maximumDimension
+from . import sizeCenter
 from . import sizeDistribution
 from . import mass
 from . import crossSectionArea

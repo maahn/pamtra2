@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import warnings
 
 """
 Central location for all units
 """
 
 
-class defaultDict(dict):
+class unitDict(dict):
     '''
     dict class which returns a default value instead of the item if the
     key does not exist
@@ -20,10 +21,11 @@ class defaultDict(dict):
         try:
             return super().__getitem__(key)
         except KeyError:
+            warnings.warn("no units found for %s." % key)
             return self.default
 
 
-units = defaultDict(
+units = unitDict(
     {
         'aspectRatio': '-',
         'crossSectionArea': 'm^2',

@@ -207,7 +207,8 @@ class softEllipsoidFixedDensity(hydrometeor):
                 'density',
                 'mass',
                 'crossSectionArea',
-                'sizeDistribution'
+                'sizeDistribution',
+                'refractiveIndex'
                 ]
         return super().__init__(*args, **kwargs)
 
@@ -224,6 +225,7 @@ class softEllipsoidMassSize(hydrometeor):
                 'mass',
                 'density',
                 'crossSectionArea',
-                'sizeDistribution'
+                'sizeDistribution',
+                'refractiveIndex'
                 ]
         return super().__init__(*args, **kwargs)

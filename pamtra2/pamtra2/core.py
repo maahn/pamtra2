@@ -5,77 +5,113 @@ import numpy as np
 import xarray as xr
 
 from . import helpers
+from . import units
+from . import dimensions
 
 __version__ = 0.2
 
 
-class profile (xr.Dataset):
+class customProfile (xr.Dataset):
     """ """
-    def __init__(self,
-                 nLayer,
-                 hydrometeors,
-                 hydrometeorBulkProperties=['waterContent'],
-                 additionalDims={}
-                 ):
+    def __init__(
+      self,
+      profileVars=[],
+      nLayer=None,
+      hydrometeors=None,
+      frequencies=None,
+      additionalDims={},
+    ):
 
-        coordsGeom = {**additionalDims, 'layer': range(nLayer)}
+        if isinstance(profileVars, xr.Dataset):
+            self = profileVars
+            return
+        else:
 
-        coordsGeom = helpers.concatDicts(
-            additionalDims, {'layer': range(nLayer)})
-        cordsHydro = OrderedDict(hydrometeor=hydrometeors)
-        coordsGeomHydro = helpers.concatDicts(coordsGeom, cordsHydro)
-        coordsAll = helpers.concatDicts(coordsGeomHydro, OrderedDict())
+            coords = {}
+            coords[dimensions.ADDITIONAL] = OrderedDict(additionalDims)
+            coords[dimensions.LAYER] = OrderedDict(layer=range(nLayer))
+            coords[dimensions.HYDROMETEOR] = OrderedDict(
+              hydrometeor=hydrometeors)
+            coords[dimensions.FREQUENCY] = OrderedDict(frequency=frequencies)
 
-        super().__init__(coords=coordsAll)
+            coordsAll = helpers.concatDicts(
+              coords[dimensions.ADDITIONAL],
+              coords[dimensions.LAYER],
+              coords[dimensions.HYDROMETEOR],
+              coords[dimensions.FREQUENCY],
+              )
 
-        arrayVars = [
-            ('height', 'm', coordsGeom, np.float64),
-            ('temperature', 'K', coordsGeom, np.float64),
-            ('pressure', 'Pa', coordsGeom, np.float64),
-            ('relativeHumidity', '%', coordsGeom, np.float64),
-            ('horizontalWind', 'm/s', coordsGeom, np.float64),
-            ('verticalWind', 'm/s', coordsGeom, np.float64),
-            # ('waterContent','kg/m^3',coordsGeomHydro,np.float64),
-            # ('effectiveRadius','m',coordsGeomHydro,np.float64),
-            # ('hydrometeorNtot','1/m^3',coordsGeomHydro,np.float64),
-            # ('hydrometeor','-',cordsHydro,'S128'),
-        ]
-        for hydrometeorBulkPropertiy in hydrometeorBulkProperties:
-            arrayVars.append(
-                (hydrometeorBulkPropertiy, 'SI', coordsGeomHydro, np.float64)
-            )
+            super().__init__(coords=coordsAll)
 
-        for var, unit, coords, dtype in arrayVars:
-            thisShape = tuple(map(len, coords.values()))
-            self[var] = xr.DataArray(
-                (np.zeros(thisShape)*np.nan).astype(dtype),
-                coords=coords.values(),
-                dims=coords.keys(),
-                attrs={'unit': unit},
-            )
+            for var, coord, dtype in profileVars:
+                coord = helpers.concatDicts(*map(lambda x: coords[x], coord))
+                thisShape = tuple(map(len, coord.values()))
+                self[var] = xr.DataArray(
+                    (np.zeros(thisShape)*np.nan).astype(dtype),
+                    coords=coord.values(),
+                    dims=coord.keys(),
+                    attrs={'unit': units.units[var]},
+                )
 
-        return
+            return
 
 
 class pamtra2(object):
     """ """
 
     def __init__(
-        self,
-        nLayer,
-        hydrometeors,
-        hydrometeorBulkProperties=['waterContent'],
-        additionalDims={}
+      self,
+      profileVars=[
+        (
+          'height',
+          [dimensions.ADDITIONAL, dimensions.LAYER],
+          np.float64
+          ),
+        (
+          'temperature',
+          [dimensions.ADDITIONAL, dimensions.LAYER],
+          np.float64
+          ),
+        (
+          'pressure',
+          [dimensions.ADDITIONAL, dimensions.LAYER],
+          np.float64
+          ),
+        (
+          'relativeHumidity',
+          [dimensions.ADDITIONAL, dimensions.LAYER],
+          np.float64
+          ),
+        (
+          'horizontalWind',
+          [dimensions.ADDITIONAL, dimensions.LAYER],
+          np.float64
+          ),
+        (
+          'verticalWind',
+          [dimensions.ADDITIONAL, dimensions.LAYER],
+          np.float64
+          ),
+        (
+          'waterContent',
+          [dimensions.ADDITIONAL, dimensions.LAYER, dimensions.HYDROMETEOR],
+          np.float64
+          ),
+      ],
+      nLayer=None,
+      hydrometeors=None,
+      frequencies=None,
+      additionalDims={},
     ):
 
-        self.profile = profile(
-            nLayer,
-            hydrometeors,
-            hydrometeorBulkProperties,
-            additionalDims
+        self.profile = customProfile(
+          profileVars=profileVars,
+          nLayer=nLayer,
+          hydrometeors=hydrometeors,
+          frequencies=frequencies,
+          additionalDims=additionalDims
         )
         self.additionalDims = additionalDims
-        self.hydrometeorBulkProperties = hydrometeorBulkProperties
         self.hydrometeors = OrderedDict()
         for hh in hydrometeors:
             self.hydrometeors[hh] = None

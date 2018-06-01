@@ -26,10 +26,11 @@ def rayleigh(diameter, K2, frequency):
     return back_spec
 
 
-def concatDicts(d1, d2):
+def concatDicts(*dicts):
     """
-    concatenate two (ordered) dicts
+    concatenate (ordered) dicts
     """
-    dMerged = deepcopy(d1)
-    dMerged.update(d2)
+    dMerged = deepcopy(dicts[0])
+    for dd in range(1, len(dicts)):
+        dMerged.update(dicts[dd])
     return dMerged
