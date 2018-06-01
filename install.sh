@@ -19,19 +19,18 @@ case $key in
     PYTHON="$2"
     shift # past argument
     shift # past value
-    ;;
+    ;;&
     -f|--flag)
     FLAGS+=" $2"
     shift # past argument
     shift # past value
-    ;;
+    ;;&
 esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
 echo "python command " $PYTHON
 echo "passed flags " $FLAGS
-
 
 cd pyPamtraRadarSimulator
 $PYTHON setup.py install $FLAGS
@@ -41,8 +40,8 @@ cd pyPamtraRadarMoments
 $PYTHON setup.py install $FLAGS
 cd ../
 
-cd pamtra2
-python setup.py install $FLAGS
+cd pyPamtra2
+$PYTHON setup.py install $FLAGS
 cd ../
 
 cd refractiveIndex
