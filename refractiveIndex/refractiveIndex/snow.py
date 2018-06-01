@@ -36,7 +36,7 @@ Notes
     shape allowing element-wise application of the functions or one of
     the two must be a scalar which will be spread across the nd computations
 
-Temperatures should be provided in Kelvin, frequencies in Hz and density in kg/m**3
+Temperature should be provided in Kelvin, frequency in Hz and density in kg/m**3
 The dielectric module checks for arguments values to be within the
 limits of validity of the dielectric model and raises ValueError in case
 they are not respected
@@ -48,19 +48,19 @@ from . import mixing
 
 ice_density = 916.7 # kg/m**3
 
-def n(temperatures,frequencies,densities,model_mix='Bruggeman',model_ice='Matzler_2006'):
+def n(temperature,frequency,density,model_mix='Bruggeman',model_ice='Matzler_2006'):
     """ Effective refractive index of snow according to the specified models for ice
         dielectric properties, effective medium approximation function and effective
         density of the snowflake
 
     Parameters
     ----------
-    temperatures : float
-        nd array of temperatures [Kelvin]
-    frequencies : float
-        nd array of frequencies [Hz]
-    densities: float
-        nd array of effective densities [kg/m**3]
+    temperature : float
+        nd array of temperature [Kelvin]
+    frequency : float
+        nd array of frequency [Hz]
+    density: float
+        nd array of effective density [kg/m**3]
     model_mix : string
         Effective Medium Approximation model name default to Bruggeman
     model_ice : string
@@ -69,24 +69,24 @@ def n(temperatures,frequencies,densities,model_mix='Bruggeman',model_ice='Matzle
     Returns
     -------
     nd - complex
-        Refractive index of snow at the requested frequencies and temperatures
+        Refractive index of snow at the requested frequency and temperature
 
     """
-    return np.sqrt(eps(temperatures,frequencies,densities,model_mix=model_mix,model_ice=model_ice))
+    return np.sqrt(eps(temperature,frequency,density,model_mix=model_mix,model_ice=model_ice))
 
-def eps(temperatures,frequencies,densities,model_mix='Bruggeman',model_ice='Matzler_2006'):
+def eps(temperature,frequency,density,model_mix='Bruggeman',model_ice='Matzler_2006'):
     """ Effective complex relative dielectric constant of snow according to the specified
         models for ice dielectric properties, effective medium approximation function and
         effective density of the snowflake
 
     Parameters
     ----------
-    temperatures : float
-        nd array of temperatures [Kelvin]
-    frequencies : float
-        nd array of frequencies [Hz]
-    densities: float
-        nd array of effective densities [kg/m**3]
+    temperature : float
+        nd array of temperature [Kelvin]
+    frequency : float
+        nd array of frequency [Hz]
+    density: float
+        nd array of effective density [kg/m**3]
     model_mix : string
         Effective Medium Approximation model name default to Bruggeman
     model_ice : string
@@ -95,12 +95,19 @@ def eps(temperatures,frequencies,densities,model_mix='Bruggeman',model_ice='Matz
     Returns
     -------
     nd - complex
-        Relative dielectric constant of snow at the requested frequencies and temperatures
+        Relative dielectric constant of snow at the requested frequency and temperature
 
     """
+    if not hasattr(temperature, '__array__'):
+        temperature = np.asarray(temperature)
+    if not hasattr(frequency, '__array__'):
+        frequency = np.asarray(frequency)
+    if not hasattr(density, '__array__'):
+        density = np.asarray(density)
 
-    fraction = densities/ice_density
-    eps_ice = ice.eps(temperatures,frequencies)
+
+    fraction = density/ice_density
+    eps_ice = ice.eps(temperature,frequency)
     eps_air = complex(1.0,0.0)+0.0*eps_ice
     return mixing.eps([eps_ice,eps_air],[fraction,1.0-fraction],model=model_mix)
 

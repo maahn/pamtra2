@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 This module provides a list of water refractive index models to compute the
-dielectric properties of water according to the requested frequencies and
+dielectric properties of water according to the requested frequency and
 temeperatures.
 The module can be also used as a standalone python script.
 
@@ -37,7 +37,7 @@ Notes
     shape allowing element-wise application of the functions or one of
     the two must be a scalar which will be spread across the nd computations
 
-Temperatures should be provided in Kelvin and frequencies in Hz
+Temperature should be provided in Kelvin and frequency in Hz
 The specific called algorithm check for arguments values to be within the
 limits of validity of the dielectric model and raises ValueError in case
 they are not respected
@@ -46,13 +46,13 @@ they are not respected
 
 import numpy as np
 
-def turner_kneifel_cadeddu(temperatures, frequencies):
+def turner_kneifel_cadeddu(temperature, frequency):
     """ The "Turner-Kneifel-Cadeddu" liquid water absorption model (JTECH 2016).
     
         SPECIAL MODEL FOR SUPERCOOLED LIQUID WATER
     
-    It was built using both laboratory observations (primarily at warm temperatures) and 
-    field data observed by MWRs at multiple frequencies at supercool temperatures. The field
+    It was built using both laboratory observations (primarily at warm temperature) and 
+    field data observed by MWRs at multiple frequency at supercool temperature. The field
     data were published in Kneifel et al. JAMC 2014.  The strength of the TKC model is the 
     use of an optimal estimation framework to determine the empirical coefficients of the 
     double-Debye model.  A full description of this model is given in 
@@ -62,19 +62,19 @@ def turner_kneifel_cadeddu(temperatures, frequencies):
 		J. Atmos. Oceanic Technol., 33(1), pp.33-44, doi:10.1175/JTECH-D-15-0074.1.
 
  	Note that the model is designed to operate over the frequency range from 0.5 to 500
-    GHz, and temperatures from -40 degC to +50 degC; only for freshwater (no salinity)
+    GHz, and temperature from -40 degC to +50 degC; only for freshwater (no salinity)
     
     Parameters
     ----------
-    temperatures : float
-        nd array of temperatures [Kelvin]
-    frequencies : float
-        nd array of frequencies [Hz]
+    temperature : array_like
+        nd array of temperature [Kelvin]
+    frequency : array_like
+        nd array of frequency [Hz]
      
     Returns
     -------
     nd - complex
-        Relative dielectric constant of ice at the requested frequencies and temperatures
+        Relative dielectric constant of ice at the requested frequency and temperature
 
     Raises
     ------
@@ -84,14 +84,14 @@ def turner_kneifel_cadeddu(temperatures, frequencies):
         If frequency or temperature out of the limits of validity of the model is passed as an argument
 
     """
-    if (frequencies < 0).any():
+    if (frequency < 0).any():
         raise ValueError('refractive: A negative frequency value has been passed')
-    if (temperatures < 0).any():
+    if (temperature < 0).any():
         raise ValueError('refractive: A negative temperature value has been passed')
-    if (frequencies > 500.0e9).any():
+    if (frequency > 500.0e9).any():
         raise ValueError('Ellison model for dielectric property of fresh water is only valid up to 1 THz')
     
-    temp = temperatures - 273.15	#; Input cloud temperature (scalar float), in degC
+    temp = temperature - 273.15	#; Input cloud temperature (scalar float), in degC
 
     #Some constants
     #cl = 299792458.0	# ;speed of light in vacuum
@@ -126,37 +126,37 @@ def turner_kneifel_cadeddu(temperatures, frequencies):
     tau_2   = c_2 * np.exp(d_2 / (temp + t_c))
 
     # Compute the relaxation terms (Eq 7) for the two Debye components
-    term1_p1 = (tau_1**2.*delta_1)/(1.0 + (2.0*np.pi*frequencies*tau_1)**2.)
-    term2_p1 = (tau_2**2.*delta_2)/(1.0 + (2.0*np.pi*frequencies*tau_2)**2.)
+    term1_p1 = (tau_1**2.*delta_1)/(1.0 + (2.0*np.pi*frequency*tau_1)**2.)
+    term2_p1 = (tau_2**2.*delta_2)/(1.0 + (2.0*np.pi*frequency*tau_2)**2.)
 
     # Compute the real permittivitity coefficient (Eq 4)
-    eps1 = eps_s - ((2.*np.pi*frequencies)**2.)*(term1_p1 + term2_p1)
+    eps1 = eps_s - ((2.*np.pi*frequency)**2.)*(term1_p1 + term2_p1)
     
     # Compute the relaxation terms (Eq 8) for the two Debye components
-    term1_p1 = (tau_1 * delta_1) / (1. + (2.*np.pi*frequencies*tau_1)**2.)
-    term2_p1 = (tau_2 * delta_2) / (1. + (2.*np.pi*frequencies*tau_2)**2.)
+    term1_p1 = (tau_1 * delta_1) / (1. + (2.*np.pi*frequency*tau_1)**2.)
+    term2_p1 = (tau_2 * delta_2) / (1. + (2.*np.pi*frequency*tau_2)**2.)
 
     # Compute the imaginary permittivitity coefficient (Eq 5)
-    eps2 = 2.0*np.pi*frequencies*(term1_p1 + term2_p1)
+    eps2 = 2.0*np.pi*frequency*(term1_p1 + term2_p1)
     #epsilon = complex(eps1, eps2)
     return eps1 + 1j*eps2
 
 
-def ellison(temperatures,frequencies):
+def ellison(temperature,frequency):
     """Water complex relative dielectric constant according to Ellison (2005)
     "..." TODO: put the extensive correct reference here
 
     Parameters
     ----------
-    temperatures : float
-        nd array of temperatures [Kelvin]
-    frequencies : float
-        nd array of frequencies [Hz]
+    temperature : array_like
+        nd array of temperature [Kelvin]
+    frequency : array_like
+        nd array of frequency [Hz]
 
     Returns
     -------
     nd - complex
-        Relative dielectric constant of ice at the requested frequencies and temperatures
+        Relative dielectric constant of ice at the requested frequency and temperature
 
     Raises
     ------
@@ -167,13 +167,13 @@ def ellison(temperatures,frequencies):
 
     """
 
-    if (frequencies < 0).any():
+    if (frequency < 0).any():
         raise ValueError('refractive: A negative frequency value has been passed')
-    if (temperatures < 0).any():
+    if (temperature < 0).any():
         raise ValueError('refractive: A negative absolute temperature value has been passed')
-    if (temperatures < 273.15).any():
+    if (temperature < 273.15).any():
         raise ValueError('refractive: A subfreeze temperature value has been passed consider to use Turner Kneifel Cadeddu model')
-    if (frequencies > 1000.0e9).any():
+    if (frequency > 1000.0e9).any():
         raise ValueError('Ellison model for dielectric property of fresh water is only valid up to 1 THz')
 
     a0 = 5.7230
@@ -188,40 +188,40 @@ def ellison(temperatures,frequencies):
     a9 = 1.4825e-3
     a10 = 2.4166e-4
 
-    T = temperatures-273.15
+    T = temperature-273.15
     es=(37088.6-82.168*T)/(421.854+T)
     einf=a6+a7*T
     e1=a0+T*(a1+T*a2)              #a0+a1*T+a2*T*T
     ni1=(45.0+T)/(a3+T*(a4+T*a5))  #(a3+a4*T+a5*T*T)
     ni2=(45.0+T)/(a8+T*(a9+T*a10)) #(a8+a9*T+a10*T*T)
-    A1=frequencies*1.0e-9/ni1
-    A2=frequencies*1.0e-9/ni2
+    A1=frequency*1.0e-9/ni1
+    A2=frequency*1.0e-9/ni2
     eps1=(es-e1)/(1+A1*A1)+(e1-einf)/(1+A2*A2)+einf
     eps2=(es*A1-e1*A1)/(1+A1*A1)+(e1*A2-einf*A2)/(1+A2*A2)
     return eps1 + 1j*eps2
 
-def pamtra_water(temperatures,frequencies):
-    return ellison(np.array(temperatures),np.array(frequencies))
+def pamtra_water(temperature,frequency):
+    return ellison(temperature,frequency)
 # PLACEHOLDER FOR WHAT PAMTRA IS CURRENTLY COMPUTING
 
 #######################################################################################################
 
-def eps(temperatures,frequencies,model="Ellison"):
+def eps(temperature,frequency,model="Ellison"):
     """Water complex relative dielectric constant according to the requested model
 
     Parameters
     ----------
-    temperatures : float
-        nd array of temperatures [Kelvin]
-    frequencies : float
-        nd array of frequencies [Hz]
+    temperature : array_like
+        nd array of temperature [Kelvin]
+    frequency : array_like
+        nd array of frequency [Hz]
     model : string
         dielectric model name default to Ellison (2005)
 
     Returns
     -------
     nd - complex
-        Relative dielectric constant of water for the requested frequencies and temperatures
+        Relative dielectric constant of water for the requested frequency and temperature
 
     Raises
     ------
@@ -229,30 +229,37 @@ def eps(temperatures,frequencies,model="Ellison"):
         If a negative frequency or temperature is passed as an argument
 
     """
+
+    if not hasattr(temperature, '__array__'):
+        temperature = np.asarray(temperature)
+    if not hasattr(frequency, '__array__'):
+        frequency = np.asarray(frequency)
+
+
     if (model == "Ellison"):
-        return ellison(np.array(temperatures),np.array(frequencies))
+        return ellison(temperature,frequency)
     if (model == 'Turner'):
-        return turner_kneifel_cadeddu(np.array(temperatures),np.array(frequencies))
+        return turner_kneifel_cadeddu(temperature,frequency)
     else:
         print("I do not recognize the ice refractive index specification, falling back to Ellison")
-        return ellison(np.array(temperatures),np.array(frequencies))
+        return ellison(temperature,frequency)
 
-def n(temperatures,frequencies,model="Ellison"):
+def n(temperature,frequency,model="Ellison"):
     """Water complex refractive index according to the requested model
 
     Parameters
     ----------
-    temperatures : float
-        nd array of temperatures [Kelvin]
-    frequencies : float
-        nd array of frequencies [Hz]
+    temperature : array_like
+        nd array of temperature [Kelvin]
+    frequency : array_like
+        nd array of frequency [Hz]
     model : string
         dielectric model name default to Ellison (2005)
 
     Returns
     -------
     nd - complex
-        Refractive index of water for the requested frequencies and temperatures
+        Refractive index of water for the requested frequency and temperature
 
     Raises
     ------
@@ -260,7 +267,7 @@ def n(temperatures,frequencies,model="Ellison"):
         If a negative frequency or temperature is passed as an argument
 
     """
-    return np.sqrt(eps(np.array(temperatures),np.array(frequencies),model))
+    return np.sqrt(eps(temperature,frequency,model))
 
 #######################################################################################################
 

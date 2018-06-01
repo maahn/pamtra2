@@ -15,5 +15,7 @@
 */docs/build
 */build
 pyPamtraRadarSimulator/pyPamtraRadarSimulator/pyPamtraRadarSimulatorLib/pyPamtraRadarSimulatorLibmodule.c
-pyPamtraRadarSimulator/pyPamtraRadarSimulator.egg-info
+*egg-info
+refractiveIndex/examples/refractive_indexes.pdf
+
 
