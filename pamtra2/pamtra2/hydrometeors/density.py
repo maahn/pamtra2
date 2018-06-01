@@ -12,16 +12,25 @@ def softEllipsoid(sizeCenter, aspectRatio, mass, minDensity=100,
     """
 
     if np.all(aspectRatio <= 1):
-        density = softOblateEllipsoid(sizeCenter, aspectRatio, mass, minDensity=minDensity,
-                                      maxDensity=maxDensity)
+        density = softOblateEllipsoid(
+            sizeCenter, aspectRatio, mass,
+            minDensity=minDensity,
+            maxDensity=maxDensity
+            )
     elif np.all(aspectRatio > 1):
-        density = softProlateEllipsoid(sizeCenter, mass, minDensity=minDensity,
-                                       maxDensity=maxDensity)
+        density = softProlateEllipsoid(
+            sizeCenter, mass, minDensity=minDensity,
+            maxDensity=maxDensity
+            )
     else:
-        density = softOblateEllipsoid(sizeCenter, aspectRatio, mass, minDensity=minDensity,
-                                      maxDensity=maxDensity)
-        density[aspectRatio > 1] = softProlateEllipsoid(sizeCenter, mass,
-            minDensity=minDensity, maxDensity=maxDensity)[aspectRatio > 1]
+        density = softOblateEllipsoid(
+            sizeCenter, aspectRatio, mass, minDensity=minDensity,
+            maxDensity=maxDensity
+            )
+        density[aspectRatio > 1] = softProlateEllipsoid(
+            sizeCenter, mass,
+            minDensity=minDensity, maxDensity=maxDensity
+            )[aspectRatio > 1]
 
     return density
 
@@ -38,18 +47,18 @@ def softOblateEllipsoid(sizeCenter, aspectRatio, mass, minDensity=100,
 
     return density
 
+
 def softProlateEllipsoid(sizeCenter, aspectRatio, mass, minDensity=100,
                          maxDensity=constants.rhoIce):
     """
     prolate (asectRatio >0) soft spheres
     """
-    density = (6. * mass * aspectRatio** 2.) / (np.pi * sizeCenter**3.)
+    density = (6. * mass * aspectRatio ** 2.) / (np.pi * sizeCenter**3.)
 
     density[density < minDensity] = minDensity
     density[density > maxDensity] = maxDensity
 
     return density
-
 
 
 water = constants.rhoWater
