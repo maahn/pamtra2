@@ -101,29 +101,17 @@ class pamtra2(object):
 
   def describeHydrometeor(
     self,
-    name,
-    kind = None, #liquid, ice
-    nBins = None,
-    sizeCenter = None,
-    sizeDistribution = None,
-    aspectRatio = None,
-    mass = None,
-    density = None,
-    crossSectionArea = None,
+    hydrometeorConstructor,
+    **kwargs,
   ):
 
-    self.hydrometeors[name] = hydrometeors.properties(
-        self,
-        name = name, #or None, then str(index)
-        kind = kind, #liquid, ice
-        nBins = nBins,
-        sizeCenter = sizeCenter,
-        sizeDistribution = sizeDistribution,
-        aspectRatio = aspectRatio,
-        mass = mass,
-        density = density,
-        crossSectionArea = crossSectionArea,
-        )
+    name = kwargs['name']
+    self.hydrometeors[name] = hydrometeorConstructor(
+      self,
+      **kwargs
+      )
+
+    self.hydrometeors[name].calculateProperties()
 
     return self.hydrometeors[name]
 

@@ -5,18 +5,51 @@ from .. import constants
 # All functions must accept sizeCenter,aspectRatio,mass as input.
 
 
-def softEllipsoid(sizeCenter,aspectRatio,mass,minDensity=100,maxDensity=constants.rhoIce):
-  """
-  oblate (AspectRatio <1) or prolate (asectRatio >0) soft spheres
-  """
-  density = np.zeros(sizeCenter.shape) * np.nan
-  density[aspectRatio<=1] = (6. * mass[aspectRatio<=1]) / (np.pi *  sizeCenter[aspectRatio<=1]**3. * aspectRatio[aspectRatio<=1])
-  density[aspectRatio>1] = (6. * mass[aspectRatio>1] * aspectRatio[aspectRatio>1]**2.) / (np.pi *  sizeCenter[aspectRatio>1]**3.)
+def softEllipsoid(sizeCenter, aspectRatio, mass, minDensity=100,
+                  maxDensity=constants.rhoIce):
+    """
+    oblate (AspectRatio <1) or prolate (asectRatio >0) soft spheres
+    """
 
-  density[density<minDensity] = minDensity
-  density[density>maxDensity] = maxDensity
+    if np.all(aspectRatio <= 1):
+        density = softOblateEllipsoid(sizeCenter, aspectRatio, mass, minDensity=minDensity,
+                                      maxDensity=maxDensity)
+    elif np.all(aspectRatio > 1):
+        density = softProlateEllipsoid(sizeCenter, mass, minDensity=minDensity,
+                                       maxDensity=maxDensity)
+    else:
+        density = softOblateEllipsoid(sizeCenter, aspectRatio, mass, minDensity=minDensity,
+                                      maxDensity=maxDensity)
+        density[aspectRatio > 1] = softProlateEllipsoid(sizeCenter, mass,
+            minDensity=minDensity, maxDensity=maxDensity)[aspectRatio > 1]
 
-  return density
+    return density
+
+
+def softOblateEllipsoid(sizeCenter, aspectRatio, mass, minDensity=100,
+                        maxDensity=constants.rhoIce):
+    """
+    oblate (AspectRatio <1)  soft spheres
+    """
+    density = (6. * mass) / (np.pi * sizeCenter**3. * aspectRatio)
+
+    density[density < minDensity] = minDensity
+    density[density > maxDensity] = maxDensity
+
+    return density
+
+def softProlateEllipsoid(sizeCenter, aspectRatio, mass, minDensity=100,
+                         maxDensity=constants.rhoIce):
+    """
+    prolate (asectRatio >0) soft spheres
+    """
+    density = (6. * mass * aspectRatio** 2.) / (np.pi * sizeCenter**3.)
+
+    density[density < minDensity] = minDensity
+    density[density > maxDensity] = maxDensity
+
+    return density
+
 
 
 water = constants.rhoWater
