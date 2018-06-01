@@ -28,16 +28,19 @@ radar dielectric factor K2 which is of great importance in radar applications
 
 import numpy as np
 
-eps2n = lambda eps: np.sqrt(eps)
 
-n2eps = lambda n: n*n
+def eps2n(eps): return np.sqrt(eps)
+
+
+def n2eps(n): return n*n
+
 
 def K(eps):
     """ Rayleigh complex dielectric factor
     This is basically the K complex factor that defines the Radar dielectric
     factor |K|**2. It is useful in Rayleigh theory to define absorption cross
     section from its imaginary part
-    
+
     Parameters
     ----------
     eps : complex
@@ -49,6 +52,7 @@ def K(eps):
         Rayleigh complex dielectric factor K
     """
     return (eps-1.0)/(eps+2.0)
+
 
 def K2(eps):
     """ Radar dielectric factor |K|**2

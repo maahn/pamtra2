@@ -17,12 +17,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-This module provides a list of ice and water refractive index models to compute 
-the dielectric properties of ice according to the requested frequencies and
-temeperatures. The module is completed with some Effective Medium approximation
-functions to compute the refractive index of inhomogeneous mixtures of materials
-which are directly used to compute the dielectric properties of snow as a
-dilution of ice in air.
+This module provides a list of ice and water refractive index models to
+compute the dielectric properties of ice according to the requested
+frequencies and temeperatures. The module is completed with some Effective
+Medium approximation functions to compute the refractive index of
+inhomogeneous mixtures of materials which are directly used to compute the
+dielectric properties of snow as a dilution of ice in air.
 
 This core file loads submodules and provide handy functions to
 consistently call ice, water or snow refractive index modules
@@ -49,10 +49,10 @@ Notes
     The functions check for argument consistency and raise AttributeError if
     a wrong list of attributes is passed.
 
-All of the argument quatities must be provided in SI units: Temperatures in 
-Kelvin, frequencies in Hz, densities in kg/m3. The specific called algorithm 
-check for arguments values to be within the limits of validity of the dielectric
-model and raises ValueError in case they are not respected
+All of the argument quatities must be provided in SI units: Temperatures in
+Kelvin, frequencies in Hz, densities in kg/m3. The specific called algorithm
+check for arguments values to be within the limits of validity of the
+dielectric model and raises ValueError in case they are not respected
 
 """
 
@@ -63,15 +63,12 @@ from . import utilities
 
 import numpy as np
 
-substances_list = ['ice','water','snow']
-#argument_list = ['temperatures','frequencies','densities','model','model_mix',
-#                   'model_ice']
-#argument_dict = {}
-#for attr in argument_list:
-#    argument_dict[attr] = None
+substances_list = ['ice', 'water', 'snow']
 
-def n(substance, temperatures, frequencies,**kwargs):# model=None, model_ice=None, model_mix=None, densities=None):
-    """Complex index of refraction of the requested substance according to the 
+
+# model=None, model_ice=None, model_mix=None, densities=None):
+def n(substance, temperatures, frequencies, **kwargs):
+    """Complex index of refraction of the requested substance according to the
         requested specifications
 
     Parameters
@@ -93,10 +90,12 @@ def n(substance, temperatures, frequencies,**kwargs):# model=None, model_ice=Non
         If an uncorrect list of arguments is passed
 
     """
-    return np.sqrt(eps(substance,temperatures,frequencies,**kwargs))
+    return np.sqrt(eps(substance, temperatures, frequencies, **kwargs))
 
-def eps(substance, temperatures, frequencies,**kwargs):# model=None, model_ice=None, model_mix=None, densities=None):
-    """Complex relative dielectric permittivity of the requested substance 
+
+# model=None, model_ice=None, model_mix=None, densities=None):
+def eps(substance, temperatures, frequencies, **kwargs):
+    """Complex relative dielectric permittivity of the requested substance
         according to the requested specifications
 
     Parameters
@@ -119,20 +118,14 @@ def eps(substance, temperatures, frequencies,**kwargs):# model=None, model_ice=N
 
     """
 
-#    for attr in argument_list:
-#        if attr in kwargs:
-#            self.__dict__[attr] = kwargs[attr]
-
     if (substance == 'ice'):
-        if 'model' in kwargs.keys():
-            model = kwargs['model']
-        return ice.eps(temperatures,frequencies,**kwargs)#model=model)
+        return ice.eps(temperatures, frequencies, **kwargs) 
     elif (substance == 'water'):
-        if 'model' in kwargs.keys():
-            model = kwargs['model']
-        return water.eps(temperatures,frequencies,**kwargs)#model=model)
+        return water.eps(temperatures, frequencies, **kwargs) 
     elif (substance == 'snow'):
-        return snow.eps(temperatures,frequencies,**kwargs)#densities=densities,model_mix=model_mix,model_ice=model_ice)
+        return snow.eps(temperatures, frequencies, **kwargs)
     else:
-        raise AttributeError("I do not recognize the " + str(substance) + "as a " + 
-        "valid substance I can only compute dielectric properties of " + str(substances_list))
+        raise AttributeError("I do not recognize the %s as a " 
+                             "valid substance I can only compute"
+                             " dielectric properties of %s" % (
+                                substance, substances_list))

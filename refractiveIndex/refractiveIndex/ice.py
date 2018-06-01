@@ -51,30 +51,46 @@ from scipy import interpolate
 
 from os import path
 module_path = path.split(path.abspath(__file__))[0]
-warren_ice_table = pd.read_csv(module_path+'/IOP_2008_ASCIItable.dat',delim_whitespace=True,names=['wl','mr','mi'])
-warren_ice_table['f'] = 299792.458e9/warren_ice_table.wl # wl is microns, should return Hz
-warren_ice_table.set_index('f',inplace=True)
-warren_ice_table = warren_ice_table.iloc[::-1] # reverse order
+warren_ice_table = pd.read_csv(
+    module_path+'/IOP_2008_ASCIItable.dat',
+    delim_whitespace=True, names=['wl', 'mr', 'mi']
+    )
+warren_ice_table['f'] = 299792.458e9 / \
+    warren_ice_table.wl  # wl is microns, should return Hz
+warren_ice_table.set_index('f', inplace=True)
+warren_ice_table = warren_ice_table.iloc[::-1]  # reverse order
 warren_ice_eps = (warren_ice_table.mr.values+1j*warren_ice_table.mi.values)**2
-warren_ice_interpolated = interpolate.interp1d(warren_ice_table.index.values,warren_ice_eps,assume_sorted=True)
+warren_ice_interpolated = interpolate.interp1d(
+    warren_ice_table.index.values, warren_ice_eps, assume_sorted=True)
 
-iwabuchi_ice_table = pd.read_csv(module_path+'/iwabuchi_ice_eps.dat',index_col=0,dtype=np.float64,comment='#')
-iwabuchi_ice_table.index.name='f'
-iwabuchi_ice_interp_real = interpolate.interp2d(np.arange(160.,275.,10.),iwabuchi_ice_table.index.values,iwabuchi_ice_table.values[:,0:12])
-iwabuchi_ice_interp_imag = interpolate.interp2d(np.arange(160.,275.,10.),iwabuchi_ice_table.index.values,iwabuchi_ice_table.values[:,12:])
+iwabuchi_ice_table = pd.read_csv(
+    module_path+'/iwabuchi_ice_eps.dat',
+    index_col=0, dtype=np.float64, comment='#'
+    )
+iwabuchi_ice_table.index.name = 'f'
+iwabuchi_ice_interp_real = interpolate.interp2d(np.arange(
+    160., 275., 10.),
+iwabuchi_ice_table.index.values, iwabuchi_ice_table.values[:, 0:12]
+)
+iwabuchi_ice_interp_imag = interpolate.interp2d(np.arange(
+    160., 275., 10.),
+iwabuchi_ice_table.index.values, iwabuchi_ice_table.values[:, 12:]
+)
 
-def iwabuchi_yang_2011(temperature,frequency):
+
+def iwabuchi_yang_2011(temperature, frequency):
     """
     Ice complex relative dielectric constant according to Iwabuchi (2011)
-    'Temperature dependence of ice optical constants: Implications for 
+    'Temperature dependence of ice optical constants: Implications for
     simulating the single-scattering properties of cold ice clouds' J. Quant.
     Spec. Rad. Tran. 112, 2520-2525
-    
+
     The model is valid for temperature ranging from 160 to 270 K.
     Frequency/wavelength range of validity is [150 MHz/2 meters; 44 nanometers]
-    
-    Source of the table is the additional material published along with the paper
-    
+
+    Source of the table is the additional material published along with the
+    paper
+
     Parameters
     ----------
     temperature : float
@@ -85,39 +101,54 @@ def iwabuchi_yang_2011(temperature,frequency):
     Returns
     -------
     nd - complex
-        Relative dielectric constant of ice at the requested frequency and temperature
+        Relative dielectric constant of ice at the requested frequency and
+        temperature
 
     Raises
     ------
     ValueError
         If a negative frequency or temperature is passed as an argument
     """
-    
+
     if (frequency < 0).any():
         raise ValueError('A negative frequency value has been passed')
-    
+
     if frequency.shape == temperature.shape:
-        eps_real = iwabuchi_ice_interp_real(temperature.flatten(),frequency.flatten()).diagonal().reshape(frequency.shape)
-        eps_imag = iwabuchi_ice_interp_imag(temperature.flatten(),frequency.flatten()).diagonal().reshape(frequency.shape)
+        eps_real = iwabuchi_ice_interp_real(temperature.flatten(
+        ), frequency.flatten()).diagonal().reshape(frequency.shape)
+        eps_imag = iwabuchi_ice_interp_imag(temperature.flatten(
+        ), frequency.flatten()).diagonal().reshape(frequency.shape)
     elif temperature.size == 1:
         temps = temperature*np.ones(frequency.shape)
-        eps_real = iwabuchi_ice_interp_real(temps.flatten(),frequency.flatten()).diagonal().reshape(temps.shape)
-        eps_imag = iwabuchi_ice_interp_imag(temps.flatten(),frequency.flatten()).diagonal().reshape(temps.shape)
+        eps_real = iwabuchi_ice_interp_real(
+            temps.flatten(), frequency.flatten()).diagonal().reshape(
+            temps.shape)
+        eps_imag = iwabuchi_ice_interp_imag(
+            temps.flatten(), frequency.flatten()).diagonal().reshape(
+            temps.shape)
     elif frequency.size == 1:
         freqs = frequency*np.ones(temperature.shape)
-        eps_real = iwabuchi_ice_interp_real(temperature.flatten(),freqs.flatten()).diagonal().reshape(freqs.shape)
-        eps_imag = iwabuchi_ice_interp_imag(temperature.flatten(),freqs.flatten()).diagonal().reshape(freqs.shape)
+        eps_real = iwabuchi_ice_interp_real(
+            temperature.flatten(), freqs.flatten()).diagonal().reshape(
+            freqs.shape)
+        eps_imag = iwabuchi_ice_interp_imag(
+            temperature.flatten(), freqs.flatten()).diagonal().reshape(
+            freqs.shape)
     else:
-        raise AttributeError('Passed temperature and frequency are non-scalars of different shapes')
+        raise AttributeError(
+            'Passed temperature and frequency are non-scalars of different'
+            'shapes')
     return eps_real + 1j*eps_imag
-    
+
+
 def warren_brandt_2008(frequency):
     """Ice complex relative dielectric constant according to Warren (2008)
-    'Optical constants of ice from the ultraviolet to the microwave: A 
-    revised compilation.' J. Geophys. Res., 113, D14220, doi:10.1029/2007JD009744.
-    which updates and corrects Warren, S. G. (1984), 'Optical constants of ice from
-    the ultraviolet to the microwave', Appl. Opt., 23, 1206–1225.
-    
+    'Optical constants of ice from the ultraviolet to the microwave: A
+    revised compilation.' J. Geophys. Res., 113, D14220,
+    doi:10.1029/2007JD009744 which updates and corrects Warren, S. G. (1984),
+    'Optical constants of ice from the ultraviolet to the microwave',
+    Appl. Opt., 23, 1206–1225.
+
     The model is valid for temperature = 266 K, thus this parameter is dropped
     Source of the tables https://atmos.washington.edu/ice_optical_constants/
 
@@ -129,7 +160,8 @@ def warren_brandt_2008(frequency):
     Returns
     -------
     nd - complex
-        Relative dielectric constant of ice at the requested frequency and temperature
+        Relative dielectric constant of ice at the requested frequency and
+        temperature
 
     Raises
     ------
@@ -139,12 +171,14 @@ def warren_brandt_2008(frequency):
     """
     if (frequency < 0).any():
         raise ValueError('A negative frequency value has been passed')
-    
+
     return warren_ice_interpolated(frequency)
 
-def matzler_2006(temperature,frequency):
+
+def matzler_2006(temperature, frequency):
     """Ice complex relative dielectric constant according to Matzler (2006)
-    "Thermal Microwave Radiation: application to remote sensing, Chapter 5, pp 456-460"
+    "Thermal Microwave Radiation: application to remote sensing, Chapter 5,
+    pp 456-460"
 
     Parameters
     ----------
@@ -156,7 +190,8 @@ def matzler_2006(temperature,frequency):
     Returns
     -------
     nd - complex
-        Relative dielectric constant of ice at the requested frequency and temperature
+        Relative dielectric constant of ice at the requested frequency and
+        temperature
 
     Raises
     ------
@@ -166,13 +201,19 @@ def matzler_2006(temperature,frequency):
     """
 
     if (frequency < 0).any():
-        raise ValueError('refractive: A negative frequency value has been passed')
+        raise ValueError(
+            'refractive: A negative frequency value has been passed')
     if (temperature < 0).any():
-        raise ValueError('refractive: A negative temperature value has been passed')
-    if (( (frequency < 0.01e9) + (frequency >= 300.0e9) ).any()):
-        raise ValueError('Matzler model for refractive index of ice is valid between 10 MHz and 300 GHz')
+        raise ValueError(
+            'refractive: A negative temperature value has been passed')
+    if (((frequency < 0.01e9) + (frequency >= 300.0e9)).any()):
+        raise ValueError(
+            'Matzler model for refractive index of ice is valid between 10 MHz'
+            ' and 300 GHz')
     if (temperature < 240.).any():
-        raise ValueError('Matzler model for refractive index of ice is only valid above 240 K')
+        raise ValueError(
+            'Matzler model for refractive index of ice is only valid above'
+            ' 240 K')
 
     freqs = frequency*1.0e-9
 
@@ -181,18 +222,18 @@ def matzler_2006(temperature,frequency):
     B2 = 1.16e-11
 #    c = 299792458.
 
-    eps1  = 3.1884+(temperature-273)*9.1e-4
+    eps1 = 3.1884+(temperature-273)*9.1e-4
     theta = 300./temperature-1.
-    alpha =(0.00504+0.0062*theta)*np.exp(-22.1*theta)
-    deltabeta=np.exp(-9.963+0.0372*(temperature-273.16))
-    betaM = B1*np.exp(b/temperature)/(temperature*((np.exp(b/temperature)-1)*(np.exp(b/temperature)-1)))+B2*freqs*freqs
-    beta  = betaM+deltabeta
-    eps2  = alpha/freqs + beta*freqs
+    alpha = (0.00504+0.0062*theta)*np.exp(-22.1*theta)
+    deltabeta = np.exp(-9.963+0.0372*(temperature-273.16))
+    betaM = B1*np.exp(b/temperature)/(temperature*((np.exp(b /
+              temperature)-1)*(np.exp(b/temperature)-1)))+B2*freqs*freqs
+    beta = betaM+deltabeta
+    eps2 = alpha/freqs + beta*freqs
     return eps1 + 1j*eps2
 
-#######################################################################################################
-
-def eps(temperature,frequency,model="Matzler_2006"):
+##############################################################################
+def eps(temperature, frequency, model="Matzler_2006"):
     """Ice complex relative dielectric constant according to the requested model
 
     Parameters
@@ -207,7 +248,8 @@ def eps(temperature,frequency,model="Matzler_2006"):
     Returns
     -------
     nd - complex
-        Relative dielectric constant of ice at the requested frequency and temperature
+        Relative dielectric constant of ice at the requested frequency and 
+        temperature
 
     Raises
     ------
@@ -222,16 +264,18 @@ def eps(temperature,frequency,model="Matzler_2006"):
         temperature = np.asarray(temperature)
 
     if (model == 'Matzler_2006'):
-        return matzler_2006(temperature,frequency)
+        return matzler_2006(temperature, frequency)
     elif (model == 'Warren_2008'):
         return warren_brandt_2008(frequency)
     elif (model == 'Iwabuchi_2011'):
-        return iwabuchi_yang_2011(temperature,frequency)
+        return iwabuchi_yang_2011(temperature, frequency)
     else:
-        print("I do not recognize the ice refractive index specification, falling back to Matzler 2006")
-        return matzler_2006(temperature,frequency)
+        print("I do not recognize the ice refractive index specification,"
+              " falling back to Matzler 2006")
+        return matzler_2006(temperature, frequency)
 
-def n(temperature,frequency,model="Matzler_2006"):
+
+def n(temperature, frequency, model="Matzler_2006"):
     """Ice complex refractive index according to the requested model
 
     Parameters
@@ -254,10 +298,10 @@ def n(temperature,frequency,model="Matzler_2006"):
         If a negative frequency or temperature is passed as an argument
 
     """
-    return np.sqrt(eps(temperature,frequency,model))
+    return np.sqrt(eps(temperature, frequency, model))
+##############################################################################
 
-#######################################################################################################
 
 if __name__ == "__main__":
     import sys
-    n(float(sys.argv[1]),float(sys.argv[2]))
+    n(float(sys.argv[1]), float(sys.argv[2]))
