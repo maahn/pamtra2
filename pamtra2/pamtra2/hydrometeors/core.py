@@ -8,8 +8,60 @@ from .. import units
 
 
 class hydrometeor(object):
-    """
-    generic class to store hydrometeor properties.
+    """generic class to store hydrometeor properties.
+
+        Parameters
+        ----------
+        parent : pamtra2 object
+            content of parent's class
+        name : str, optional
+            name of the hydrometeor
+        kind :  {'liquid', 'ice'}, optional
+            liquid or frozen hydrometeor?
+        nBins : int, optional
+            number of size bins
+        discreteProperties : xr.Dataset, optional
+            pre-calculated discrete properties
+        calculationOrder : optional
+            order for estimating the properties
+        funcArgs : dict, optional
+            additional arguments for the functions describing the hydrometeor
+            default {}.
+        useFuncArgDefaults : bool, optional
+            if parameters are not found in any of funcArgs, discreteProperties,
+            parent's profile, then fall back to default values of the function.
+            Helpful for debugging. default True.
+        **kwargs :
+            All properties of the hydrometeor. Most hydrometeors require at
+            least 'sizeCenter', 'aspectRatio', 'mass', 'density',
+            'crossSectionArea', and 'sizeDistribution'.
+
+        Attributes
+        ----------
+        name : str, optional
+            name of the hydrometeor
+        index : int
+            hydrometeor index in parent
+        kind :  {'liquid', 'ice'}
+            liquid or frozen hydrometeor?
+        nBins : int
+            number of size bins
+        discreteProperties : xr.Dataset
+            calculated discrete properties
+        calculationOrder
+            order for estimating the properties
+        funcArgs : dict
+            additional arguments for the functions describing the hydrometeor
+            default {}.
+        useFuncArgDefaults : bool
+            if parameters are not found in any of funcArgs, discreteProperties,
+            parent's profile, then fall back to default values of the function.
+            Helpful for debugging. default True.
+        description : dict
+            All properties of the hydrometeor. Most hydrometeors require at
+            least 'sizeCenter', 'aspectRatio', 'mass', 'density',
+            'crossSectionArea', and 'sizeDistribution'.
+
     """
     def __init__(
         self,
@@ -45,13 +97,31 @@ class hydrometeor(object):
 
     @property
     def _parentProfile(self):
-        '''
-        Limited version of parent.profile. Contains only data belonging to
+        """Helper function
+
+        Returns
+        -------
+        _parentProfile
+            Limited version of parent.profile. Contains only data belonging to
         the hydrometeor.
-        '''
+        """
         return self._parentFull.profile.sel(hydrometeor=self.name, drop=True)
 
     def _arrayOrFunc(self, thisDesription, **fixedKwargs):
+        """Helper function calling functions if required.
+
+        Parameters
+        ----------
+        thisDesription :
+            function or value or xr.DataArray
+        **fixedKwargs :
+            additional parameters for the function not defined elsewhere
+
+        Returns
+        -------
+        thisProperty
+            value or xr.DataArray
+        """
 
         if callable(thisDesription):
             print('callable')
@@ -94,6 +164,14 @@ class hydrometeor(object):
         return thisProperty
 
     def calculateProperties(self):
+        """Helper function to estimate all discrete properties of a
+         hydrometeor
+
+        Returns
+        -------
+        discreteProperties
+            xr.Dataset with results
+        """
 
         if self.calculationOrder is None:
             self.calculationOrder = self.description.keys()
@@ -119,6 +197,7 @@ class hydrometeor(object):
 
 
 class softEllipsoidFixedDensity(hydrometeor):
+    """hydrometeor class to be used for soft ellipsoids with fixed density."""
 
     def __init__(self, *args, **kwargs):
         if 'calculationOrder' not in kwargs.keys():
@@ -134,6 +213,8 @@ class softEllipsoidFixedDensity(hydrometeor):
 
 
 class softEllipsoidMassSize(hydrometeor):
+    """hydrometeor class to be used for soft ellipsoids with variable
+    density depending on the mass-size relation."""
 
     def __init__(self, *args, **kwargs):
         if 'calculationOrder' not in kwargs.keys():

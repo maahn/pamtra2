@@ -1,20 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from copy import deepcopy
 import numpy as np
 import xarray as xr
 
 from . import helpers
-from . import hydrometeors
-# import json
-# from functools import lru_cache
 
 __version__ = 0.2
 
 
 class profile (xr.Dataset):
-
+    """ """
     def __init__(self,
                  nLayer,
                  hydrometeors,
@@ -62,6 +58,7 @@ class profile (xr.Dataset):
 
 
 class pamtra2(object):
+    """ """
 
     def __init__(
         self,
@@ -89,24 +86,43 @@ class pamtra2(object):
 
     @property
     def nHydrometeors(self):
+        """ """
         return len(self.hydrometeors)
 
     @property
     def nInstruments(self):
+        """ """
         return len(self.instruments)
 
     @property
     def nLayer(self):
+        """ """
         return len(self.profile.layer)
 
     def describeHydrometeor(
         self,
-        hydrometeorConstructor,
+        hydrometeorClass,
         **kwargs,
     ):
+        """
+        Add hydrometeor properties for one hydrometeor. Hydrometeor is added
+        to self.hydrometeors[name]
+
+        Parameters
+        ----------
+        hydrometeorClass :
+            hydrometeor class
+        **kwargs : dict
+            Arguments handed over to hydrometeorClass to initialize class
+
+        Returns
+        -------
+        hydrometeorClass :
+            Evaluated hydrometeor class
+        """
 
         name = kwargs['name']
-        self.hydrometeors[name] = hydrometeorConstructor(
+        self.hydrometeors[name] = hydrometeorClass(
             self,
             **kwargs
         )
@@ -116,9 +132,23 @@ class pamtra2(object):
         return self.hydrometeors[name]
 
     def addInstrument(
+        self,
         name,
         frequencies=[],
     ):
+        """
+
+        Parameters
+        ----------
+        name :
+
+        frequencies :
+             (Default value = [])
+
+        Returns
+        -------
+
+        """
 
         self.frequencies = frequencies
         self.instrumentName = name

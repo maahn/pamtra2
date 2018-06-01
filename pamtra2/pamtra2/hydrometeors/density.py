@@ -7,8 +7,25 @@ from .. import constants
 
 def softEllipsoid(sizeCenter, aspectRatio, mass, minDensity=100,
                   maxDensity=constants.rhoIce):
-    """
-    oblate (AspectRatio <1) or prolate (asectRatio >0) soft spheres
+    """oblate (AspectRatio <1) or prolate (asectRatio >0) soft spheres
+
+    Parameters
+    ----------
+    sizeCenter : array_like
+        particle size at center of size bin
+    aspectRatio : array_like
+        particle aspect ratio
+    mass : array_like
+        particle mass
+    minDensity : float
+         minimal density (Default value = 100)
+    maxDensity : float
+         maximum density (Default value = constants.rhoIce)
+
+    Returns
+    -------
+    density : array_like
+        density of hydrometeor
     """
 
     if np.all(aspectRatio <= 1):
@@ -37,8 +54,25 @@ def softEllipsoid(sizeCenter, aspectRatio, mass, minDensity=100,
 
 def softOblateEllipsoid(sizeCenter, aspectRatio, mass, minDensity=100,
                         maxDensity=constants.rhoIce):
-    """
-    oblate (AspectRatio <1)  soft spheres
+    """oblate (AspectRatio <1)  soft spheres
+
+    Parameters
+    ----------
+    sizeCenter : array_like
+        particle size at center of size bin
+    aspectRatio : array_like
+        particle aspect ratio
+    mass : array_like
+        particle mass
+    minDensity : float
+         minimal density (Default value = 100)
+    maxDensity : float
+         maximum density (Default value = constants.rhoIce)
+
+    Returns
+    -------
+    density : array_like
+        density of hydrometeor
     """
     density = (6. * mass) / (np.pi * sizeCenter**3. * aspectRatio)
 
@@ -50,8 +84,25 @@ def softOblateEllipsoid(sizeCenter, aspectRatio, mass, minDensity=100,
 
 def softProlateEllipsoid(sizeCenter, aspectRatio, mass, minDensity=100,
                          maxDensity=constants.rhoIce):
-    """
-    prolate (asectRatio >0) soft spheres
+    """prolate (asectRatio >0) soft spheres
+
+    Parameters
+    ----------
+    sizeCenter : array_like
+        particle size at center of size bin
+    aspectRatio : array_like
+        particle aspect ratio
+    mass : array_like
+        particle mass
+    minDensity : float
+         minimal density (Default value = 100)
+    maxDensity : float
+         maximum density (Default value = constants.rhoIce)
+
+    Returns
+    -------
+    density : array_like
+        density of hydrometeor
     """
     density = (6. * mass * aspectRatio ** 2.) / (np.pi * sizeCenter**3.)
 
@@ -63,73 +114,3 @@ def softProlateEllipsoid(sizeCenter, aspectRatio, mass, minDensity=100,
 
 water = constants.rhoWater
 ice = constants.rhoIce
-
-# # -*- coding: utf-8 -*-
-# import numpy as np
-# from .. import constants
-
-# def softSphere(sizeCenter,aspectRatio,mass=None,minDensity=100,maxDensity=constants.rhoIce):
-#   """
-#   oblate (AspectRatio <1) or prolate (asectRatio >0) soft spheres
-#   """
-  
-#   massArr = np.zeros(sizeCenter.shape) * np.nan
-#   if callable(mass[0]):
-#       print('callable')
-#       func, kwargs = mass
-#       args = [sizeCenter]
-#       massArr[:] = func(*args, **kwargs)
-#   else:
-#       print('not callable',mass)
-#       massArr[:] = mass
-
-#   densityArr = np.zeros(sizeCenter.shape) * np.nan
-#   densityArr[aspectRatio<=1] = (6. * massArr[aspectRatio<=1]) / (np.pi *  sizeCenter[aspectRatio<=1]**3. * aspectRatio[aspectRatio<=1])
-#   densityArr[aspectRatio>1] = (6. * massArr[aspectRatio>1] * aspectRatio[aspectRatio>1]**2.) / (np.pi *  sizeCenter[aspectRatio>1]**3.)
-
-#   densityArr[densityArr<minDensity] = minDensity
-#   densityArr[densityArr>maxDensity] = maxDensity
-
-#   return densityArr, massArr
-
-
-# def solidSphere(sizeCenter,aspectRatio, density=None):
-
-#   if not np.any(aspectRatio!=1):
-#     raise NotImplementedError('aspectRatio != 1 not implemented yet!')
-
-#   densityArr = np.zeros(sizeCenter.shape) * np.nan
-#   densityArr[:] = density
-
-#   massSizeA = np.pi/6 * densityArr
-#   massSizeB = 3.
-
-#   massArr =  massSizePowerLaw(sizeCenter,massSizeA,massSizeB)
-
-#   return densityArr, massArr
-
-
-# def massSizePowerLaw(sizeCenter,massSizeA=None,massSizeB=None):
-#   """
-#   classical mass size relation as power law
-
-#   Parameters
-#   ----------
-#   sizeCenter : array_like
-#     particle size at center of size bin
-#   massSizeA : array_like
-#     mass size pre factor
-#   massSizeB : float or array_like
-#     mass size exponent
-
-#   Returns
-#   -------
-
-#   m : array
-#     particle mass
-#   """
-
-#   m = massSizeA*sizeCenter**massSizeB
-
-#   return m
-
