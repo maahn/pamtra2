@@ -40,7 +40,6 @@ class Rayleigh(Scatterer):
     def __init__(self,
                  diameter = 1.0e-3,
                  frequency = None,
-                 wavelength = None,
                  refractive_index=None,
                  dielectric_permittivity=None,
                  theta_inc = 0.0,
