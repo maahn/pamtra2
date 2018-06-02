@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+import collections
 from copy import deepcopy
 
 from . import decorators
@@ -34,3 +35,22 @@ def concatDicts(*dicts):
     for dd in range(1, len(dicts)):
         dMerged.update(dicts[dd])
     return dMerged
+
+
+def swapListItems(li, i1, i2):
+    '''
+    Swap i1 and i2 of li.
+    '''
+    li = deepcopy(li)
+    a = li.index(i1)
+    b = li.index(i2)
+    li[b], li[a] = li[a], li[b]
+
+    return li
+
+
+class AttrDict(collections.OrderedDict):
+    """Dictionary accesible through attributes"""
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self

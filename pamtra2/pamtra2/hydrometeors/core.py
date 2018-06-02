@@ -5,6 +5,18 @@ import xarray as xr
 import inspect
 
 from .. import units
+from .. import helpers
+
+def DEFAULT_CALCULATION_ORDER():
+    return [
+                'sizeCenter',
+                'aspectRatio',
+                'density',
+                'mass',
+                'crossSectionArea',
+                'sizeDistribution',
+                'dielectricConstant',
+                ]
 
 
 class hydrometeor(object):
@@ -66,32 +78,28 @@ class hydrometeor(object):
     def __init__(
         self,
         parent,
-        name=None,  # or None, then str(index)
-        kind=None,  # liquid, ice
+        name= None,
         nBins=None,
         discreteProperties=None,
         calculationOrder=None,
-        funcArgs={},
         useFuncArgDefaults=True,
         **kwargs
     ):
 
-        self.name = name
-        self.kind = kind
-        self.nBins = nBins
+        self._nBins = nBins
         self.calculationOrder = calculationOrder
-        self.funcArgs = funcArgs
+        # self.funcArgs = funcArgs
         self.useFuncArgDefaults = useFuncArgDefaults
         self.description = kwargs
-
+        self.name = name
         self.index = np.where(parent.profile.hydrometeor.values == name)[0][0]
         self._parentFull = parent
 
         if discreteProperties is None:
             discreteProperties = xr.Dataset(
-                    coords=dict(sizeBin=range(self.nBins))
+                    coords=dict(sizeBin=range(self._nBins))
                     )
-        self.discreteProperties = discreteProperties
+        self.profile = discreteProperties
 
         return
 
@@ -107,7 +115,7 @@ class hydrometeor(object):
         """
         return self._parentFull.profile.sel(hydrometeor=self.name, drop=True)
 
-    def _arrayOrFunc(self, thisDesription, **fixedKwargs):
+    def _arrayOrFunc(self, thisKey, thisDesription, **fixedKwargs):
         """Helper function calling functions if required.
 
         Parameters
@@ -141,12 +149,14 @@ class hydrometeor(object):
             # where do we find the required data?
             kw4Func = {}
             for k in funcArgs:
-                if k in self.funcArgs.keys():
-                    kw4Func[k] = self.funcArgs[k]
-                elif k in self.discreteProperties.keys():
-                    kw4Func[k] = self.discreteProperties[k]
+                # if k in self.funcArgs.keys():
+                #     kw4Func[k] = self.funcArgs[k]
+                if k in self.profile.keys():
+                    kw4Func[k] = self.profile[k]
                 elif k in self._parentProfile.keys():
                     kw4Func[k] = self._parentProfile[k]
+                elif k in self.description.keys():
+                    kw4Func[k] = self.description[k]
                 elif k in fixedKwargs.keys():
                     kw4Func[k] = fixedKwargs[k]
                 elif self.useFuncArgDefaults and (k in funcDefaults.keys()):
@@ -174,26 +184,32 @@ class hydrometeor(object):
         """
 
         if self.calculationOrder is None:
-            self.calculationOrder = self.description.keys()
+            self.calculationOrder = DEFAULT_CALCULATION_ORDER()
+
+        for key in self.description.keys():
+            if key not in self.calculationOrder:
+                self.calculationOrder.append(key)
+            self.description.keys()
 
         for key in self.calculationOrder:
+
             value = self.description[key]
             print(key, value)
 
-            thisProperty = self._arrayOrFunc(value, nBins=self.nBins)
+            thisProperty = self._arrayOrFunc(key,value, nBins=self._nBins)
             if (key == 'sizeCenter') and 'coords' not in dir(value):
                 thisProperty = xr.DataArray(
                     thisProperty,
-                    coords=[self.discreteProperties.sizeBin]
+                    coords=[self.profile.sizeBin]
                     )
 
-            self.discreteProperties[key] = thisProperty
+            self.profile[key] = thisProperty
 
-            self.discreteProperties[key].attrs.update(
+            self.profile[key].attrs.update(
                 {'unit': units.units[key]}
                 )
 
-        return self.discreteProperties
+        return self.profile
 
 
 class softEllipsoidFixedDensity(hydrometeor):
@@ -201,15 +217,7 @@ class softEllipsoidFixedDensity(hydrometeor):
 
     def __init__(self, *args, **kwargs):
         if 'calculationOrder' not in kwargs.keys():
-            kwargs['calculationOrder'] = [
-                'sizeCenter',
-                'aspectRatio',
-                'density',
-                'mass',
-                'crossSectionArea',
-                'sizeDistribution',
-                'refractiveIndex'
-                ]
+            kwargs['calculationOrder'] = DEFAULT_CALCULATION_ORDER()
         return super().__init__(*args, **kwargs)
 
 
@@ -219,13 +227,10 @@ class softEllipsoidMassSize(hydrometeor):
 
     def __init__(self, *args, **kwargs):
         if 'calculationOrder' not in kwargs.keys():
-            kwargs['calculationOrder'] = [
-                'sizeCenter',
-                'aspectRatio',
+            kwargs['calculationOrder'] = helpers.swapListItems(
+                DEFAULT_CALCULATION_ORDER(),
                 'mass',
-                'density',
-                'crossSectionArea',
-                'sizeDistribution',
-                'refractiveIndex'
-                ]
+                'density'
+                )
+
         return super().__init__(*args, **kwargs)

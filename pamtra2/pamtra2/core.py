@@ -112,7 +112,7 @@ class pamtra2(object):
           additionalDims=additionalDims
         )
         self.additionalDims = additionalDims
-        self.hydrometeors = OrderedDict()
+        self.hydrometeors = helpers.AttrDict()
         for hh in hydrometeors:
             self.hydrometeors[hh] = None
 

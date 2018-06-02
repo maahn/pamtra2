@@ -1,31 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import warnings
+import collections
 
 """
 Central location for all units
 """
 
 
-class unitDict(dict):
-    '''
-    dict class which returns a default value instead of the item if the
-    key does not exist
-    '''
-
-    def __init__(self, *args, **kwargs):
-        self.default = 'n/a'
-        return super().__init__(*args, **kwargs)
-
-    def __getitem__(self, key):
-        try:
-            return super().__getitem__(key)
-        except KeyError:
-            warnings.warn("no units found for %s." % key)
-            return self.default
-
-
-units = unitDict(
+units = collections.defaultdict(
+    lambda: 'n/a',
     {
         'aspectRatio': '-',
         'crossSectionArea': 'm^2',
