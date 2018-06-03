@@ -15,7 +15,7 @@
 
 #include <complex.h>
 
-int Mie(double x, double complex m, int nt, double Theta[], double complex S1[],double complex S2[]);
+int Mie(double x, double complex m, int nt, double Theta[], double complex S1[], double complex S2[], double Q[]);
 
 int Nmax(double x, double complex m);
 

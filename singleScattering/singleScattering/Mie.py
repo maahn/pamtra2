@@ -22,6 +22,9 @@ Mie spherical scatterer object and member functions
 """
 
 from .scatterer import Scatterer
+from singleScattering import cMie
+
+import numpy as np
 
 try:
     from refractiveIndex import utilities as ref_utils
@@ -29,7 +32,7 @@ except:
     sys.path.append('../../refractiveIndex/')
     from refractiveIndex import utilities as ref_utils
 
-class Mie(Scatterer):
+class MieScatt(Scatterer):
     """
     This is class implement the Mie model of scattering for a sphere
     """
@@ -37,8 +40,8 @@ class Mie(Scatterer):
                  diameter = 1.0e-3,
                  frequency = None,
                  wavelength = None,
-                 refractive_index=None,
-                 dielectric_permittivity=None,
+                 refractive_index = None,
+                 dielectric_permittivity = None,
                  theta_inc = 0.0,
                  phi_inc = 0.0,
                  theta_sca = 0.0,
@@ -47,13 +50,27 @@ class Mie(Scatterer):
         Scatterer.__init__(self,
                            diameter = diameter,
                            frequency = frequency,
-                           refractive_index=refractive_index,
-                           dielectric_permittivity=dielectric_permittivity,
+                           wavelength = wavelength,
+                           refractive_index = refractive_index,
+                           dielectric_permittivity = dielectric_permittivity,
                            theta_inc = theta_inc,
                            phi_inc = phi_inc,
                            theta_sca = theta_sca,
                            phi_sca = phi_sca)
 
         print('I am a Mie instance')
-        raise NotImplementedError('Mie is not implemented yet')
+        self.geometric_cross_section = np.pi*self.diameter*self.diameter*0.25
+        self.K = ref_utils.K(self.dielectric_permittivity)
+        
+        Q = cMie.mie(self.wavelength,self.diameter,self.refractive_index)
+        
+        self.Cext = Q[0]*self.geometric_cross_section
+        self.Csca = Q[1]*self.geometric_cross_section
+        self.Cabs = Q[2]*self.geometric_cross_section
+        self.Cbck = Q[3]*self.geometric_cross_section
+        
+        #self.S1 = -1.5j*self.size_parameter**3.0
+        #self.S2 = self.S1*np.cos(self.scatt_angle)
+        #self.S3 = 0.0
+        #self.S4 = 0.0
 

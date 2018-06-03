@@ -43,9 +43,13 @@ def mie(double_t wavelength, double_t size, complex_t m):
     S1 = np.zeros(nt, dtype=np.complex128)
     cdef np.ndarray[dtype=complex_t, ndim=1, mode="c"] S2
     S2 = np.zeros(nt, dtype=np.complex128)
-    c_Mie.Mie(x, m, nt, <double*>theta.data, <double complex*> S1.data, <double complex*> S2.data)
-    print(S1[0],S2[0])
-    print(S1[-1],S2[-1])
+    cdef np.ndarray[dtype=double_t, ndim=1, mode="c"] Q
+    Q = np.zeros(4, dtype='d')
+    c_Mie.Mie(x, m, nt, <double*>theta.data, <double complex*> S1.data, <double complex*> S2.data, <double*>Q.data)
+#    print(S1[0],S2[0])
+#    print(S1[-1],S2[-1])
+    print(Q[0],Q[1],Q[2],Q[3])
+    return Q
 
 def mie_coated(np.ndarray[dtype= double_t,ndim=1,mode='c'] x,
                np.ndarray[dtype=complex_t,ndim=1,mode='c'] m):

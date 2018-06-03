@@ -30,8 +30,8 @@ consistently call ice, water or snow refractive index modules
 Example
 -------
     $ python
-    >>> import refractive
-    >>> refractive.n(temperatures, frequencies, **kwargs)
+    >>> import refractiveIndex
+    >>> refractiveIndex.n(temperatures, frequencies, **kwargs)
 
 and returns the complex refractive index of ice at the requested
 Temperature [Kelvin] and Frequency [Hz]

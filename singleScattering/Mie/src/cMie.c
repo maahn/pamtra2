@@ -29,12 +29,17 @@
    __typeof__ (b) _b = (b); \
    _a < _b ? _a : _b; })
 
-int Mie(double x, double complex m, int nt, double Theta[], double complex S1[],double complex S2[]) {
+int Mie(double x, double complex m, int nt, double Theta[], double complex S1[], double complex S2[], double Q[]) {
+    // This is actually just a wrapper function around calc_Mie that does not do anything particular so far, but it helps for fast changig of I/O parameters
     //double Theta[MAXTHETA];
     //double complex S1[MAXTHETA], S2[MAXTHETA];
     double Qext, Qabs, Qsca, Qbk;
     //int nt = 0;
     int Nmax = calc_Mie(x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, S1, S2);
+    Q[0] = Qext;
+    Q[1] = Qsca;   
+    Q[2] = Qabs;
+    Q[3] = Qbk;
     return Nmax;
 }
 
@@ -91,7 +96,7 @@ int calc_Mie(double x, double complex m, int nTheta, double Theta[], double *Qex
 
     // Initialize Pi, Tau and the scattering amplitudes
     for (t=0; t<nTheta; t++) {
-        printf("Init Pi, Tau, S1 and S2 arrays ntheta \n");
+        //printf("Init Pi, Tau, S1 and S2 arrays ntheta \n");
         Pi[0][t] = 0.0;
         Tau[0][t] = 0.0;
         S1[t] = 0.0*I;
@@ -154,7 +159,7 @@ int calc_Mie(double x, double complex m, int nTheta, double Theta[], double *Qex
   // scattering parameters                                               //
   //*********************************************************************//
 
-    calc_scatt_prop();
+    // calc_scatt_prop(); // I want to move the actual scattering properties into a function so that it is easier to extend
 
     x2 = x*x;
     anP1 = calc_an(1, x, Ha[1][1], m, PsiXL[1], ZetaXL[1], PsiXL[0], ZetaXL[0]);

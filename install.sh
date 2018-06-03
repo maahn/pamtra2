@@ -40,7 +40,7 @@ cd pyPamtraRadarMoments
 $PYTHON setup.py install $FLAGS
 cd ../
 
-cd pyPamtra2
+cd pamtra2
 $PYTHON setup.py install $FLAGS
 cd ../
 

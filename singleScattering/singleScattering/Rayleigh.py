@@ -32,14 +32,16 @@ except:
     sys.path.append('../../refractiveIndex/')
     from refractiveIndex import utilities as ref_utils
 
-class Rayleigh(Scatterer):
+class RayleighScatt(Scatterer):
     """
     This is class implement the Rayleigh model of scattering for a sphere
     No check is performed to the actual validity of the Rayleigh approximation
     """
+    
     def __init__(self,
                  diameter = 1.0e-3,
                  frequency = None,
+                 wavelength = None,
                  refractive_index=None,
                  dielectric_permittivity=None,
                  theta_inc = 0.0,
@@ -50,6 +52,7 @@ class Rayleigh(Scatterer):
         Scatterer.__init__(self,
                            diameter = diameter,
                            frequency = frequency,
+                           wavelength = wavelength,
                            refractive_index=refractive_index,
                            dielectric_permittivity=dielectric_permittivity,
                            theta_inc = theta_inc,

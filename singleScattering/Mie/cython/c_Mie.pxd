@@ -19,5 +19,5 @@
 # Here we make a wrapper to the functions we want to call from cython
 
 cdef extern from "../src/cMie.h":
-    int Mie(double x, double complex m, int nt, double theta[], double complex S1[], double complex S2[]);
+    int Mie(double x, double complex m, int nt, double theta[], double complex S1[], double complex S2[], double Q[]);
     
