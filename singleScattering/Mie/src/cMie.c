@@ -198,7 +198,7 @@ int calc_Mie(double x, double complex m, int nTheta, double Theta[], double *Qex
     *Qsca = 2*(*Qsca)/x2;                                 // Equation (28)
     *Qabs = *Qext - *Qsca;                                // Equation (30)
     *Qbk = (creal(Qbktmp)*creal(Qbktmp) + cimag(Qbktmp)*cimag(Qbktmp))/x2;    // Equation (33) last norm and xl
-    printf("%+.5e, %+.5e, %+.5e, %+.5e\n", *Qext, *Qsca, *Qabs, *Qbk);
+    //printf("%+.5e, %+.5e, %+.5e, %+.5e\n", *Qext, *Qsca, *Qabs, *Qbk);
     return maxN;
 }
 

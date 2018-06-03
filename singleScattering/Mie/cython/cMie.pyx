@@ -31,10 +31,10 @@ ctypedef np.complex128_t complex_t
 
 #def mie(double_t x, complex_t m):#double_t wl,double_t size,complex_t m, th=None):
 def mie(double_t wavelength, double_t size, complex_t m):
-    print('I am python3 c cmie and refractive index is ',m,' and wl is ',wavelength,' and size is ', size)
+    #print('I am python3 c cmie and refractive index is ',m,' and wl is ',wavelength,' and size is ', size)
     cdef double_t x
     x=np.pi*size/wavelength
-    print('I am python3 c cmie and refractive index is ',m,' and x is ',x)
+    #print('I am python3 c cmie and refractive index is ',m,' and x is ',x)
     cdef int_t nt
     nt = 180
     cdef np.ndarray[dtype=double_t, ndim=1, mode="c"] theta
@@ -48,7 +48,7 @@ def mie(double_t wavelength, double_t size, complex_t m):
     c_Mie.Mie(x, m, nt, <double*>theta.data, <double complex*> S1.data, <double complex*> S2.data, <double*>Q.data)
 #    print(S1[0],S2[0])
 #    print(S1[-1],S2[-1])
-    print(Q[0],Q[1],Q[2],Q[3])
+#    print(Q[0],Q[1],Q[2],Q[3])
     return Q
 
 def mie_coated(np.ndarray[dtype= double_t,ndim=1,mode='c'] x,

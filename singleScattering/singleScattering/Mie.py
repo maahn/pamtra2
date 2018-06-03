@@ -58,7 +58,7 @@ class MieScatt(Scatterer):
                            theta_sca = theta_sca,
                            phi_sca = phi_sca)
 
-        print('I am a Mie instance')
+        #print('I am a Mie instance')
         self.geometric_cross_section = np.pi*self.diameter*self.diameter*0.25
         self.K = ref_utils.K(self.dielectric_permittivity)
         
