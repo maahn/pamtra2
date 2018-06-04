@@ -155,7 +155,7 @@ def skin_depth(frequency=None, wavelength=None,
     if (wavelength is not None):
         return wavelength/(m.imag*2.0*np.pi)
     if (frequency is not None):
-        wl=speed_of_light/frequency
+        wl=utilities.speed_of_light/frequency
         return wl/(m.imag*2.0*np.pi)
 
 def magnetic2electric_ratio(size=None, frequency=None, wavelength=None, 
