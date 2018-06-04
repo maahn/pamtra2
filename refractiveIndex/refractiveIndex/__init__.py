@@ -40,4 +40,4 @@ model and raises ValueError in case they are not respected
 
 """
 
-from .core import n, eps
+from .core import *

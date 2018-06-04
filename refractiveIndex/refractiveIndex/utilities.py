@@ -26,9 +26,8 @@ radar dielectric factor K2 which is of great importance in radar applications
 
 """
 
+from __future__ import absolute_import
 import numpy as np
-
-from . import core
 
 speed_of_light = 299792458.0
 
@@ -86,47 +85,4 @@ def K2(eps):
     K_complex = (eps-1.0)/(eps+2.0)
     return (K_complex*K_complex.conj()).real
 
-def mk(frequency=None, wavelength=None, 
-       refractive_index=None, substance=None, **kwargs):
-    """ Interaction depth
-        Inverse of a distance [meters]
-        It is the first part of the |m|kd criterion for the DDA validity
-    """
-    m = refractive_index
-    if (m is None):
-        m = core.n(substance=substance,frequencies=frequency,**kwargs)
-    return np.abs(m)*wavenumber(frequency,wavelength)
-  
-def skin_depth(frequency=None, wavelength=None, 
-               refractive_index=None, substance=None, **kwargs):
-    """ Skin depth in the material
-        Distance [meters] that takes to the electric field to change due to the
-        presence of the dielectric material according to Draine [1988]
-    """
-    m = refractive_index
-    if (refractive_index is None):
-        m = core.n(substance=substance,frequencies=frequency,**kwargs)
-    
-    if (wavelength is not None):
-        return wavelength/m.imag
-    if (frequency is not None):
-        wl=speed_of_light/frequency
-        return wl/m.imag
 
-def magnetic2electric_ratio(size=None, frequency=None, wavelength=None, 
-                            refractive_index=None, substance=None, **kwargs):
-    """ Ratio between the absorption cross section due to magnetic dipoles and
-        absorption due to electric dipoles. It must be small for the validity of
-        the DDA algorithm which does not consider magnetic moments.
-        Approximate formulation according to Draine and Lee [1984]
-    """
-    if (size is None):
-        raise AttributeError('You must provide the size of the dipole')
-
-    m = refractive_index
-    if (m is None):
-        m = core.n(substance=substance,frequencies=frequency,**kwargs)
-    eps = n2eps(m)
-
-    k = wavenumber(frequency, wavelength)
-    return (k*size)**2.0 * ((eps.real)**2.0 + eps.imag**2.0)/90.0

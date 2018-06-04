@@ -93,7 +93,6 @@ def n(substance, temperatures, frequencies, **kwargs):
     return np.sqrt(eps(substance, temperatures, frequencies, **kwargs))
 
 
-# model=None, model_ice=None, model_mix=None, densities=None):
 def eps(substance, temperatures, frequencies, **kwargs):
     """Complex relative dielectric permittivity of the requested substance
         according to the requested specifications
@@ -129,3 +128,52 @@ def eps(substance, temperatures, frequencies, **kwargs):
                              "valid substance I can only compute"
                              " dielectric properties of %s" % (
                                 substance, substances_list))
+
+################################################################################
+
+def mk(frequency=None, wavelength=None, 
+       refractive_index=None, substance=None, **kwargs):
+    """ Interaction depth
+        Inverse of a distance [meters]
+        It is the first part of the |m|kd criterion for the DDA validity
+    """
+    m = refractive_index
+    if (m is None):
+        m = n(substance=substance,frequencies=frequency,**kwargs)
+    return np.abs(m)*utilities.wavenumber(frequency,wavelength)
+  
+def skin_depth(frequency=None, wavelength=None, 
+               refractive_index=None, substance=None, **kwargs):
+    """ Skin depth in the material
+        Distance [meters] that takes to the electric field to change due to the
+        presence of the dielectric material according to Draine [1988]
+    """
+    m = refractive_index
+    if (refractive_index is None):
+        m = n(substance=substance,frequencies=frequency,**kwargs)
+    
+    if (wavelength is not None):
+        return wavelength/(m.imag*2.0*np.pi)
+    if (frequency is not None):
+        wl=speed_of_light/frequency
+        return wl/(m.imag*2.0*np.pi)
+
+def magnetic2electric_ratio(size=None, frequency=None, wavelength=None, 
+                            refractive_index=None, substance=None, **kwargs):
+    """ Ratio between the absorption cross section due to magnetic dipoles and
+        absorption due to electric dipoles. It must be small for the validity of
+        the DDA algorithm which does not consider magnetic moments.
+        Approximate formulation according to Draine and Lee [1984]
+    """
+    if (size is None):
+        raise AttributeError('You must provide the size of the dipole')
+
+    m = refractive_index
+    if (m is None):
+        m = n(substance=substance,frequencies=frequency,**kwargs)
+    eps = utilities.n2eps(m)
+
+    k = utilities.wavenumber(frequency, wavelength)
+    return (k*size)**2.0 * ((eps.real)**2.0 + eps.imag**2.0)/90.0
+
+
