@@ -4,7 +4,10 @@ from __future__ import division, absolute_import, print_function
 import numpy as np
 import scipy.special
 
-# all functions have to accept hydrometeor size as first parameter
+# input names are not arbritrary and have to follow Pamtra2 defaults!
+
+# if this is too slow think about implementing @vectorize
+# https://numba.pydata.org/numba-doc/dev/user/vectorize.html
 
 from . import mass
 

@@ -14,6 +14,7 @@ units = collections.defaultdict(
         'aspectRatio': '-',
         'crossSectionArea': 'm^2',
         'density': 'kg/m^3',
+        'frequency': 'Hz',
         'height': 'm',
         'horizontalWind': 'm/s',
         'mass': 'kg',
@@ -23,5 +24,6 @@ units = collections.defaultdict(
         'sizeCenter': 'm',
         'temperature': 'K',
         'verticalWind': 'm/s',
+        'wavelenght': 'm',
     }
 )

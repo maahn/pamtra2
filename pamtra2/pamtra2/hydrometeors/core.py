@@ -7,6 +7,7 @@ import inspect
 from .. import units
 from .. import helpers
 
+
 def DEFAULT_CALCULATION_ORDER():
     return [
                 'sizeCenter',
@@ -15,7 +16,8 @@ def DEFAULT_CALCULATION_ORDER():
                 'mass',
                 'crossSectionArea',
                 'sizeDistribution',
-                'dielectricConstant',
+                'refractiveIndex',
+                'scattering',
                 ]
 
 
@@ -78,7 +80,7 @@ class hydrometeor(object):
     def __init__(
         self,
         parent,
-        name= None,
+        name=None,
         nBins=None,
         discreteProperties=None,
         calculationOrder=None,
@@ -94,6 +96,7 @@ class hydrometeor(object):
         self.name = name
         self.index = np.where(parent.profile.hydrometeor.values == name)[0][0]
         self._parentFull = parent
+        self.coords = parent.coords
 
         if discreteProperties is None:
             discreteProperties = xr.Dataset(
@@ -102,6 +105,27 @@ class hydrometeor(object):
         self.profile = discreteProperties
 
         return
+
+    def getProfileAllBroadcasted(self, variables=None, sel={}):
+        if variables is None:
+            return xr.broadcast(self.profile.sel(**sel))[0]
+        else:
+            return xr.broadcast(self.profile.sel(**sel)[variables])[0]
+
+    def getProfileWithParentAllBroadcasted(
+        self,
+        variables=None,
+        parentVariables=None,
+        exclude=[],
+    ):
+        profile = self.getProfileAllBroadcasted(variables)
+        parent = self._parentFull.getProfileAllBroadcasted(
+            parentVariables,
+            sel={'hydrometeor': self.name},
+            )
+        profile, parent = xr.broadcast(profile, parent, exclude=exclude)
+        merged = xr.merge((profile, parent))
+        return merged
 
     @property
     def _parentProfile(self):
@@ -196,7 +220,7 @@ class hydrometeor(object):
             value = self.description[key]
             print(key, value)
 
-            thisProperty = self._arrayOrFunc(key,value, nBins=self._nBins)
+            thisProperty = self._arrayOrFunc(key, value, nBins=self._nBins)
             if (key == 'sizeCenter') and 'coords' not in dir(value):
                 thisProperty = xr.DataArray(
                     thisProperty,
@@ -208,8 +232,32 @@ class hydrometeor(object):
             self.profile[key].attrs.update(
                 {'unit': units.units[key]}
                 )
+        self._postProcessing()
 
         return self.profile
+
+    def _postProcessing(self):
+        """
+        clean up 'artificial' dimensions required becaus xr.apply_ufunc cannot
+        return multiple items.
+        """
+        variables = ['extinctionCrossSection', 'scatterCrossSection',
+                     'absorptionCrossSection', 'backscatterCrossSection']
+        scatteringProperty = helpers.dimensionToVariables(
+            self.profile.scattering,
+            'scatteringProperty',
+            variables
+            )
+
+        for key in scatteringProperty.keys():
+            scatteringProperty[key].attrs.update(
+                {'unit': units.units[key]}
+                )
+
+        self.profile = self.profile.drop('scattering')
+        self.profile.merge(scatteringProperty, inplace=True)
+
+        return
 
 
 class softEllipsoidFixedDensity(hydrometeor):

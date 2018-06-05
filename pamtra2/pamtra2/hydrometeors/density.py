@@ -2,7 +2,8 @@
 import numpy as np
 from .. import constants
 
-# All functions must accept sizeCenter,aspectRatio,mass as input.
+# input names are not arbritrary and have to follow Pamtra2 defaults!
+
 
 
 def softEllipsoid(sizeCenter, aspectRatio, mass, minDensity=100,

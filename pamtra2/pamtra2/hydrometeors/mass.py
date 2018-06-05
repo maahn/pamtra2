@@ -3,8 +3,10 @@ import numpy as np
 
 from .. import constants
 
-# all functions have to accept hydrometeor size as first parameter.
-# NOT Soft sphere function must also accept  aspectRatio anddensity)
+# input names are not arbritrary and have to follow Pamtra2 defaults!
+
+# if this is too slow think about implementing @vectorize
+# https://numba.pydata.org/numba-doc/dev/user/vectorize.html
 
 powerLawLiquidPrefactor = np.pi/6 * constants.rhoWater
 powerLawIcePrefactor = np.pi/6 * constants.rhoIce

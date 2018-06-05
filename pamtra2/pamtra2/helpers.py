@@ -2,6 +2,7 @@
 import numpy as np
 import collections
 from copy import deepcopy
+import xarray as xr
 
 from . import decorators
 
@@ -54,3 +55,11 @@ class AttrDict(collections.OrderedDict):
     def __init__(self, *args, **kwargs):
         super(AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
+
+
+def dimensionToVariables(darray, dimension, variables):
+    profile = {}
+    for ii, var in enumerate(variables):
+        profile[var] = darray.isel(**{dimension: ii})
+    profile = xr.Dataset(profile)
+    return profile

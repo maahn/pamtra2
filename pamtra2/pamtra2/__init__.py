@@ -6,5 +6,9 @@ from .core import __version__
 from .core import *
 
 from . import hydrometeors
+from . import scattering4Pamtra
+from . import dimensions
+from . import helpers
+from . import units
 
 # from .core2 import *

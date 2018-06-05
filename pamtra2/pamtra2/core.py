@@ -7,6 +7,7 @@ import xarray as xr
 from . import helpers
 from . import units
 from . import dimensions
+from . import constants
 
 __version__ = 0.2
 
@@ -15,6 +16,7 @@ class customProfile (xr.Dataset):
     """ """
     def __init__(
       self,
+      parent,
       profileVars=[],
       nLayer=None,
       hydrometeors=None,
@@ -26,25 +28,12 @@ class customProfile (xr.Dataset):
             self = profileVars
             return
         else:
-
-            coords = {}
-            coords[dimensions.ADDITIONAL] = OrderedDict(additionalDims)
-            coords[dimensions.LAYER] = OrderedDict(layer=range(nLayer))
-            coords[dimensions.HYDROMETEOR] = OrderedDict(
-              hydrometeor=hydrometeors)
-            coords[dimensions.FREQUENCY] = OrderedDict(frequency=frequencies)
-
-            coordsAll = helpers.concatDicts(
-              coords[dimensions.ADDITIONAL],
-              coords[dimensions.LAYER],
-              coords[dimensions.HYDROMETEOR],
-              coords[dimensions.FREQUENCY],
-              )
-
-            super().__init__(coords=coordsAll)
+            super().__init__(coords=parent.coords['all'])
 
             for var, coord, dtype in profileVars:
-                coord = helpers.concatDicts(*map(lambda x: coords[x], coord))
+                coord = helpers.concatDicts(
+                  *map(lambda x: parent.coords[x], coord)
+                  )
                 thisShape = tuple(map(len, coord.values()))
                 self[var] = xr.DataArray(
                     (np.zeros(thisShape)*np.nan).astype(dtype),
@@ -52,6 +41,8 @@ class customProfile (xr.Dataset):
                     dims=coord.keys(),
                     attrs={'unit': units.units[var]},
                 )
+
+            self['wavelength'] = constants.speedOfLight/self.frequency
 
             return
 
@@ -93,6 +84,11 @@ class pamtra2(object):
           np.float64
           ),
         (
+          'eddyDissipationRate',
+          [dimensions.ADDITIONAL, dimensions.LAYER],
+          np.float64
+          ),
+        (
           'waterContent',
           [dimensions.ADDITIONAL, dimensions.LAYER, dimensions.HYDROMETEOR],
           np.float64
@@ -104,7 +100,24 @@ class pamtra2(object):
       additionalDims={},
     ):
 
+        self.coords = {}
+        self.coords[dimensions.ADDITIONAL] = OrderedDict(additionalDims)
+        self.coords[dimensions.LAYER] = OrderedDict(layer=range(nLayer))
+        self.coords[dimensions.HYDROMETEOR] = OrderedDict(
+          hydrometeor=hydrometeors)
+        self.coords[dimensions.FREQUENCY] = OrderedDict(
+          frequency=frequencies)
+
+        self.coords['all'] = helpers.concatDicts(
+          self.coords[dimensions.ADDITIONAL],
+          self.coords[dimensions.LAYER],
+          self.coords[dimensions.HYDROMETEOR],
+          self.coords[dimensions.FREQUENCY],
+          )
+
+
         self.profile = customProfile(
+          self,
           profileVars=profileVars,
           nLayer=nLayer,
           hydrometeors=hydrometeors,
@@ -119,6 +132,12 @@ class pamtra2(object):
         self.instruments = OrderedDict()
 
         return
+
+    def getProfileAllBroadcasted(self, variables=None, sel={}):
+        if variables is None:
+            return xr.broadcast(self.profile.sel(**sel))[0]
+        else:
+            return xr.broadcast(self.profile.sel(**sel)[variables])[0]
 
     @property
     def nHydrometeors(self):
