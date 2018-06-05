@@ -25,7 +25,7 @@ module radar_spectral_broadening
     integer, intent(in) :: n_heights
     real(kind=dbl), intent(in) :: beamwidth_deg !full width half radiation
     real(kind=dbl), intent(in) :: integration_time
-    real(kind=dbl), intent(in) :: wavelength
+    real(kind=dbl), dimension(n_heights), intent(in) :: wavelength
     real(kind=dbl), intent(in) :: kolmogorov
     real(kind=dbl), dimension(n_heights), intent(out) :: specBroad
     integer :: hh
@@ -53,7 +53,7 @@ module radar_spectral_broadening
         height(hh),&
         beamwidth_deg,&
         integration_time,&
-        wavelength,&
+        wavelength(hh),&
         kolmogorov,&
         specBroad(hh) &
       )

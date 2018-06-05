@@ -47,7 +47,7 @@ module radar_spectrum
         real(kind=dbl), dimension(n_heights,nbins),intent(in):: rho_particle
         character(len=30),intent(in) :: vel_size_mod
         real(kind=dbl), dimension(n_heights), intent(in):: temp
-        real(kind=dbl), intent(in):: wavelength
+        real(kind=dbl), dimension(n_heights), intent(in):: wavelength
         real(kind=dbl), dimension(n_heights), intent(in):: press
         real(kind=dbl), dimension(n_heights), intent(in):: atmo_wind_w
         integer, intent(in) :: n_heights
@@ -103,7 +103,7 @@ module radar_spectrum
             temp(zz),&              !in
             press(zz),&             !in
             atmo_wind_w(zz), &      !in
-            wavelength,&         !in
+            wavelength(zz),&         !in
             rho_particle(zz,:),&      !in
             vel_size_mod,&      !in
             mass(zz,:),&              !in
