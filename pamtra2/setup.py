@@ -46,4 +46,4 @@ if __name__ == "__main__":
           #     'pamtra2': ['file'],
           # },
           platforms=['any'],
-          requires=['numpy', 'scipy', 'xarray', 'json'])
+          requires=['numpy', 'scipy', 'xarray', 'json', 'dask', 'numba'])
