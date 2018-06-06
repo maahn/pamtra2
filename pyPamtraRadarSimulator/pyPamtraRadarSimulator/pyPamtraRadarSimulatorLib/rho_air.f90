@@ -1,16 +1,16 @@
 real(kind=dbl) function rho_air(T, P)
 
 ! This function returns the density of dry air in kg/m**3.
-! The input parameters T and P are the temperature (K) and 
-! pressure (pa)                           
+! The input parameters T and P are the temperature (K) and
+! pressure (pa)
 
-  use kinds
-  implicit none
+   use kinds
+   implicit none
 
-  real(kind=dbl), intent (in) :: T, P
-  real(kind=dbl) :: r = 28704.d-2
+   real(kind=dbl), intent(in) :: T, P
+   real(kind=dbl) :: r = 28704.d-2
 
-  rho_air = P / (T*r) 
+   rho_air = P/(T*r)
 
-  return 
+   return
 end function rho_air
