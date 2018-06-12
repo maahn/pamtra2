@@ -18,5 +18,6 @@ pyPamtraRadarSimulator/pyPamtraRadarSimulator/pyPamtraRadarSimulatorLib/pyPamtra
 pyPamtraRadarSimulator/pyPamtraRadarSimulator/pyPamtraRadarSimulatorLib/pyPamtraRadarSimulatorLib-f2pywrappers2.f90
 *egg-info
 refractiveIndex/examples/refractive_indexes.pdf
+pamtra2/.pytest_cache
 
 
