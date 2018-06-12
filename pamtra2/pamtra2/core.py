@@ -3,6 +3,7 @@
 from collections import OrderedDict
 import numpy as np
 import xarray as xr
+import meteo_si
 
 from . import helpers
 from . import units
@@ -107,7 +108,10 @@ class pamtra2(object):
           hydrometeor=hydrometeors)
         self.coords[dimensions.FREQUENCY] = OrderedDict(
           frequency=frequencies)
-
+        self.coords['nonCore'] = helpers.concatDicts(
+          self.coords[dimensions.ADDITIONAL],
+          self.coords[dimensions.LAYER],
+          )
         self.coords['all'] = helpers.concatDicts(
           self.coords[dimensions.ADDITIONAL],
           self.coords[dimensions.LAYER],
@@ -129,7 +133,7 @@ class pamtra2(object):
         for hh in hydrometeors:
             self.hydrometeors[hh] = None
 
-        self.instruments = OrderedDict()
+        self.instruments = helpers.AttrDict()
 
         return
 
@@ -138,6 +142,99 @@ class pamtra2(object):
             return xr.broadcast(self.profile.sel(**sel))[0]
         else:
             return xr.broadcast(self.profile.sel(**sel)[variables])[0]
+
+    def getIntegratedScatteringCrossSections(
+      self,
+      frequencies=None,
+      crossSections='all'
+      ):
+
+        integrated = {}
+
+        if crossSections == 'all':
+            crossSections = [
+                'extinctionCrossSection'
+                'scatterCrossSection'
+                'absorptionCrossSection',
+                'backscatterCrossSection',
+              ]
+        for crossSection in crossSections:
+            perHydro = []
+            for name in self.hydrometeors.keys():
+                sizeDistribution = self.hydrometeors[
+                  name].profile.sizeDistribution
+                sizeWidth = self.hydrometeors[
+                  name].profile.sizeBoundsWidth
+                crossSec = self.hydrometeors[name].profile[crossSection]
+                if frequencies is not None:
+                    crossSec.sel(frequency=frequencies)
+                thisHydro = crossSec * sizeWidth * sizeDistribution
+                perHydro.append(thisHydro)
+            integrated[crossSection] = xr.concat(
+              perHydro, dim='hydro').sum(['hydro', 'sizeBin'])
+        return integrated
+
+    def addMissingVariables(self):
+
+        self.addDryAirDensity()
+        self.addAirDensity()
+        self.addDynamicViscosity()
+        self.addKinematicViscosity()
+
+        return self.profile
+
+    def addDryAirDensity(self):
+        '''
+        add dry air density
+        '''
+
+        p = self.profile.pressure
+        T = self.profile.temperature
+        rh = self.profile.temperature/100.
+
+        self.profile['dryAirDensity'] = meteo_si.density.moist_rho_rh(p, T, rh)
+
+        return self.profile['dryAirDensity']
+
+    def addAirDensity(self):
+        '''
+        add air density
+        '''
+
+        p = self.profile.pressure
+        T = self.profile.temperature
+        rh = self.profile.temperature/100.
+        qm = self.profile.waterContent.sum('hydrometeor')
+
+        self.profile['airDensity'] = meteo_si.density.moist_rho_rh(
+          p, T, rh, qm)
+
+        return self.profile['airDensity']
+
+    def addDynamicViscosity(self):
+        '''
+        dynamic viscosity of dry air
+        '''
+
+        self.profile['dynamicViscosity'] = _dynamic_viscosity_air(
+          self.profile.temperature)
+
+        return self.profile['dynamicViscosity']
+
+    def addKinematicViscosity(self):
+        '''
+        kinematic viscosity of dry air
+        '''
+
+        if 'dryAirDensity' not in self.profile.keys():
+            self.addAirDensity()
+        if 'dynamicViscosity' not in self.profile.keys():
+            self.addDynamicViscosity()
+        self.profile['kinematicViscosity'] = (
+            self.profile['dynamicViscosity']/self.profile['dryAirDensity']
+            )
+
+        return self.profile['kinematicViscosity']
 
     @property
     def nHydrometeors(self):
@@ -157,6 +254,7 @@ class pamtra2(object):
     def describeHydrometeor(
         self,
         hydrometeorClass,
+        solve=True,
         **kwargs,
     ):
         """
@@ -182,14 +280,18 @@ class pamtra2(object):
             **kwargs
         )
 
-        self.hydrometeors[name].calculateProperties()
+        if solve:
+            self.hydrometeors[name].solve()
 
         return self.hydrometeors[name]
 
     def addInstrument(
         self,
-        name,
+        instrumentClass,
+        name=None,
         frequencies=[],
+        solve=True,
+        **kwargs,
     ):
         """
 
@@ -205,8 +307,44 @@ class pamtra2(object):
 
         """
 
-        self.frequencies = frequencies
-        self.instrumentName = name
+        if not hasattr(frequencies, '__iter__'):
+            frequencies = [frequencies]
 
-        for hh in self.hydrometeors.keys():
-            self.hydrometeors[hh].frequencies = frequencies
+        self.instruments[name] = instrumentClass(
+            self,
+            frequencies=frequencies,
+            **kwargs
+        )
+
+        if solve:
+            self.instruments[name].solve()
+
+        return self.instruments[name]
+
+
+
+# MOVE TO METEOSI!
+def _dynamic_viscosity_air(temperature):
+    """
+    ! This function returns the dynamic viscosity of dry air in Pa s
+    ! Sutherland law
+    ! coefficients from F. M. White, Viscous Fluid Flow, 2nd ed., McGraw-Hill,
+    ! (1991). Kim et al., arXiv:physics/0410237v1
+    """
+
+    mu0 = 1.716e-5  # Pas
+    T0 = 273.
+    C = 111.  # K
+
+    eta = mu0*((T0 + C)/(temperature + C))*(temperature/T0)**1.5
+
+    return eta
+
+
+# # MOVE TO METEOSI!
+# def _kinematic_viscosity_air(temperature, dryAirDensity):
+#     # ! This function returns the kineamtic viscosity_air
+
+#     viscosity = _dynamic_viscosity_air(temperature)
+#     return viscosity/dryAirDensity
+

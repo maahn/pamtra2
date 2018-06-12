@@ -32,12 +32,12 @@ subroutine hildebrand_sekhon( &
 ! written by P. Kollias, tranlated to Fortran by M. Maahn (12.2012)
 !
 ! in
-! spectrum: radar sectrum [mm⁶/m³]
+! spectrum: radar sectrum [mm⁶/m³/(m/s)]
 ! n_ave: no of averaged spectra [-]
 ! n_ffts: no fft points [-]
 !
 ! out
-! noise_mean: neam noise leve according to Hildebrand [mm⁶/m³]
+! noise_mean: mean noise leve according to Hildebrand [mm⁶/m³/(m/s)]
 
    use kinds
 !  use settings, only: verbose
@@ -80,6 +80,9 @@ subroutine hildebrand_sekhon( &
          errorstatus = err
          stop !return
       end if
+
+      if (verbose >= 10) print *, "hildebrand spectrum_sorted", h, spectrum_sorted
+
       sumLi = 0.d0
       sumSq = 0.d0
       sumNs = 0.d0

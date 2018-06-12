@@ -141,7 +141,8 @@ contains
       integer, intent(in) ::  radar_no_Ave
       real(kind=dbl), intent(in) :: radar_K2
       integer, intent(in) ::  seed
-      real(kind=dbl), dimension(radar_nfft), intent(out):: noise_turb_spectra
+      real(kind=dbl), dimension(radar_nfft), intent(out):: noise_turb_spectra ! in [mm⁶/m³/(m/s)]
+
 
       real(kind=dbl) ::  back !volumetric backscattering crossection in m²/m³
       real(kind=dbl), dimension(radar_nfft_aliased) :: particle_spectrum_att
@@ -188,11 +189,19 @@ contains
       end interface
       if (verbose >= 2) call report(info, 'Start of ', nameOfRoutine)
       err = 0
-      back = SUM(particle_spectrum)
+
+
+      !get delta velocity
+      del_v = (radar_max_V - radar_min_V)/radar_nfft ![m/s]
+      !create array from min_v to max_v iwth del_v spacing -> velocity spectrum of radar
+      spectra_velo = (/(((ii*del_v) + radar_min_V), ii=0, radar_nfft - 1)/) ! [m/s]
+
+      ! particle_spectrum already in correct units for linear Ze
+      Ze_back = SUM(particle_spectrum * del_v)
 
       call assert_false(err, (ANY(ISNAN(particle_spectrum))), &
                         "got nan in values in backscattering spectrum")
-      call assert_false(err, ISNAN(back) .or. (back < 0.d0), &
+      call assert_false(err, ISNAN(Ze_back) .or. (Ze_back < 0.d0), &
                         "got nan or negative value in linear Ze")
       call assert_false(err, (SUM(particle_spectrum) < 0.d0), &
                         "sum particle_spectrum < 0")
@@ -206,20 +215,12 @@ contains
       ! get |K|**2 and lambda
       K2 = radar_K2
 
-      !transform backscattering in linear reflectivity units, 10*log10(back) would be in dBz
-      Ze_back = 1.d18*(1.d0/(K2*pi**5))*back*(wavelength)**4 ![mm⁶/m³]
-
       !take care of path integrated attenuation
       Ze_back = Ze_back/10d0**(0.1d0*PIA)
       particle_spectrum_att = particle_spectrum(:)/10d0**(0.1d0*PIA)
 
-      if (verbose >= 2) print *, "particle_spectrum_att"
-      if (verbose >= 2) print *, particle_spectrum_att
-
-      !get delta velocity
-      del_v = (radar_max_V - radar_min_V)/radar_nfft ![m/s]
-      !create array from min_v to max_v iwth del_v spacing -> velocity spectrum of radar
-      spectra_velo = (/(((ii*del_v) + radar_min_V), ii=0, radar_nfft - 1)/) ! [m/s]
+      if (verbose >= 5) print *, "particle_spectrum_att"
+      if (verbose >= 5) print *, particle_spectrum_att
 
       !same for the extended spectrum
       min_V_aliased = radar_min_V - radar_aliasing_nyquist_interv*(radar_max_V - radar_min_V)
@@ -234,7 +235,7 @@ contains
 
       !get turbulence (no turbulence in clear sky...)
       turb(:) = 0.d0
-      if ((spectral_broadening > 0.d0) .and. (back > 0)) then
+      if ((spectral_broadening > 0.d0) .and. (Ze_back > 0)) then
          do tt = 1, radar_nfft_aliased
             ! gaussian function with same length as radar spectrum, centered around zero
             turb(tt) = exp(-(spectra_velo_aliased(tt) - 0)**2.d0/(2.d0*spectral_broadening**2.d0))
@@ -243,7 +244,7 @@ contains
       end if
 
       ! skip in case ss was so little that sum(turb) is zero)
-      if ((SUM(turb) > 0.d0) .and. (back > 0)) then
+      if ((SUM(turb) > 0.d0) .and. (Ze_back > 0)) then
          call assert_false(err, (ANY(ISNAN(turb)) .or. (SUM(turb) <= 0.d0)), &
                            "got nan or negative value in linear turb")
          call assert_true(err, ((ABS(turb(1)) < almostZero) .and. (ABS(turb(radar_nfft_aliased)) < almostZero)), &
@@ -383,8 +384,8 @@ contains
       print *, "##########################################"
    end if
 
-   !apply spectral resolution
-   noise_turb_spectra = noise_turb_spectra*del_v !now [mm⁶/m³]
+   ! !apply spectral resolution
+   ! noise_turb_spectra = noise_turb_spectra*del_v !now [mm⁶/m³]
 
    if (verbose >= 4) then
       print *, "first K", K
@@ -396,18 +397,20 @@ contains
       print *, "TOTAL", " Ze SUM(snr_turb_spectra)*del_v", 10*log10(SUM(snr_turb_spectra)*del_v)
       print *, "TOTAL", " Ze SUM(noise_turb_spectra)*del_v", 10*log10(SUM(noise_turb_spectra))
       print *, "TOTAL", " Ze SUM(snr_turb_spectra)*del_v-radar_Pnoise", 10*log10(SUM(snr_turb_spectra)*del_v - radar_Pnoise)
-      print *, "TOTAL", " Ze SUM(noise_turb_spectra)*del_v-radar_Pnoise", 10*log10(SUM(noise_turb_spectra) - radar_Pnoise)
+      print *, "TOTAL", " Ze SUM(noise_turb_spectra)*del_v-radar_Pnoise", 10*log10(SUM(noise_turb_spectra*del_v) - radar_Pnoise)
    end if
 
-   if (verbose >= 5) then
-      print *, " linear spectrum befor receiver uncertainty"
-      print *, noise_turb_spectra
-      print *, "#####################"
-   end if
+   ! if (verbose >= 5) then
+   !    print *, " linear spectrum befor receiver uncertainty"
+   !    print *, noise_turb_spectra
+   !    print *, "#####################"
+   ! end if
 
    if (verbose >= 5) then
       print *, "final linear spectrum"
       print *, noise_turb_spectra
+      print *, "final velocity spectrum"
+      print *, spectra_velo
       print *, "#####################"
    end if
 

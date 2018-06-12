@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import warnings
 import numpy as np
 import xarray as xr
 import inspect
@@ -10,14 +11,17 @@ from .. import helpers
 
 def DEFAULT_CALCULATION_ORDER():
     return [
+                'sizeBounds',
                 'sizeCenter',
+                'sizeBoundsWidth',
                 'aspectRatio',
                 'density',
                 'mass',
                 'crossSectionArea',
                 'sizeDistribution',
-                'refractiveIndex',
+                'relativePermittivity',
                 'scattering',
+                'fallVelocity',
                 ]
 
 
@@ -81,14 +85,12 @@ class hydrometeor(object):
         self,
         parent,
         name=None,
-        nBins=None,
         discreteProperties=None,
         calculationOrder=None,
         useFuncArgDefaults=True,
         **kwargs
     ):
 
-        self._nBins = nBins
         self.calculationOrder = calculationOrder
         # self.funcArgs = funcArgs
         self.useFuncArgDefaults = useFuncArgDefaults
@@ -100,7 +102,10 @@ class hydrometeor(object):
 
         if discreteProperties is None:
             discreteProperties = xr.Dataset(
-                    coords=dict(sizeBin=range(self._nBins))
+                    coords=dict(
+                        sizeBin=range(kwargs['nBins']),
+                        sizeBin1=range(kwargs['nBins']+1),
+                        )
                     )
         self.profile = discreteProperties
 
@@ -160,6 +165,11 @@ class hydrometeor(object):
 
             func = thisDesription
 
+            try:
+                self._keysToBeUsed.remove(thisKey)
+            except ValueError:
+                pass
+
             # inspect function to get the required arguments
             argspec = inspect.getargspec(func)
             funcArgs, funcVarargs, funcKeywords, funcDefaults = argspec
@@ -181,6 +191,10 @@ class hydrometeor(object):
                     kw4Func[k] = self._parentProfile[k]
                 elif k in self.description.keys():
                     kw4Func[k] = self.description[k]
+                    try:
+                        self._keysToBeUsed.remove(k)
+                    except ValueError:
+                        pass
                 elif k in fixedKwargs.keys():
                     kw4Func[k] = fixedKwargs[k]
                 elif self.useFuncArgDefaults and (k in funcDefaults.keys()):
@@ -188,7 +202,8 @@ class hydrometeor(object):
                 else:
                     raise KeyError('Did not find %s in provided kwargs or '
                                    'discreteProperties or profile or '
-                                   'functions\'s defaultArgs' % k)
+                                   'functions\'s defaultArgs for '
+                                   ' %s' % (k, thisKey))
 
             thisProperty = func(**kw4Func)
         else:
@@ -197,7 +212,7 @@ class hydrometeor(object):
 
         return thisProperty
 
-    def calculateProperties(self):
+    def solve(self):
         """Helper function to estimate all discrete properties of a
          hydrometeor
 
@@ -215,18 +230,27 @@ class hydrometeor(object):
                 self.calculationOrder.append(key)
             self.description.keys()
 
+        self._keysToBeUsed = list(self.description.keys())
+
         for key in self.calculationOrder:
 
             value = self.description[key]
             print(key, value)
 
-            thisProperty = self._arrayOrFunc(key, value, nBins=self._nBins)
-            if (key == 'sizeCenter') and 'coords' not in dir(value):
+            thisProperty = self._arrayOrFunc(key, value)
+            # to do: what if sizeCenter depends on other coords?
+            if (key in ['sizeCenter', 'sizeBoundsWidth']):
                 thisProperty = xr.DataArray(
-                    thisProperty,
-                    coords=[self.profile.sizeBin]
+                    thisProperty.data,
+                    coords=[self.profile.sizeBin],
+                    attrs={'unit': units.units[key]},
                     )
-
+            elif (key in ['sizeBounds']):
+                thisProperty = xr.DataArray(
+                    thisProperty.data,
+                    coords=[self.profile.sizeBin1],
+                    attrs={'unit': units.units[key]},
+                    )
             self.profile[key] = thisProperty
 
             self.profile[key].attrs.update(
@@ -234,11 +258,21 @@ class hydrometeor(object):
                 )
         self._postProcessing()
 
+        self._keysToBeUsed = [x for x in self._keysToBeUsed if x not in
+                              DEFAULT_CALCULATION_ORDER()]
+        if len(self._keysToBeUsed) > 0:
+            warnings.warn('The following kwargs were NOT used: '
+                          '%s' % self._keysToBeUsed)
+
+        # Apply units
+        for k in self.profile.variables:
+            self.profile[k].attrs['unit'] = units.units[k]
+
         return self.profile
 
     def _postProcessing(self):
         """
-        clean up 'artificial' dimensions required becaus xr.apply_ufunc cannot
+        clean up 'artificial' dimensions. Required becaus xr.apply_ufunc cannot
         return multiple items.
         """
         variables = ['extinctionCrossSection', 'scatterCrossSection',

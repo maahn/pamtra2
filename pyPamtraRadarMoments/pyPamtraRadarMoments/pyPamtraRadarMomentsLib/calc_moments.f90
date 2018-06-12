@@ -27,7 +27,7 @@ contains
       implicit none
 
       integer, intent(in) :: radar_nfft, radar_nPeaks, n_heights
-      real(kind=dbl), dimension(n_heights, radar_nfft), intent(in):: radar_spectrum_in
+      real(kind=dbl), dimension(n_heights, radar_nfft), intent(in):: radar_spectrum_in !in mm6/m3/(m/s)
       real(kind=dbl), dimension(n_heights), intent(in):: noise, noise_max
 
       real(kind=dbl), intent(in) :: radar_max_V
@@ -103,8 +103,8 @@ contains
       radar_nfft, &
       radar_nPeaks, &
       radar_spectrum_in, &
-      noise, &
-      noise_max, &
+      noise_in, &
+      noise_max_in, &
       radar_max_V, &
       radar_min_V, &
       radar_smooth_spectrum, &
@@ -121,9 +121,9 @@ contains
       ! calculate the 0th -4th moment and the slopes of the peak of a radar spectrum!
       !
       ! in
-      ! radar_spectrum_in: radar spectrum with noise [mm⁶/m³]
-      ! noise: mean spectral noise in [mm⁶/m³]
-      ! noise_max: max spectral noise in [mm⁶/m³]
+      ! radar_spectrum_in: radar spectrum with noise [mm⁶/m³/(m/s)]
+      ! noise_in: mean spectral noise in [mm⁶/m³/(m/s)]
+      ! noise_max_in: max spectral noise in [mm⁶/m³/(m/s)]
       ! out
       ! spectrum_out: radar spectrum with noise removed [mm⁶/m³]
       ! moments, dimension(0:4):0th - 4th moment [mm⁶/m³, m/s, m/s,-,-]
@@ -138,7 +138,7 @@ contains
 
       integer, intent(in) :: radar_nfft, radar_nPeaks
       real(kind=dbl), dimension(radar_nfft), intent(in):: radar_spectrum_in
-      real(kind=dbl), intent(in):: noise, noise_max
+      real(kind=dbl), intent(in):: noise_in, noise_max_in
 
       real(kind=dbl), intent(in) :: radar_max_V
       real(kind=dbl), intent(in) :: radar_min_V
@@ -158,7 +158,9 @@ contains
       real(kind=dbl), dimension(radar_nPeaks + 1, radar_nfft):: radar_spectrum_arr
       real(kind=dbl), dimension(radar_nfft):: radar_spectrum_only_noise
       real(kind=dbl), dimension(radar_nfft):: radar_spectrum_4mom
+      real(kind=dbl), dimension(radar_nfft):: radar_spectrum_4sum
       real(kind=dbl) :: del_v, specMax, noiselog, specSNR
+      real(kind=dbl) :: noise, noise_max
       integer :: spec_max_ii, spec_max_ii_a(1), right_edge, left_edge, &
                  ii, jj, right_edge4slope, &
                  left_edge4slope
@@ -201,20 +203,24 @@ contains
       end if
 
       !initilaize
-      moments(:, :) = -9999
-      edge(:, :) = -9999
-      slope(:, :) = -9999
+      moments(:, :) = -9999.d0
+      edge(:, :) = -9999.d0
+      slope(:, :) = -9999.d0
 
       del_v = (radar_max_V - radar_min_V)/radar_nfft
       spectra_velo = (/(((ii*del_v) + radar_min_V), ii=0, radar_nfft - 1)/) ! [m/s]
       quality = 0
       additionalPeaks = .false.
 
+      radar_spectrum_4sum = radar_spectrum_in * del_v
+      noise_max = noise_max_in * del_v
+      noise = noise_in * del_v
+
       do nn = 1, radar_nPeaks + 1
-         radar_spectrum_arr(nn, :) = radar_spectrum_in
+         radar_spectrum_arr(nn, :) = radar_spectrum_4sum
       end do
 
-      radar_spectrum_only_noise = radar_spectrum_in
+      radar_spectrum_only_noise = radar_spectrum_4sum
 
       do nn = 1, radar_nPeaks + 1
 
@@ -304,7 +310,7 @@ contains
 
             if (radar_smooth_spectrum) then
                !make the spectrum smooth and remove noise
-               call smooth_savitzky_golay(err, radar_spectrum_in, radar_nfft, use_fft, radar_spectrum_4mom)
+               call smooth_savitzky_golay(err, radar_spectrum_4sum, radar_nfft, use_fft, radar_spectrum_4mom)
                if (err /= 0) then
                   msg = 'error in smooth_savitzky_golay!'
                   call report(err, msg, nameOfRoutine)
@@ -312,7 +318,7 @@ contains
                   return
                end if
             else
-               radar_spectrum_4mom(:) = radar_spectrum_in(:)
+               radar_spectrum_4mom(:) = radar_spectrum_4sum(:)
             end if
 
             !     remove noise for moment estimation
@@ -337,7 +343,7 @@ contains
 
             if (nn == 1) then
                !     output spectrum is with main peak only and noise removed but without the smoothing
-               spectrum_out = radar_spectrum_in - noise
+               spectrum_out = radar_spectrum_4sum - noise
                if (left_edge >= 1) spectrum_out(1:left_edge) = 0.d0
                if (right_edge <= radar_nfft) spectrum_out(right_edge:radar_nfft) = 0.d0
             end if
@@ -396,11 +402,19 @@ contains
             if (verbose >= 5) print *, "edge", edge(:, nn)
             if (verbose >= 5) print *, "moments", moments
 
-            call assert_false(err, slope(1, nn) >= HUGE(slope(1, nn)), &
-                              "inf in left slope")
-            call assert_false(err, slope(2, nn) >= HUGE(slope(2, nn)), &
-                              "inf in right slope")
+            ! call assert_false(err, slope(1, nn) >= HUGE(slope(1, nn)), &
+            !                   "inf in left slope")
+            ! call assert_false(err, slope(2, nn) >= HUGE(slope(2, nn)), &
+            !                   "inf in right slope")
 
+            if (slope(1, nn) >= HUGE(slope(1, nn))) then
+               print*, "inf in left slope"
+               slope(1, nn) = -9999.d0
+            end if
+            if (slope(2, nn) >= HUGE(slope(2, nn))) then
+               print*, "inf in left slope"
+               slope(2, nn) = -9999.d0
+            end if
          end if !skip peak
       end do !no peaks
 
@@ -409,8 +423,8 @@ contains
       if (verbose >= 5) print *, "radar_nfft", radar_nfft
       if (verbose >= 5) print *, "spectrum_out", spectrum_out
 
-      call assert_false(err, any(ISNAN(slope)), &
-                        "nan in slope")
+      ! call assert_false(err, any(ISNAN(slope)), &
+      !                   "nan in slope")
 
       call assert_false(err, any(ISNAN(moments)), &
                         "nan in moments")

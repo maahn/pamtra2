@@ -15,6 +15,40 @@ powerLawLiquidExponent = 3.
 powerLawIceExponent = 3.
 
 
+def waterSphere(sizeCenter):
+    """mass for water spheres
+
+    Parameters
+    ----------
+    sizeCenter : array_like
+        particle size at center of size bin
+
+    Returns
+    -------
+    mass : array_like
+        particle mass
+    """
+    return powerLaw(
+        sizeCenter, powerLawLiquidPrefactor, powerLawLiquidExponent)
+
+
+def iceSphere(sizeCenter):
+    """mass for ice spheres
+
+    Parameters
+    ----------
+    sizeCenter : array_like
+        particle size at center of size bin
+
+    Returns
+    -------
+    mass : array_like
+        particle mass
+    """
+    return powerLaw(
+        sizeCenter, powerLawIcePrefactor, powerLawIceExponent)
+
+
 def powerLaw(sizeCenter, massSizeA, massSizeB):
     """classical mass size relation as power law
 
@@ -39,7 +73,7 @@ def powerLaw(sizeCenter, massSizeA, massSizeB):
 
 
 def ellipsoid(sizeCenter, aspectRatio, density):
-    """classical mass size relation as power law
+    """mass of a fixed-density ellipsoid
 
     Parameters
     ----------

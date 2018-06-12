@@ -3,6 +3,8 @@
 import warnings
 import collections
 
+from . import constants
+
 """
 Central location for all units
 """
@@ -21,9 +23,16 @@ units = collections.defaultdict(
         'particleSizeDistribution': 'm^(-4)',
         'pressure': 'Pa',
         'relativeHumidity': '%',
+        'sizeBounds': 'm',
+        'sizeBoundsWidth': 'm',
         'sizeCenter': 'm',
         'temperature': 'K',
         'verticalWind': 'm/s',
         'wavelenght': 'm',
+
     }
 )
+
+
+def kelvin2Celsius(kelvin):
+    return kelvin - constants.tFreezing

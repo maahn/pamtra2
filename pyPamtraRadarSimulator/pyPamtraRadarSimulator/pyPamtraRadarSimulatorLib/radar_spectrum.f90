@@ -5,17 +5,13 @@ contains
    subroutine get_radar_spectrum( &
       errorstatus, &
       nbins, & !in
+      n_heights, & !in
       diameter_spec, & !in
+      spec_width, & !in
       back_spec, & !in
-      temp, & !in
-      press, & !in
+      fallVel, & !in
       atmo_wind_w, & !in
       wavelength, & !in
-      rho_particle, & !in
-      vel_size_mod, & !in
-      mass, & !in
-      area, & !in
-      n_heights, & !in
       radar_max_V, & !in
       radar_min_V, & !in
       radar_aliasing_nyquist_interv, & !in
@@ -40,14 +36,10 @@ contains
       integer, intent(in) ::  nbins
 
       real(kind=dbl), dimension(n_heights, nbins), intent(in):: diameter_spec
+      real(kind=dbl), dimension(n_heights, nbins), intent(in):: spec_width
       real(kind=dbl), dimension(n_heights, nbins), intent(in):: back_spec
-      real(kind=dbl), dimension(n_heights, nbins), intent(in):: mass
-      real(kind=dbl), dimension(n_heights, nbins), intent(in):: area
-      real(kind=dbl), dimension(n_heights, nbins), intent(in):: rho_particle
-      character(len=30), intent(in) :: vel_size_mod
-      real(kind=dbl), dimension(n_heights), intent(in):: temp
+      real(kind=dbl), dimension(n_heights, nbins), intent(in):: fallVel
       real(kind=dbl), dimension(n_heights), intent(in):: wavelength
-      real(kind=dbl), dimension(n_heights), intent(in):: press
       real(kind=dbl), dimension(n_heights), intent(in):: atmo_wind_w
       integer, intent(in) :: n_heights
       real(kind=dbl), intent(in) ::  radar_max_V
@@ -75,17 +67,37 @@ contains
       if (verbose >= 2) call report(info, 'Start of ', nameOfRoutine)
       err = 0
 
+      if (verbose >= 5) then
+         print*, 'nbins', SHAPE(nbins), nbins
+         print*, 'n_heights', SHAPE(n_heights), n_heights
+         print*, '1 diameter_spec', SHAPE(diameter_spec), diameter_spec
+         print*, '2 back_spec', SHAPE(back_spec), back_spec
+         print*, '10 fallVel', fallVel
+         print*, '8 atmo_wind_w', SHAPE(atmo_wind_w), atmo_wind_w
+         print*, '9 wavelength', SHAPE(wavelength), wavelength
+         print*, '11 radar_max_V', radar_max_V
+         print*, '12 radar_min_V', radar_min_V
+         print*, '13 radar_aliasing_nyquist_interv', radar_aliasing_nyquist_interv
+         print*, '14 radar_nfft', radar_nfft
+         print*, '13*14 radar_nfft_aliased', radar_nfft_aliased
+         print*, '15 radar_airmotion', radar_airmotion
+         print*, '16 radar_airmotion_model', radar_airmotion_model
+         print*, '17 radar_airmotion_vmin', radar_airmotion_vmin
+         print*, '18 radar_airmotion_vmax', radar_airmotion_vmax
+         print*, '19 radar_airmotion_linear_steps', radar_airmotion_linear_steps
+         print*, '20 radar_airmotion_step_vmin', radar_airmotion_step_vmin
+         print*, '21 radar_K2', radar_K2
+      end if
+
+
+
       particle_spec(:, :) = -9999.d0
 
       do zz = 1, n_heights
 
          if (ANY(ISNAN(diameter_spec(zz, :))) .or. &
              ANY(ISNAN(back_spec(zz, :))) .or. &
-             ANY(ISNAN(mass(zz, :))) .or. &
-             ANY(ISNAN(area(zz, :))) .or. &
-             ANY(ISNAN(rho_particle(zz, :))) .or. &
-             ISNAN(press(zz)) .or. &
-             ISNAN(temp(zz)) &
+             ANY(ISNAN(fallVel(zz, :))) &
              ) then
 
             if (verbose >= 2) print *, 'skipping due to NAN', zz
@@ -97,15 +109,11 @@ contains
             errorstatus, &
             nbins, & !in
             diameter_spec(zz, :), & !in
+            spec_width(zz, :), &
             back_spec(zz, :), & !in
-            temp(zz), & !in
-            press(zz), & !in
+            fallVel(zz,:), & !in
             atmo_wind_w(zz), & !in
             wavelength(zz), & !in
-            rho_particle(zz, :), & !in
-            vel_size_mod, & !in
-            mass(zz, :), & !in
-            area(zz, :), & !in
             radar_max_V, & !in
             radar_min_V, & !in
             radar_aliasing_nyquist_interv, & !in
@@ -138,15 +146,11 @@ contains
       errorstatus, &
       nbins, & !in
       diameter_spec, & !in
+      spec_width, & !in
       back_spec, & !in
-      temp, & !in
-      press, & !in
+      fallVel, & !in
       atmo_wind_w, & !in
       wavelength, & !in
-      rho_particle, & !in
-      vel_size_mod, & !in
-      mass, & !in
-      area, & !in
       radar_max_V, & !in
       radar_min_V, & !in
       radar_aliasing_nyquist_interv, & !in
@@ -189,14 +193,9 @@ contains
       !nbins: No of bins
       !diameter_spec: Diameter Spectrum (SI)
       !back_spec: backscattering cross section per volume in m²/m⁴ (includes number density)
-      !temp: temperature in K
-      !press: air pressure in Pa
       !atmo_wind_w: vertical wind in m/s
       !wavelength in m
-      !rho_particle: density of particle
-      !mass: mass of particle [kg]
-      !area: cross section area [m²]
-      !area_size_b: b of mass size relation, needed for graupel, hail, snow, ice
+      !vallVel: fall velocity of particle
       !out
       !particle_spec particle spectrum in dependence of radar Doppler velocity in m6m-3/ms-1
 
@@ -211,14 +210,10 @@ contains
       integer, intent(in) ::  nbins
 
       real(kind=dbl), dimension(nbins), intent(in):: diameter_spec
+      real(kind=dbl), dimension(nbins), intent(in):: spec_width
       real(kind=dbl), dimension(nbins), intent(in):: back_spec
-      real(kind=dbl), dimension(nbins), intent(in):: mass
-      real(kind=dbl), dimension(nbins), intent(in):: area
-      real(kind=dbl), dimension(nbins), intent(in):: rho_particle
-      character(len=30), intent(in) :: vel_size_mod
-      real(kind=dbl), intent(in):: temp
+      real(kind=dbl), dimension(nbins) :: fallVel
       real(kind=dbl), intent(in):: wavelength
-      real(kind=dbl), intent(in):: press
       real(kind=dbl), intent(in):: atmo_wind_w
       real(kind=dbl), intent(in) ::  radar_max_V
       real(kind=dbl), intent(in) ::  radar_min_V
@@ -252,32 +247,28 @@ contains
 
       if (verbose >= 2) then
          call report(info, 'Start of ', nameOfRoutine)
-         print *, "back,temp, press, mass,nbins", back, temp, press, mass, nbins
+         print *, "back,nbins", back, nbins
       end if
       err = 0
 
-      back = SUM(back_spec)
+      back = SUM(back_spec*spec_width)
 
       call assert_true(err, all(diameter_spec > 0), &
                        "nan or negative diameter_spec")
+      call assert_true(err, all(spec_width > 0), &
+                       "nan or negative spec_width")
       call assert_true(err, all(back_spec >= 0), &
                        "nan or negative back_spec")
       call assert_true(err, nbins > 1, &
                        "nbins must be greater than 1 for the radar simulator!")
       call assert_true(err, back >= 0, &
                        "nan or negative back")
-      call assert_true(err, temp > 0, &
-                       "nan or negative temperature")
-      call assert_true(err, press > 0, &
-                       "nan or negative press")
       call assert_true(err, wavelength > 0, &
                        "nan or negative wavelength")
-      call assert_true(err, all(mass >= 0), &
-                       "nan or negative mass")
-      if (vel_size_mod == "heymsfield10_particles") then
-         call assert_true(err, all(area >= 0), &
-                          "nan or negative area")
-      end if
+      ! call assert_true(err, all(mass >= 0), &
+      !                  "nan or negative mass")
+      call assert_true(err, all(fallVel >= 0), &
+                       "nan or negative fallVel")
       call assert_true(err, (radar_nfft_aliased > 0), &
                        "nan or negative radar_nfft_aliased")
       if (err > 0) then
@@ -304,44 +295,46 @@ contains
 
       diameter_spec_cp(:) = diameter_spec(:)
 
-      rho = rho_air(temp, press)
-      call viscosity_air(temp, viscosity)
-      nu = viscosity/rho !kinematic viscosity
+      ! rho = rho_air(temp, press)
+      ! call viscosity_air(temp, viscosity)
+      ! nu = viscosity/rho !kinematic viscosity
 
-      err = 0
-      if (vel_size_mod == "khvorostyanov01_drops") then
-         call dia2vel_khvorostyanov01_drops(err, nbins, diameter_spec_cp, rho, nu, vel_spec)
-      else if (vel_size_mod == "khvorostyanov01_spheres") then
-         call dia2vel_khvorostyanov01_spheres(err, nbins, diameter_spec_cp, rho, nu, rho_particle, vel_spec)
-      else if (vel_size_mod .eq. "rogers_drops") then
-         call dia2vel_rogers_drops(err, nbins, diameter_spec_cp, rho, vel_spec)
-      else if (vel_size_mod == "heymsfield10_particles") then
-         k_factor = 0.5d0
-         call dia2vel_heymsfield10_particles(err, nbins, diameter_spec_cp, rho, nu, &
-                                             mass, area, k_factor, vel_spec)
-         !     else if (vel_size_mod == "heymsfield10_particles_K") then
-         !       call dia2vel_heymsfield10_particles(err,nbins,diameter_spec_cp,rho,nu,&
-         !             mass,area,radar_fallvel_A,vel_spec)
-      else if (vel_size_mod == "khvorostyanov01_particles") then
-         call dia2vel_khvorostyanov01_particles(err, nbins, diameter_spec_cp, rho, nu, &
-                                                mass, area, vel_spec)
-      else if (vel_size_mod .eq. "rogers_graupel") then
-         call dia2vel_rogers_graupel(err, nbins, diameter_spec_cp, vel_spec)
-      else if (vel_size_mod(:8) .eq. "powerLaw") then
-         call dia2vel_power_law(err, nbins, diameter_spec_cp, vel_size_mod, vel_spec)
-      else if (vel_size_mod(:11) .eq. "corPowerLaw") then
-         call dia2vel_corrected_power_law(err, nbins, diameter_spec_cp, rho, temp, vel_size_mod, vel_spec)
-      else
-         errorstatus = fatal
-         msg = 'Did not understand variable vel_size_mod: '//vel_size_mod
-         call report(errorstatus, msg, nameOfRoutine)
-         return
-      end if
+      ! err = 0
+      ! if (vel_size_mod == "khvorostyanov01_drops") then
+      !    call dia2vel_khvorostyanov01_drops(err, nbins, diameter_spec_cp, rho, nu, vel_spec)
+      ! else if (vel_size_mod == "khvorostyanov01_spheres") then
+      !    call dia2vel_khvorostyanov01_spheres(err, nbins, diameter_spec_cp, rho, nu, rho_particle, vel_spec)
+      ! else if (vel_size_mod .eq. "rogers_drops") then
+      !    call dia2vel_rogers_drops(err, nbins, diameter_spec_cp, rho, vel_spec)
+      ! else if (vel_size_mod == "heymsfield10_particles") then
+      !    k_factor = 0.5d0
+      !    call dia2vel_heymsfield10_particles(err, nbins, diameter_spec_cp, rho, nu, &
+      !                                        mass, area, k_factor, vel_spec)
+      !    !     else if (vel_size_mod == "heymsfield10_particles_K") then
+      !    !       call dia2vel_heymsfield10_particles(err,nbins,diameter_spec_cp,rho,nu,&
+      !    !             mass,area,radar_fallvel_A,vel_spec)
+      ! else if (vel_size_mod == "khvorostyanov01_particles") then
+      !    call dia2vel_khvorostyanov01_particles(err, nbins, diameter_spec_cp, rho, nu, &
+      !                                           mass, area, vel_spec)
+      ! else if (vel_size_mod .eq. "rogers_graupel") then
+      !    call dia2vel_rogers_graupel(err, nbins, diameter_spec_cp, vel_spec)
+      ! else if (vel_size_mod(:8) .eq. "powerLaw") then
+      !    call dia2vel_power_law(err, nbins, diameter_spec_cp, vel_size_mod, vel_spec)
+      ! else if (vel_size_mod(:11) .eq. "corPowerLaw") then
+      !    call dia2vel_corrected_power_law(err, nbins, diameter_spec_cp, rho, temp, vel_size_mod, vel_spec)
+      ! else
+      !    errorstatus = fatal
+      !    msg = 'Did not understand variable vel_size_mod: '//vel_size_mod
+      !    call report(errorstatus, msg, nameOfRoutine)
+      !    return
+      ! end if
+
+      vel_spec(:) = fallVel
 
       !if in-situ measurements are used, mass or area might be zero (since corresponding ndens=0 as well)
-      where ((area == 0.d0) .or. (mass == 0.d0))
-      vel_spec = 0.d0
-      end where
+      ! where ((area == 0.d0) .or. (mass == 0.d0))
+      ! vel_spec = 0.d0
+      ! end where
 
       call assert_true(err, all(vel_spec >= 0) .and. (MAXVAL(vel_spec) < HUGE(vel_spec)), &
                        "nan or negative vel_spec")
@@ -356,7 +349,7 @@ contains
       back_spec_ref = back_spec_ref*1d18 !now non-SI: [mm⁶/m³/m]
 
       !spetial output for testing the radar simulator
-      if (verbose == -666) then
+      if (verbose >= 5) then
          print *, "##########################################"
          print *, "Diameter (D)"
          print *, diameter_spec

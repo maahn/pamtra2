@@ -5,7 +5,6 @@ from .. import constants
 # input names are not arbritrary and have to follow Pamtra2 defaults!
 
 
-
 def softEllipsoid(sizeCenter, aspectRatio, mass, minDensity=100,
                   maxDensity=constants.rhoIce):
     """oblate (AspectRatio <1) or prolate (asectRatio >0) soft spheres

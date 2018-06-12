@@ -38,6 +38,7 @@ def configuration(parent_package='',top_path=None):
         kw['extra_link_args'] = ['-undefined dynamic_lookup', '-bundle']
     config.add_extension('pyPamtraRadarMomentsLib',
         sources=[
+                 'pyPamtraRadarMoments/pyPamtraRadarMomentsLib/nan.f90',
                  'pyPamtraRadarMoments/pyPamtraRadarMomentsLib/pyPamtraRadarMomentsLib.pyf',
                  'pyPamtraRadarMoments/pyPamtraRadarMomentsLib/kinds.f90',
                  'pyPamtraRadarMoments/pyPamtraRadarMomentsLib/report_module.f90',

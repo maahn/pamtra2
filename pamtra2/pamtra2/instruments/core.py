@@ -1,28 +1,33 @@
-# # -*- coding: utf-8 -*-
-# from collections import OrderedDict
-# from copy import deepcopy
-# import numpy as np
-# import xarray as xr
-# import toolz
+# -*- coding: utf-8 -*-
 
-# from .density import softEllipsoid
+import numpy as np
+import xarray as xr
 
-# class instrument(object):
-#   def __init__(
-#     parent,
-#     name = None,
-#     kind = None,
-#     settings = {},
-#     ):
+from .. import units
+from .. import helpers
 
-#     self.parent = parent
-#     self.name = name
-#     self.kind = kind
-#     self.settings = settings
 
-#   return
+class instrument(object):
+    def __init__(
+        self,
+        parent,
+        frequencies='all',
+        **settings,
+    ):
+        if frequencies == 'all':
+            frequencies = parent.profile.frequency
+        elif not hasattr(frequencies, '__iter__'):
+            frequencies = [frequencies]
+        self.frequencies = frequencies
+        self.settings = settings
+        self.parent = parent
 
-#   def run():
+        self.profile = parent.profile.sel(frequency=frequencies)
+        self.hydrometeorProfiles = helpers.AttrDict()
+        for hydro in parent.hydrometeors.keys():
+            self.hydrometeorProfiles[hydro] = parent.hydrometeors[
+                hydro].profile.sel(frequency=frequencies)
 
-#     result = None
-#     return result
+        self.results = xr.Dataset()
+
+        return self.results

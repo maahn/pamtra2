@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, absolute_import, print_function
+import warnings
 
 import numpy as np
 import scipy.special
@@ -10,6 +11,25 @@ import scipy.special
 # https://numba.pydata.org/numba-doc/dev/user/vectorize.html
 
 from . import mass
+from .. import units
+
+
+def monoDisperse(sizeBoundsWidth, Ntot):
+    """constant distribution
+    Parameters
+    ----------
+    sizeBoundsWidth : array_like
+        width of size bins
+    Ntot : array_like
+        total number of particles for the whole size spectruum
+
+    Returns
+    -------
+    size distribution : array_like
+        calculated size distribution
+    """
+    N = (Ntot/np.shape(sizeBoundsWidth)[-1])/sizeBoundsWidth
+    return N
 
 
 def modifiedGamma(sizeCenter, N0, lambd, mu, gamma):
@@ -86,6 +106,28 @@ def exponential(sizeCenter, N0, lambd):
     return modifiedGamma(
       sizeCenter=sizeCenter, N0=N0, lambd=lambd, mu=mu, gamma=gamma
       )
+
+
+def exponentialMarshallPalmer(sizeCenter, rainRate):
+    """classical exponential distribution for rain followig Marshall
+    Palmer, 1948.
+
+    Parameters
+    ----------
+    sizeCenter : array_like
+        particle size at center of size bin
+    rainRate : array_like
+        rain rate in mm/hour!
+
+    Returns
+    -------
+    size distribution : array_like
+        calculated size distribution
+    """
+
+    N0 = 0.08 * 100**4
+    lambd = 41*rainRate**(-0.21)*100
+    return exponential(sizeCenter, N0, lambd)
 
 
 def exponentialField(sizeCenter, temperature, lambd):
@@ -224,12 +266,11 @@ def _exponentialField(temperature):
     size distribution : array_like
         calculated size distribution
     """
-    if not np.all(temperature > 0):
-        raise ValueError('temperature has to be larger 0K')
+
     if np.any(np.isnan(temperature)):
         raise ValueError('Found NAN in temperature')
 
-    N0 = 7.628e6 * np.exp(0.107 * (273.15 - temperature))
+    N0 = 7.628e6 * np.exp(-0.107 * units.kelvin2Celsius(temperature))
 
     if np.any(np.isnan(N0)):
         raise ValueError('Found NAN in N0')
@@ -256,6 +297,9 @@ def _exponentialWC2Lambda(N0, WC, massSizeA, massSizeB):
     size distribution : array_like
         calculated size distribution
     """
+
+    warnings.warn('Truncation effect on the PSD are not considered. '
+                  'I.e., typically mass is lost!')
 
     if np.any(np.isnan(WC)):
         raise ValueError('Found NAN in WC')
@@ -289,6 +333,9 @@ def _exponentialReff2Lambda(effectiveRadius):
     size distribution : array_like
         calculated size distribution
     """
+
+    raise NotImplementedError('See tests, they fail by a factor of 2?')
+
     if np.any(np.isnan(effectiveRadius)):
         raise ValueError('Found NAN in effectiveRadius')
 

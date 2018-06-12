@@ -118,7 +118,7 @@ contains
 
       if (verbose >= 2) call report(info, 'Start of ', nameOfRoutine)
 
-      ! no check for baundaries due to different possible particle types
+      ! no check for boundaries due to different possible particle types
       err = success
 
 !       k = 0.5d0 !defined in the paper

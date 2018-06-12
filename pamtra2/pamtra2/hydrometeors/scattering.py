@@ -5,47 +5,44 @@ import xarray as xr
 import singleScattering
 
 # required because apply_ufunc is picky about args and kwargs...
+
+
 def _scatteringWrapper(diameter,
                        wavelength,
-                       refractiveIndex,
+                       relativePermittivity,
                        model='Rayleigh',
                        ):
 
     if ((model == 'Rayleigh') or (model == 'Ray')):
         scatt = singleScattering.Rayleigh.RayleighScatt(
-                  diameter,
-                  wavelength=wavelength,
-                  refractive_index=refractiveIndex,
-                  )
+            diameter,
+            wavelength=wavelength,
+            dielectric_permittivity=relativePermittivity,
+        )
     elif (model == 'Mie'):
         scatt = singleScattering.Mie.MieScatt(
-                  diameter,
-                  wavelength=wavelength,
-                  refractive_index=refractiveIndex,
-                  )
+            diameter,
+            wavelength=wavelength,
+            dielectric_permittivity=relativePermittivity,
+        )
     return np.stack([scatt.Cext, scatt.Csca, scatt.Cabs, scatt.Cbck], axis=-1)
 
 
-def _dimensionToVariables(darray, dimension, variables):
-    profile = {}
-    for ii, var in enumerate(variables):
-        profile[var] = darray.isel(**{dimension: ii})
-    profile = xr.Dataset(profile)
-    return profile
-
-
 def Mie(
-  sizeCenter,
-  wavelength,
-  refractiveIndex,
-  ):
+    sizeCenter,
+    wavelength,
+    relativePermittivity,
+):
+    """Simple Wrapper for singleScattering.Mie.MieScatt to
+    make sure it works with xr.DataArrays.
+    """
 
     kwargs = dict(model='Mie')
     scatteringProperty = xr.apply_ufunc(
         _scatteringWrapper,
         sizeCenter,
         wavelength,
-        refractiveIndex,
+        relativePermittivity,
         kwargs=kwargs,
         output_core_dims=[['scatteringProperty']],
         output_dtypes=[sizeCenter.dtype],
@@ -58,17 +55,20 @@ def Mie(
 
 
 def Rayleigh(
-  sizeCenter,
-  wavelength,
-  refractiveIndex,
-  ):
+    sizeCenter,
+    wavelength,
+    relativePermittivity,
+):
+    """Simple Wrapper for singleScattering.Rayleigh.RayleighScatt to
+    make sure it works with xr.DataArrays.
+    """
 
     kwargs = dict(model='Rayleigh')
     scatteringProperty = xr.apply_ufunc(
         _scatteringWrapper,
         sizeCenter,
         wavelength,
-        refractiveIndex,
+        relativePermittivity,
         kwargs=kwargs,
         output_core_dims=[['scatteringProperty']],
         output_dtypes=[sizeCenter.dtype],
@@ -76,9 +76,4 @@ def Rayleigh(
         dask='parallelized',
     )
 
-    # variables = ['extinctionCrossSection', 'scatterCrossSection',
-    #              'absorptionCrossSection', 'backscatterCrossSection']
-    # dimension = 'scatteringProperty'
-
     return scatteringProperty
-

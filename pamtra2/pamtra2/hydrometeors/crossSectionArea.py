@@ -42,7 +42,7 @@ def sphere(sizeCenter):
         cross section area
     """
 
-    areaSizeA = np.pi/4.*sizeCenter**2
-    areaSizeB = 2
+    areaSizeA = np.pi/4.
+    areaSizeB = 2.
 
     return powerLaw(sizeCenter, areaSizeA, areaSizeB)
