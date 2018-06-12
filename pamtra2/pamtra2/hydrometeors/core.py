@@ -5,24 +5,35 @@ import numpy as np
 import xarray as xr
 import inspect
 
+import refractiveIndex
+
 from .. import units
 from .. import helpers
+
+from . import aspectRatio
+from . import crossSectionArea
+from . import density
+from . import fallVelocity
+from . import mass
+from . import scattering
+from . import size
+from . import sizeDistribution
 
 
 def DEFAULT_CALCULATION_ORDER():
     return [
-                'sizeBounds',
-                'sizeCenter',
-                'sizeBoundsWidth',
-                'aspectRatio',
-                'density',
-                'mass',
-                'crossSectionArea',
-                'sizeDistribution',
-                'relativePermittivity',
-                'scattering',
-                'fallVelocity',
-                ]
+        'sizeBounds',
+        'sizeCenter',
+        'sizeBoundsWidth',
+        'aspectRatio',
+        'density',
+        'mass',
+        'crossSectionArea',
+        'sizeDistribution',
+        'relativePermittivity',
+        'scattering',
+        'fallVelocity',
+    ]
 
 
 class hydrometeor(object):
@@ -34,10 +45,6 @@ class hydrometeor(object):
             content of parent's class
         name : str, optional
             name of the hydrometeor
-        kind :  {'liquid', 'ice'}, optional
-            liquid or frozen hydrometeor?
-        nBins : int, optional
-            number of size bins
         discreteProperties : xr.Dataset, optional
             pre-calculated discrete properties
         calculationOrder : optional
@@ -81,6 +88,7 @@ class hydrometeor(object):
             'crossSectionArea', and 'sizeDistribution'.
 
     """
+
     def __init__(
         self,
         parent,
@@ -102,11 +110,11 @@ class hydrometeor(object):
 
         if discreteProperties is None:
             discreteProperties = xr.Dataset(
-                    coords=dict(
-                        sizeBin=range(kwargs['nBins']),
-                        sizeBin1=range(kwargs['nBins']+1),
-                        )
-                    )
+                coords=dict(
+                    sizeBin=range(kwargs['nBins']),
+                    sizeBin1=range(kwargs['nBins']+1),
+                )
+            )
         self.profile = discreteProperties
 
         return
@@ -127,7 +135,7 @@ class hydrometeor(object):
         parent = self._parentFull.getProfileAllBroadcasted(
             parentVariables,
             sel={'hydrometeor': self.name},
-            )
+        )
         profile, parent = xr.broadcast(profile, parent, exclude=exclude)
         merged = xr.merge((profile, parent))
         return merged
@@ -244,18 +252,18 @@ class hydrometeor(object):
                     thisProperty.data,
                     coords=[self.profile.sizeBin],
                     attrs={'unit': units.units[key]},
-                    )
+                )
             elif (key in ['sizeBounds']):
                 thisProperty = xr.DataArray(
                     thisProperty.data,
                     coords=[self.profile.sizeBin1],
                     attrs={'unit': units.units[key]},
-                    )
+                )
             self.profile[key] = thisProperty
 
             self.profile[key].attrs.update(
                 {'unit': units.units[key]}
-                )
+            )
         self._postProcessing()
 
         self._keysToBeUsed = [x for x in self._keysToBeUsed if x not in
@@ -281,12 +289,12 @@ class hydrometeor(object):
             self.profile.scattering,
             'scatteringProperty',
             variables
-            )
+        )
 
         for key in scatteringProperty.keys():
             scatteringProperty[key].attrs.update(
                 {'unit': units.units[key]}
-                )
+            )
 
         self.profile = self.profile.drop('scattering')
         self.profile.merge(scatteringProperty, inplace=True)
@@ -313,6 +321,49 @@ class softEllipsoidMassSize(hydrometeor):
                 DEFAULT_CALCULATION_ORDER(),
                 'mass',
                 'density'
-                )
+            )
+
+        return super().__init__(*args, **kwargs)
+
+
+class cloudDroplet(hydrometeor):
+    """hydrometeor class with presets for cloud droplets.  """
+
+    def __init__(
+        self,
+        *args,
+        nBins=2,
+        sizeBounds=size.linspaceBounds,
+        sizeCenter=size.boundsToMid,
+        sizeBoundsWidth=size.boundsWidth,
+        sizeDistribution=sizeDistribution.monoDisperse,
+        aspectRatio=1.0,
+        mass=mass.ellipsoid,
+        density=density.water,
+        crossSectionArea=crossSectionArea.sphere,
+        relativePermittivity=refractiveIndex.water.turner_kneifel_cadeddu,
+        scattering=scattering.Rayleigh,
+        fallVelocity=fallVelocity.khvorostyanov01_drops,
+        Dmin=1e-5 - 1e-10,
+        Dmax=1e-5 + 1e-10,
+        Ntot=1e9,
+        **kwargs,
+    ):
+
+        kwargs['nBins'] = nBins
+        kwargs['sizeBounds'] = sizeBounds
+        kwargs['sizeCenter'] = sizeCenter
+        kwargs['sizeBoundsWidth'] = sizeBoundsWidth
+        kwargs['sizeDistribution'] = sizeDistribution
+        kwargs['aspectRatio'] = aspectRatio
+        kwargs['mass'] = mass
+        kwargs['density'] = density
+        kwargs['crossSectionArea'] = crossSectionArea
+        kwargs['relativePermittivity'] = relativePermittivity
+        kwargs['scattering'] = scattering
+        kwargs['fallVelocity'] = fallVelocity
+        kwargs['Dmin'] = Dmin
+        kwargs['Dmax'] = Dmax
+        kwargs['Ntot'] = Ntot
 
         return super().__init__(*args, **kwargs)

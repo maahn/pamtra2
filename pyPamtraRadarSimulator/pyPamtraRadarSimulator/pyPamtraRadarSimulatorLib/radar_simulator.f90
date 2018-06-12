@@ -63,7 +63,7 @@ contains
 
          if (ANY(ISNAN(particle_spectrum(hh, :))) .or. ISNAN(spectral_broadening(hh)) .or. ISNAN(PIA(hh))) then
             if (verbose >= 2) print *, 'skipping due to NAN', hh
-            continue
+            CYCLE
          end if
 
          call simulate_radar_one( &
@@ -85,7 +85,7 @@ contains
             )
 
          if (err /= 0) then
-            msg = 'error in estimate_spectralBroadening_one!'
+            msg = 'error in simulate_radar_one!'
             call report(err, msg, nameOfRoutine)
             errorstatus = err
             return
