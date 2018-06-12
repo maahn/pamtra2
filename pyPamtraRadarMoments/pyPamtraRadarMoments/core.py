@@ -147,8 +147,6 @@ def calc_radarMoments(spectrum,
     momentsSpecNoiseMean = np.asarray(momentsSpecNoiseMean)
     momentsSpecNoiseMax = np.asarray(momentsSpecNoiseMax)
 
-    import pdb
-
     pyPamtraRadarMomentsLib.report_module.verbose = verbosity
 
     # apply a receiver miscalibration:
@@ -164,7 +162,9 @@ def calc_radarMoments(spectrum,
         momentsSpecNoiseMean = momentsSpecNoiseMean.reshape(1)
         momentsSpecNoiseMax = momentsSpecNoiseMax.reshape(1)
 
-    noiseMean = momentsSpecNoiseMean*spectrum.shape[-1]  # nFFT
+    radarNFFT = spectrum.shape[-1]
+    del_v = (radarMaxV-radarMinV)/radarNFFT
+    noiseMean = 10*np.log10(momentsSpecNoiseMean * radarNFFT * del_v)
 
     assert (len(spectrum.shape) - 1) == len(
         momentsSpecNoiseMean.shape

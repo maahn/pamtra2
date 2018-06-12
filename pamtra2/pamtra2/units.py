@@ -9,7 +9,6 @@ from . import constants
 Central location for all units
 """
 
-
 units = collections.defaultdict(
     lambda: 'n/a',
     {
@@ -20,6 +19,7 @@ units = collections.defaultdict(
         'height': 'm',
         'horizontalWind': 'm/s',
         'mass': 'kg',
+        'noiseMean': 'dB',
         'particleSizeDistribution': 'm^(-4)',
         'pressure': 'Pa',
         'relativeHumidity': '%',

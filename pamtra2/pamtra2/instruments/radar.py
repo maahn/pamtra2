@@ -72,7 +72,6 @@ class dopplerRadarPamtra(_radar):
         radarAirmotionVmax=0,
         radarAirmotionLinearSteps=30,
         radarAirmotionStepVmin=0.5,
-        # dielectric constant |K|² (always for liquid water by convention) for the radar equation
         radarK2=0.93,
         radarBeamwidthDeg=0.2,
         radarIntegrationTime=60,
