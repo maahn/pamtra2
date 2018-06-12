@@ -47,9 +47,9 @@ class simpleRadar(_radar):
         Ze_back = 1.e18*(1.e0/(K2*np.pi**5))*back*(wavelength)**4
         Ze_back = Ze_back/10**(0.1*PIA)
 
-        self.results['radarReflectivty'] = 10*np.log10(Ze_back)
-        self.results['radarReflectivty'].attrs['unit'] = units.units[
-            'radarReflectivty']
+        self.results['radarReflectivity'] = 10*np.log10(Ze_back)
+        self.results['radarReflectivity'].attrs['unit'] = units.units[
+            'radarReflectivity']
 
 
         return self.results

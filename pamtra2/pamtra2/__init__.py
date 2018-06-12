@@ -7,7 +7,6 @@ from .core import *
 
 from . import hydrometeors
 from . import instruments
-from . import scattering4Pamtra
 from . import dimensions
 from . import helpers
 from . import units
