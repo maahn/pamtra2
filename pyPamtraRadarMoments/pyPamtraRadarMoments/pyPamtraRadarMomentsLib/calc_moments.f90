@@ -65,7 +65,7 @@ contains
 
             quality(hh) = quality(hh) + 64
 
-            continue
+            CYCLE
          end if
 
          call calc_moments_one( &
