@@ -196,3 +196,14 @@ def apply_ufunc_extended(
         this_result[key] = xr.DataArray(this_result[key], coords=this_ccords)
         ii += this_len
     return xr.Dataset(this_result)
+
+
+def xrGradient(data, dimension=None):
+    '''
+    Wrapper for np.gradient which is not available in xarray
+    '''
+    if dimension is None:
+        axis = 0
+    else:
+        axis = data.get_axis_num(dimension)
+    return xr.DataArray(np.gradient(data, axis=axis), coords=data.coords)
