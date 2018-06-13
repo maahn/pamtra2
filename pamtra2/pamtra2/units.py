@@ -13,6 +13,7 @@ units = collections.defaultdict(
     lambda: 'n/a',
     {
         'aspectRatio': '-',
+        'attenuation': 'dB/m',
         'crossSectionArea': 'm^2',
         'density': 'kg/m^3',
         'frequency': 'Hz',
@@ -21,6 +22,8 @@ units = collections.defaultdict(
         'mass': 'kg',
         'noiseMean': 'dB',
         'particleSizeDistribution': 'm^(-4)',
+        'pathIntegratedAttBottomUp': 'dB',
+        'pathIntegratedAttTopDown': 'dB',
         'pressure': 'Pa',
         'relativeHumidity': '%',
         'sizeBounds': 'm',

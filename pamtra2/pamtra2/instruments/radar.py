@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import warnings
 
 import numpy as np
 import xarray as xr
@@ -11,24 +12,21 @@ from .. import helpers
 from .core import instrument
 
 
-class _radar(instrument):
-
-    def _calcPIA(self):
-        print('PIA = 0!')
-        return xr.zeros_like(self.profile.height)
-
-
-class simpleRadar(_radar):
+class simpleRadar(instrument):
     def __init__(
         self,
         parent,
         frequencies='all',
         radarK2=0.93,
+        applyAttenuation=None,
+        **kwargs,
     ):
         super().__init__(
             parent,
             frequencies=frequencies,
             radarK2=radarK2,
+            applyAttenuation=applyAttenuation,
+             **kwargs,
         )
 
     def solve(self):
@@ -48,14 +46,45 @@ class simpleRadar(_radar):
         Ze_back = Ze_back/10**(0.1*PIA)
 
         self.results['radarReflectivity'] = 10*np.log10(Ze_back)
-        self.results['radarReflectivity'].attrs['unit'] = units.units[
-            'radarReflectivity']
 
+        self._calcPIA()
+
+        for vv in self.results.variables:
+            self.results[vv].attrs['unit'] = units.units[vv]
 
         return self.results
 
+    def _calcPIA(self):
+        apecAttenuation = self.parent.getIntegratedScatteringCrossSections(
+            crossSections=['extinctionCrossSection'],
+            frequencies=self.frequencies,
+        )['extinctionCrossSection']
+        del_h = helpers.xrGradient(self.parent.profile.height, 'layer')
+        # Doviak Zrnic eq 3.12
+        attenuation = apecAttenuation * 4.34 * del_h
 
-class dopplerRadarPamtra(_radar):
+        warnings.warn('only hydrometeor attenuation is considered by now!')
+
+        PIA_bottomup, PIA_topdown = _attenuation2pia(attenuation)
+        self.results['attenuation'] = attenuation / del_h
+        self.results['pathIntegratedAttBottomUp'] = PIA_bottomup
+        self.results['pathIntegratedAttTopDown'] = PIA_topdown
+
+        if self.settings['applyAttenuation'] is None:
+            pass
+        elif self.settings['applyAttenuation'] == 'bottomUp':
+            self.results['radarReflectivity'] -= self.results[
+                'pathIntegratedAttBottomUp']
+        elif self.settings['applyAttenuation'] == 'topDown':
+            self.results['radarReflectivity'] -= self.results[
+                'pathIntegratedAttTopDown']
+        else:
+            raise ValueError('Do not understand applyAttenuation: %s. Must be'
+                             'None, "bottomUp" or "topDown"' %
+                             self.settings['applyAttenuation'])
+
+
+class dopplerRadarPamtra(simpleRadar):
 
     def __init__(
         self,
@@ -87,6 +116,7 @@ class dopplerRadarPamtra(_radar):
         momentsUseWiderPeak=False,
         momentsReceiverMiscalibration=0,
         seed=0,
+        applyAttenuation=None,
     ):
 
         super().__init__(
@@ -118,13 +148,15 @@ class dopplerRadarPamtra(_radar):
             momentsSmoothSpectrum=momentsSmoothSpectrum,
             momentsUseWiderPeak=momentsUseWiderPeak,
             momentsReceiverMiscalibration=momentsReceiverMiscalibration,
+            applyAttenuation=applyAttenuation,
         )
 
         if len(frequencies) > 1:
-            raise NotImplementedError('Sorry, the radar simulator can handle '
-                                      'only one frequency at the moment (due '
-                                      'to missing support for vectorized '
-                                      'settings.)')
+            warnings.warn('Note that the radar simulator '
+                          'assumes that settings are the same for '
+                          'all frequencies (due to '
+                          'missing support for vectorized '
+                          'settings.)')
 
     def solve(self):
 
@@ -136,6 +168,7 @@ class dopplerRadarPamtra(_radar):
         self._calcRadarSpectrum()
         self._simulateRadar()
         self._calcMoments()
+        self._calcPIA()
 
         for vv in self.results.variables:
             self.results[vv].attrs['unit'] = units.units[vv]
@@ -355,8 +388,8 @@ class dopplerRadarPamtra(_radar):
         moments = moments.unstack('merged')
 
         moments = moments.assign_coords(
-            peak=np.arange(1,self.settings['momentsNPeaks']+1)
-            )
+            peak=np.arange(1, self.settings['momentsNPeaks']+1)
+        )
 
         self.results.merge(moments, inplace=True)
         return moments
@@ -389,3 +422,15 @@ def _calc_radarMoments_wrapper(*args, **kwargs):
               quality, noiseMean)
 
     return result
+
+
+def _attenuation2pia(attenuation, dim='layer'):
+
+    attenuationRev = attenuation.isel(
+        layer=attenuation.coords[dim].values[::-1])
+
+    PIA_bottomup = attenuation.cumsum(dim) * 2 - attenuation
+    PIA_topdown = attenuationRev.cumsum(dim) * 2 - attenuationRev
+
+    PIA_topdown = PIA_topdown.isel(layer=attenuation.coords[dim].values[::-1])
+    return PIA_bottomup, PIA_topdown
