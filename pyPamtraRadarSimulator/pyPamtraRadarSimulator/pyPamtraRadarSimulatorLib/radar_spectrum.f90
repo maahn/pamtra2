@@ -102,7 +102,7 @@ contains
 
             if (verbose >= 2) print *, 'skipping due to NAN', zz
 
-            continue
+            CYCLE
          end if
 
          call get_radar_spectrum_one( &
