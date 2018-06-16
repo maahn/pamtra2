@@ -11,11 +11,9 @@
 *.png
 .python-version
 .DS_Store
-*/examples/.ipynb_checkpoints
+*.ipynb_checkpoints
 */docs/build
 */build
-pyPamtraRadarSimulator/pyPamtraRadarSimulator/pyPamtraRadarSimulatorLib/pyPamtraRadarSimulatorLibmodule.c
-pyPamtraRadarSimulator/pyPamtraRadarSimulator/pyPamtraRadarSimulatorLib/pyPamtraRadarSimulatorLib-f2pywrappers2.f90
 *egg-info
 refractiveIndex/examples/refractive_indexes.pdf
 */.pytest_cache
