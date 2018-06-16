@@ -5,7 +5,6 @@ import numpy as np
 import xarray as xr
 
 import meteo_si
-import pygasabs
 
 from . import helpers
 from . import units
@@ -179,6 +178,7 @@ class pamtra2(object):
 
     def addMissingVariables(self):
 
+        self.addHeightBinDepth()
         self.addDryAirDensity()
         self.addAirDensity()
         self.addDynamicViscosity()
@@ -188,6 +188,16 @@ class pamtra2(object):
         self.addWaterVaporPressure()
 
         return self.profile
+
+    def addHeightBinDepth(self, update=False):
+
+        if (not update) and ('heightBinDepth' in self.profile.keys()):
+            return
+        else:
+            self.profile['heightBinDepth'] = helpers.xrGradient(
+                self.parent.profile.height, 'layer')
+
+            return self.profile['heightBinDepth']
 
     def addAbsoluteHumidity(self):
         '''
@@ -207,9 +217,9 @@ class pamtra2(object):
         '''
 
         self.profile['specificHumidity'] = meteo_si.humidity.rh2q(
-          self.profile.relativeHumidity/100.,
-          self.profile.temperature,
-          self.profile.pressure,
+            self.profile.relativeHumidity/100.,
+            self.profile.temperature,
+            self.profile.pressure,
         )
 
         return self.profile['specificHumidity']
@@ -220,9 +230,9 @@ class pamtra2(object):
         '''
 
         self.profile['waterVaporPressure'] = meteo_si.humidity.q2e(
-          self.profile['specificHumidity'],
-          self.profile.pressure
-          )
+            self.profile['specificHumidity'],
+            self.profile.pressure
+        )
 
         return self.profile['waterVaporPressure']
 

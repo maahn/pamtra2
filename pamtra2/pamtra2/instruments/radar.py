@@ -85,9 +85,7 @@ class simpleRadar(microwaveInstrument):
 
     def _attenuation2pia(self, attenuation, dim='layer'):
 
-        del_h = helpers.xrGradient(self.parent.profile.height, 'layer')
-
-        attenuation = attenuation * del_h
+        attenuation = attenuation * self.parent.profile.heightBinDepth
 
         attenuationRev = attenuation.isel(
             layer=attenuation.coords[dim].values[::-1])

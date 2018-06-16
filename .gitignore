@@ -19,6 +19,7 @@ pyPamtraRadarSimulator/pyPamtraRadarSimulator/pyPamtraRadarSimulatorLib/pyPamtra
 *egg-info
 refractiveIndex/examples/refractive_indexes.pdf
 */.pytest_cache
+.pytest_cache
 dask-worker-space
 
 
