@@ -13,7 +13,6 @@ units = collections.defaultdict(
     lambda: 'n/a',
     {
         'aspectRatio': '-',
-        'attenuation': 'dB/m',
         'crossSectionArea': 'm^2',
         'density': 'kg/m^3',
         'frequency': 'Hz',
@@ -29,6 +28,7 @@ units = collections.defaultdict(
         'sizeBounds': 'm',
         'sizeBoundsWidth': 'm',
         'sizeCenter': 'm',
+        'specificAttenuation': 'dB/m',
         'temperature': 'K',
         'verticalWind': 'm/s',
         'wavelenght': 'm',

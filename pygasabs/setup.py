@@ -43,6 +43,7 @@ def configuration(parent_package='', top_path=None):
                              'pygasabs/pygasabs_lib/constants.f90',
                              'pygasabs/pygasabs_lib/gasabs_module.f90',
                              'pygasabs/pygasabs_lib/rosen98_gasabs.f90',
+                             'pygasabs/pygasabs_lib/mpm93.f90',
                          ],
                          # library_dirs=['/usr/local/lib/'],
                          # libraries=['fftw3', 'lapack'],

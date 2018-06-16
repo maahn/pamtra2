@@ -3,11 +3,44 @@
 import numpy as np
 import xarray as xr
 
+import pygasabs
+
 from .. import units
 from .. import helpers
 
 
 class instrument(object):
+    '''Base instrument simulator class
+
+    This is the base class for all instrument simulators providing
+    the most important data structures.
+
+    Parameters
+    ----------
+    parent : {pamtra2 class}
+        Calling parent object
+    frequencies : {list} or {'all'}, optional
+        Use this instrument for the frequencies indicated in the list or
+        'all' frequencies (the default is 'all', which means all frequencies)
+    **settings : {dict}
+        Additional settings for the instrument
+
+    Attributes
+    ----------
+    frequencies : {list}
+        List of used frequencies
+    settings : {dict}
+        Instrument specific settings
+    parent : {pamtra2 class}
+        Calling parent object
+    profile : {xr.Dataset}
+        Calling parent's profile
+    hydrometeorProfiles : {pamtra2.helpers.AttrDict}
+         Calling parent's hydrometeor profiles
+    results : {xr.Dataset}
+        Instrument simulator results
+    '''
+
     def __init__(
         self,
         parent,
@@ -30,4 +63,75 @@ class instrument(object):
 
         self.results = xr.Dataset()
 
-        return self.results
+
+class microwaveInstrument(instrument):
+    def __init__(
+        self,
+        parent,
+        frequencies='all',
+        gaseousAttenuationModel='Rosenkranz98',
+        **settings,
+    ):
+        super().__init__(
+            parent,
+            frequencies=frequencies,
+            gaseousAttenuationModel=gaseousAttenuationModel,
+            **settings,
+        )
+
+    def _calcHydrometeorAbsorption(self):
+        '''Calculate hydrometeor absorption
+
+        Returns
+        -------
+        xr.DataArray
+            absorption coefficient
+        '''
+        hydroAbs = self.parent.getIntegratedScatteringCrossSections(
+            crossSections=['extinctionCrossSection'],
+            frequencies=self.frequencies,
+        )['extinctionCrossSection']
+
+        return hydroAbs
+
+    def _calcGaseousAbsorption(self):
+        '''Calculate gaseous absorption
+
+        Returns
+        -------
+        xr.DataArray
+            absorption coefficient
+        '''
+        thisProf = self.parent.profile.stack(merged=helpers.concatDicts(
+            self.parent.coords['additional'],
+            self.parent.coords['layer'],
+            self.parent.coords['frequency']
+        ))
+
+        kwargs = {}
+
+        args = [thisProf.frequency,
+                thisProf.temperature,
+                thisProf.waterVaporPressure,
+                thisProf.pressure
+                ]
+        args = xr.broadcast(*args)
+
+        if self.settings['gaseousAttenuationModel'] == 'Rosenkranz98':
+            kwargs['sumResults'] = True
+            func = pygasabs.calculate_gas_absorption_rosenkranz98
+        elif self.settings['gaseousAttenuationModel'] == 'Liebe93':
+            func = pygasabs.calculate_gas_absorption_rosenkranz98
+        else:
+            raise ValueError('Do not recognize gaseousAttenuationModel: %s' %
+                             self.settings['gaseousAttenuationModel'])
+
+        gasAbs = xr.apply_ufunc(
+            func,
+            *args,
+            kwargs=kwargs,
+            dask='parallelized',
+            output_dtypes=[args[1].dtype],
+        ).unstack('merged')
+
+        return gasAbs

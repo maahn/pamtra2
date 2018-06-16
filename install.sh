@@ -19,12 +19,12 @@ case $key in
     PYTHON="$2"
     shift # past argument
     shift # past value
-    ;;&
+    ;;
     -f|--flag)
     FLAGS+=" $2"
     shift # past argument
     shift # past value
-    ;;&
+    ;;
 esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
@@ -40,10 +40,6 @@ cd pyPamtraRadarMoments
 $PYTHON setup.py install $FLAGS
 cd ../
 
-cd pamtra2
-$PYTHON setup.py install $FLAGS
-cd ../
-
 cd refractiveIndex
 $PYTHON setup.py install $FLAGS
 cd ../
@@ -51,3 +47,13 @@ cd ../
 cd singleScattering
 $PYTHON setup.py install $FLAGS
 cd ../
+
+cd pygasabs
+$PYTHON setup.py install $FLAGS
+cd ../
+
+cd pamtra2
+$PYTHON setup.py install $FLAGS
+cd ../
+
+

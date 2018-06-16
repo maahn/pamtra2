@@ -6,18 +6,20 @@ import xarray as xr
 
 import pyPamtraRadarSimulator
 import pyPamtraRadarMoments
+import pygasabs
 
 from .. import units
 from .. import helpers
-from .core import instrument
+from .core import microwaveInstrument
 
 
-class simpleRadar(instrument):
+class simpleRadar(microwaveInstrument):
     def __init__(
         self,
         parent,
         frequencies='all',
         radarK2=0.93,
+        gaseousAttenuationModel='Rosenkranz98',
         applyAttenuation=None,
         **kwargs,
     ):
@@ -26,7 +28,8 @@ class simpleRadar(instrument):
             frequencies=frequencies,
             radarK2=radarK2,
             applyAttenuation=applyAttenuation,
-             **kwargs,
+            gaseousAttenuationModel=gaseousAttenuationModel,
+            **kwargs,
         )
 
     def solve(self):
@@ -36,39 +39,16 @@ class simpleRadar(instrument):
             frequencies=self.frequencies,
         )
 
+        self._calcPIA()
+
         back = crossSections['backscatterCrossSection']
         wavelength = self.parent.profile.wavelength.sel(
             frequency=self.frequencies)
         K2 = self.settings['radarK2']
-        PIA = self.parent.profile.pathIntegratedAtenuattion.sel(
-            frequency=self.frequencies)
+
         Ze_back = 1.e18*(1.e0/(K2*np.pi**5))*back*(wavelength)**4
-        Ze_back = Ze_back/10**(0.1*PIA)
 
         self.results['radarReflectivity'] = 10*np.log10(Ze_back)
-
-        self._calcPIA()
-
-        for vv in self.results.variables:
-            self.results[vv].attrs['unit'] = units.units[vv]
-
-        return self.results
-
-    def _calcPIA(self):
-        apecAttenuation = self.parent.getIntegratedScatteringCrossSections(
-            crossSections=['extinctionCrossSection'],
-            frequencies=self.frequencies,
-        )['extinctionCrossSection']
-        del_h = helpers.xrGradient(self.parent.profile.height, 'layer')
-        # Doviak Zrnic eq 3.12
-        attenuation = apecAttenuation * 4.34 * del_h
-
-        warnings.warn('only hydrometeor attenuation is considered by now!')
-
-        PIA_bottomup, PIA_topdown = _attenuation2pia(attenuation)
-        self.results['attenuation'] = attenuation / del_h
-        self.results['pathIntegratedAttBottomUp'] = PIA_bottomup
-        self.results['pathIntegratedAttTopDown'] = PIA_topdown
 
         if self.settings['applyAttenuation'] is None:
             pass
@@ -82,6 +62,42 @@ class simpleRadar(instrument):
             raise ValueError('Do not understand applyAttenuation: %s. Must be'
                              'None, "bottomUp" or "topDown"' %
                              self.settings['applyAttenuation'])
+
+        for vv in self.results.variables:
+            self.results[vv].attrs['unit'] = units.units[vv]
+
+        return self.results
+
+    def _calcPIA(self):
+        absHydro = self._calcHydrometeorAbsorption()
+        absGas = self._calcGaseousAbsorption()
+
+        # Doviak Zrnic eq 3.12 with 10*np.log10(np.exp(X) = 4.34*X
+        specificAttenuation = 10*np.log10(np.exp(absHydro + absGas))
+
+        warnings.warn('only hydrometeor attenuation is considered by now!')
+
+        PIA_bottomup, PIA_topdown = self._attenuation2pia(specificAttenuation)
+
+        self.results['specificAttenuation'] = specificAttenuation
+        self.results['pathIntegratedAttBottomUp'] = PIA_bottomup
+        self.results['pathIntegratedAttTopDown'] = PIA_topdown
+
+    def _attenuation2pia(self, attenuation, dim='layer'):
+
+        del_h = helpers.xrGradient(self.parent.profile.height, 'layer')
+
+        attenuation = attenuation * del_h
+
+        attenuationRev = attenuation.isel(
+            layer=attenuation.coords[dim].values[::-1])
+
+        PIA_bottomup = attenuation.cumsum(dim) * 2 - attenuation
+        PIA_topdown = attenuationRev.cumsum(dim) * 2 - attenuationRev
+
+        PIA_topdown = PIA_topdown.isel(
+            layer=attenuation.coords[dim].values[::-1])
+        return PIA_bottomup, PIA_topdown
 
 
 class dopplerRadarPamtra(simpleRadar):
@@ -117,6 +133,7 @@ class dopplerRadarPamtra(simpleRadar):
         momentsReceiverMiscalibration=0,
         seed=0,
         applyAttenuation=None,
+        gaseousAttenuationModel='Rosenkranz98',
     ):
 
         super().__init__(
@@ -149,6 +166,7 @@ class dopplerRadarPamtra(simpleRadar):
             momentsUseWiderPeak=momentsUseWiderPeak,
             momentsReceiverMiscalibration=momentsReceiverMiscalibration,
             applyAttenuation=applyAttenuation,
+            gaseousAttenuationModel=gaseousAttenuationModel,
         )
 
         if len(frequencies) > 1:
@@ -165,10 +183,10 @@ class dopplerRadarPamtra(simpleRadar):
                 raise ValueError('nbins must be greater than 1 for the'
                                  'spectral radar simulator!')
 
+        self._calcPIA()
         self._calcRadarSpectrum()
         self._simulateRadar()
         self._calcMoments()
-        self._calcPIA()
 
         for vv in self.results.variables:
             self.results[vv].attrs['unit'] = units.units[vv]
@@ -274,13 +292,27 @@ class dopplerRadarPamtra(simpleRadar):
             'eddyDissipationRate',
             'horizontalWind',
             'radarIdealizedSpectrum',
-            'pathIntegratedAtenuattion',
+            'pathIntegratedAttenuation',
             'wavelength',
         ]
 
         mergedProfile = self.parent.profile.copy()
         mergedProfile['radarIdealizedSpectrum'] = self.results[
             'radarIdealizedSpectrum']
+
+        if self.settings['applyAttenuation'] is None:
+            mergedProfile['pathIntegratedAttenuation'] = xr.zeros_like(
+                mergedProfile.height)
+        elif self.settings['applyAttenuation'] == 'bottomUp':
+            mergedProfile['pathIntegratedAttenuation'] = self.results[
+                'pathIntegratedAttBottomUp']
+        elif self.settings['applyAttenuation'] == 'topDown':
+            mergedProfile['pathIntegratedAttenuation'] = self.results[
+                'pathIntegratedAttTopDown']
+        else:
+            raise ValueError('Do not understand applyAttenuation: %s. Must be'
+                             'None, "bottomUp" or "topDown"' %
+                             self.settings['applyAttenuation'])
 
         mergedProfile = mergedProfile.stack(
             merged=helpers.concatDicts(
@@ -422,15 +454,3 @@ def _calc_radarMoments_wrapper(*args, **kwargs):
               quality, noiseMean)
 
     return result
-
-
-def _attenuation2pia(attenuation, dim='layer'):
-
-    attenuationRev = attenuation.isel(
-        layer=attenuation.coords[dim].values[::-1])
-
-    PIA_bottomup = attenuation.cumsum(dim) * 2 - attenuation
-    PIA_topdown = attenuationRev.cumsum(dim) * 2 - attenuationRev
-
-    PIA_topdown = PIA_topdown.isel(layer=attenuation.coords[dim].values[::-1])
-    return PIA_bottomup, PIA_topdown

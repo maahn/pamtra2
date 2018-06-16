@@ -3,26 +3,30 @@
 from collections import OrderedDict
 import numpy as np
 import xarray as xr
+
 import meteo_si
+import pygasabs
 
 from . import helpers
 from . import units
 from . import dimensions
 from . import constants
 
+
 __version__ = 0.2
 
 
 class customProfile (xr.Dataset):
     """ """
+
     def __init__(
-      self,
-      parent,
-      profileVars=[],
-      nLayer=None,
-      hydrometeors=None,
-      frequencies=None,
-      additionalDims={},
+        self,
+        parent,
+        profileVars=[],
+        nLayer=None,
+        hydrometeors=None,
+        frequencies=None,
+        additionalDims={},
     ):
 
         if isinstance(profileVars, xr.Dataset):
@@ -33,8 +37,8 @@ class customProfile (xr.Dataset):
 
             for var, coord, dtype in profileVars:
                 coord = helpers.concatDicts(
-                  *map(lambda x: parent.coords[x], coord)
-                  )
+                    *map(lambda x: parent.coords[x], coord)
+                )
                 thisShape = tuple(map(len, coord.values()))
                 self[var] = xr.DataArray(
                     (np.zeros(thisShape)*np.nan).astype(dtype),
@@ -52,81 +56,80 @@ class pamtra2(object):
     """ """
 
     def __init__(
-      self,
-      profileVars=[
-        (
-          'height',
-          [dimensions.ADDITIONAL, dimensions.LAYER],
-          np.float64
-          ),
-        (
-          'temperature',
-          [dimensions.ADDITIONAL, dimensions.LAYER],
-          np.float64
-          ),
-        (
-          'pressure',
-          [dimensions.ADDITIONAL, dimensions.LAYER],
-          np.float64
-          ),
-        (
-          'relativeHumidity',
-          [dimensions.ADDITIONAL, dimensions.LAYER],
-          np.float64
-          ),
-        (
-          'horizontalWind',
-          [dimensions.ADDITIONAL, dimensions.LAYER],
-          np.float64
-          ),
-        (
-          'verticalWind',
-          [dimensions.ADDITIONAL, dimensions.LAYER],
-          np.float64
-          ),
-        (
-          'eddyDissipationRate',
-          [dimensions.ADDITIONAL, dimensions.LAYER],
-          np.float64
-          ),
-        (
-          'waterContent',
-          [dimensions.ADDITIONAL, dimensions.LAYER, dimensions.HYDROMETEOR],
-          np.float64
-          ),
-      ],
-      nLayer=None,
-      hydrometeors=None,
-      frequencies=None,
-      additionalDims={},
+        self,
+        profileVars=[
+            (
+            'height',
+                [dimensions.ADDITIONAL, dimensions.LAYER],
+                np.float64
+            ),
+            (
+            'temperature',
+                [dimensions.ADDITIONAL, dimensions.LAYER],
+                np.float64
+            ),
+            (
+            'pressure',
+                [dimensions.ADDITIONAL, dimensions.LAYER],
+                np.float64
+            ),
+            (
+            'relativeHumidity',
+                [dimensions.ADDITIONAL, dimensions.LAYER],
+                np.float64
+            ),
+            (
+            'horizontalWind',
+                [dimensions.ADDITIONAL, dimensions.LAYER],
+                np.float64
+            ),
+            (
+            'verticalWind',
+                [dimensions.ADDITIONAL, dimensions.LAYER],
+                np.float64
+            ),
+            (
+            'eddyDissipationRate',
+                [dimensions.ADDITIONAL, dimensions.LAYER],
+                np.float64
+            ),
+            (
+            'waterContent',
+                [dimensions.ADDITIONAL, dimensions.LAYER, dimensions.HYDROMETEOR],
+                np.float64
+            ),
+        ],
+        nLayer=None,
+        hydrometeors=None,
+        frequencies=None,
+        additionalDims={},
     ):
 
         self.coords = {}
         self.coords[dimensions.ADDITIONAL] = OrderedDict(additionalDims)
         self.coords[dimensions.LAYER] = OrderedDict(layer=range(nLayer))
         self.coords[dimensions.HYDROMETEOR] = OrderedDict(
-          hydrometeor=hydrometeors)
+            hydrometeor=hydrometeors)
         self.coords[dimensions.FREQUENCY] = OrderedDict(
-          frequency=frequencies)
+            frequency=frequencies)
         self.coords['nonCore'] = helpers.concatDicts(
-          self.coords[dimensions.ADDITIONAL],
-          self.coords[dimensions.LAYER],
-          )
+            self.coords[dimensions.ADDITIONAL],
+            self.coords[dimensions.LAYER],
+        )
         self.coords['all'] = helpers.concatDicts(
-          self.coords[dimensions.ADDITIONAL],
-          self.coords[dimensions.LAYER],
-          self.coords[dimensions.HYDROMETEOR],
-          self.coords[dimensions.FREQUENCY],
-          )
-
+            self.coords[dimensions.ADDITIONAL],
+            self.coords[dimensions.LAYER],
+            self.coords[dimensions.HYDROMETEOR],
+            self.coords[dimensions.FREQUENCY],
+        )
 
         self.profile = customProfile(
-          self,
-          profileVars=profileVars,
-          nLayer=nLayer,
-          hydrometeors=hydrometeors,
-          frequencies=frequencies,
-          additionalDims=additionalDims
+            self,
+            profileVars=profileVars,
+            nLayer=nLayer,
+            hydrometeors=hydrometeors,
+            frequencies=frequencies,
+            additionalDims=additionalDims
         )
         self.additionalDims = additionalDims
         self.hydrometeors = helpers.AttrDict()
@@ -144,10 +147,10 @@ class pamtra2(object):
             return xr.broadcast(self.profile.sel(**sel)[variables])[0]
 
     def getIntegratedScatteringCrossSections(
-      self,
-      frequencies=None,
-      crossSections='all'
-      ):
+        self,
+        frequencies=None,
+        crossSections='all'
+    ):
 
         integrated = {}
 
@@ -157,21 +160,21 @@ class pamtra2(object):
                 'scatterCrossSection'
                 'absorptionCrossSection',
                 'backscatterCrossSection',
-              ]
+            ]
         for crossSection in crossSections:
             perHydro = []
             for name in self.hydrometeors.keys():
                 sizeDistribution = self.hydrometeors[
-                  name].profile.sizeDistribution
+                    name].profile.sizeDistribution
                 sizeWidth = self.hydrometeors[
-                  name].profile.sizeBoundsWidth
+                    name].profile.sizeBoundsWidth
                 crossSec = self.hydrometeors[name].profile[crossSection]
                 if frequencies is not None:
                     crossSec.sel(frequency=frequencies)
                 thisHydro = crossSec * sizeWidth * sizeDistribution
                 perHydro.append(thisHydro)
             integrated[crossSection] = xr.concat(
-              perHydro, dim='hydro').sum(['hydro', 'sizeBin'])
+                perHydro, dim='hydro').sum(['hydro', 'sizeBin'])
         return integrated
 
     def addMissingVariables(self):
@@ -180,8 +183,48 @@ class pamtra2(object):
         self.addAirDensity()
         self.addDynamicViscosity()
         self.addKinematicViscosity()
+        self.addSpecificHumidity()
+        self.addAbsoluteHumidity()
+        self.addWaterVaporPressure()
 
         return self.profile
+
+    def addAbsoluteHumidity(self):
+        '''
+        add absolute humidity
+        '''
+
+        self.profile['absoluteHumidity'] = meteo_si.humidity.rh2a(
+            self.profile.relativeHumidity/100.,
+            self.profile.temperature
+        )
+
+        return self.profile['absoluteHumidity']
+
+    def addSpecificHumidity(self):
+        '''
+        add specific humidity
+        '''
+
+        self.profile['specificHumidity'] = meteo_si.humidity.rh2q(
+          self.profile.relativeHumidity/100.,
+          self.profile.temperature,
+          self.profile.pressure,
+        )
+
+        return self.profile['specificHumidity']
+
+    def addWaterVaporPressure(self):
+        '''
+        add waterVaporPressure
+        '''
+
+        self.profile['waterVaporPressure'] = meteo_si.humidity.q2e(
+          self.profile['specificHumidity'],
+          self.profile.pressure
+          )
+
+        return self.profile['waterVaporPressure']
 
     def addDryAirDensity(self):
         '''
@@ -207,7 +250,7 @@ class pamtra2(object):
         qm = self.profile.waterContent.sum('hydrometeor')
 
         self.profile['airDensity'] = meteo_si.density.moist_rho_rh(
-          p, T, rh, qm)
+            p, T, rh, qm)
 
         return self.profile['airDensity']
 
@@ -217,7 +260,7 @@ class pamtra2(object):
         '''
 
         self.profile['dynamicViscosity'] = _dynamic_viscosity_air(
-          self.profile.temperature)
+            self.profile.temperature)
 
         return self.profile['dynamicViscosity']
 
@@ -232,7 +275,7 @@ class pamtra2(object):
             self.addDynamicViscosity()
         self.profile['kinematicViscosity'] = (
             self.profile['dynamicViscosity']/self.profile['dryAirDensity']
-            )
+        )
 
         return self.profile['kinematicViscosity']
 
@@ -322,7 +365,6 @@ class pamtra2(object):
         return self.instruments[name]
 
 
-
 # MOVE TO METEOSI!
 def _dynamic_viscosity_air(temperature):
     """
@@ -347,4 +389,3 @@ def _dynamic_viscosity_air(temperature):
 
 #     viscosity = _dynamic_viscosity_air(temperature)
 #     return viscosity/dryAirDensity
-

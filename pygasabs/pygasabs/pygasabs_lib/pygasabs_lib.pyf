@@ -52,6 +52,30 @@ python module pygasabs_lib ! in
             real(kind=dbl) intent(out) :: absair
             real(kind=dbl) intent(out) :: abswv
         end subroutine rosen98_gasabs_one
+        subroutine mpm93(errorstatus,nlayer,freq,pbkpa,ekpa,tc,w,abscof) ! in :pygasabs_lib:mpm93.f90
+            use kinds, only: dbl,long
+            use report_module
+            integer(kind=long_bn) intent(out) :: errorstatus
+            integer, optional,intent(in),check(len(freq)>=nlayer),depend(freq) :: nlayer=len(freq)
+            real(kind=dbl) dimension(nlayer),intent(in) :: freq
+            real(kind=dbl) dimension(nlayer),intent(in),depend(nlayer) :: pbkpa
+            real(kind=dbl) dimension(nlayer),intent(in),depend(nlayer) :: ekpa
+            real(kind=dbl) dimension(nlayer),intent(in),depend(nlayer) :: tc
+            real(kind=dbl) dimension(nlayer),intent(in),depend(nlayer) :: w
+            real(kind=dbl) dimension(nlayer),intent(out),depend(nlayer) :: abscof
+        end subroutine mpm93
+        subroutine mpm93_one(errorstatus,freq,pbkpa,ekpa,tc,w,abscof) ! in :pygasabs_lib:mpm93.f90
+            use kinds, only: dbl,long
+            use constants, only: t_abs
+            use report_module
+            integer(kind=long_bn) intent(out) :: errorstatus
+            real(kind=dbl) intent(in) :: freq
+            real(kind=dbl) intent(in) :: pbkpa
+            real(kind=dbl) intent(in) :: ekpa
+            real(kind=dbl) intent(in) :: tc
+            real(kind=dbl) intent(in) :: w
+            real(kind=dbl) intent(out) :: abscof
+        end subroutine mpm93_one
     end interface 
 end python module pygasabs_lib
 

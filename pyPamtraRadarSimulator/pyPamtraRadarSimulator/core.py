@@ -17,7 +17,7 @@ def radarSimulator(
     specWidth,
     backSpec,
     fallVelSpec,
-    pathIntegratedAtenuattion,
+    pathIntegratedAttenuation,
     height,
     verticalWind,
     horizontalWind,
@@ -55,7 +55,7 @@ def radarSimulator(
     fallVelSpec :
         Fall velocity in m/s. Shape (range, hydrometeor,
         hydrometeorBin)
-    pathIntegratedAtenuattion :
+    pathIntegratedAttenuation :
         path integrated attenuation in dB
     height :
         altitude in m
@@ -148,7 +148,7 @@ def radarSimulator(
         eddyDissipationRate=eddyDissipationRate,
         horizontalWind=horizontalWind,
         mergedParticleSpec=mergedParticleSpec,
-        pathIntegratedAtenuattion=pathIntegratedAtenuattion,
+        pathIntegratedAttenuation=pathIntegratedAttenuation,
         wavelength=wavelength,
         radarMaxV=radarMaxV,
         radarMinV=radarMinV,
@@ -295,7 +295,7 @@ def simulateRadarSpectrum(
     eddyDissipationRate,
     horizontalWind,
     mergedParticleSpec,
-    pathIntegratedAtenuattion,
+    pathIntegratedAttenuation,
     wavelength,
     radarMaxV=7.885,
     radarMinV=-7.885,
@@ -321,7 +321,7 @@ def simulateRadarSpectrum(
         horizontal wind in m/s
     mergedParticleSpec :
         idealized radar spectrum in mm6/m3. Sum for all hydrometeors.
-    pathIntegratedAtenuattion :
+    pathIntegratedAttenuation :
         path integrated attenuation in dB
     wavelength :
         wavelength in m
@@ -383,7 +383,7 @@ def simulateRadarSpectrum(
     error, radar_spectrum = rsLib.radar_simulator.simulate_radar(
         wavelength,
         mergedParticleSpec,
-        pathIntegratedAtenuattion,
+        pathIntegratedAttenuation,
         spectralBroadening,
         radarPNnoise,
         radarMaxV,

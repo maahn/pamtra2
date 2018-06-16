@@ -140,6 +140,11 @@ def apply_ufunc_extended(
     output_names = kwargs.pop('output_names', [])
     output_core_dims = kwargs.pop('output_core_dims', [])
 
+    if len(output_core_dims) == 0:
+        output_core_dims = [tuple()] * len(output_names)
+
+    assert len(output_core_dims) == len(output_names)
+
     OrderedDict(zip(output_names, output_core_dims))
 
     all_input_core_dims = []
@@ -168,7 +173,6 @@ def apply_ufunc_extended(
                                   )
 
     len_tmp_dim = np.sum([np.prod(vv) for vv in output_shapes.values()])
-
     flat_func = mergeFlattResults(output_core_shapes)(func)
 
     results = xr.apply_ufunc(
