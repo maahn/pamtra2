@@ -152,7 +152,8 @@ if __name__ == "__main__":
             ],
         },
         platforms=['any'],
-        requires=['numpy', 'scipy', 'xarray', 'json', 'dask', 'numba'],
+        requires=['numpy', 'scipy', 'xarray', 'json', 'dask', 'numba',
+                  'cython'],
         ext_modules=cythonize(
             [singleScattering, pamgasabs, pyrasim, pyramom]),
 

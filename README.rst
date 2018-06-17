@@ -19,42 +19,32 @@ All other packages are provided in `/libs`. They are installed as part of pamtra
 Installation
 ============
 
-First install all required python packages 
+First install all required python packages ::
 
-```
-numpy
-scipy
-xarray
-json
-dask
-numba
-```
+    numpy
+    scipy
+    xarray
+    json
+    dask
+    numba
 
 with e.g. `pip install ...` or `conda install`. Then, you can install pamtra2 
-with
+with ::
 
-```
-python setup.py install [flag]
-```
+    python setup.py install [flag]
 
-the flag --user will install the package under user's home and it is useful if you do not have root privileges. If you are actively developing,
+the flag --user will install the package under user's home and it is useful if you do not have root privileges. If you are actively developing, :: 
 
-```
-python setup.py develop [flag]
-```
+    python setup.py develop [flag]
 
-is recommended. In case you want to run the tests, you also need
+is recommended. In case you want to run the tests, you also need :: 
 
-```
-pytest
-```
+    pytest
 
-For building the documentation, please install
+For building the documentation, please install :: 
 
-```
-sphinx
-nbsphinx
-ipykernel
-pandoc
-```
+    sphinx
+    nbsphinx
+    ipykernel
+    pandoc
 
