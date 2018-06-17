@@ -22,4 +22,5 @@ refractiveIndex/examples/refractive_indexes.pdf
 .pytest_cache
 dask-worker-space
 MANIFEST
-
+*f2pywrappers2.f90
+*ibmodule.c
