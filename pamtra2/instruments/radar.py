@@ -4,9 +4,8 @@ import warnings
 import numpy as np
 import xarray as xr
 
-import pyPamtraRadarSimulator
-import pyPamtraRadarMoments
-import pygasabs
+from ..libs import pyPamtraRadarSimulator
+from ..libs import pyPamtraRadarMoments
 
 from .. import units
 from .. import helpers
@@ -74,8 +73,6 @@ class simpleRadar(microwaveInstrument):
 
         # Doviak Zrnic eq 3.12 with 10*np.log10(np.exp(X) = 4.34*X
         specificAttenuation = 10*np.log10(np.exp(absHydro + absGas))
-
-        warnings.warn('only hydrometeor attenuation is considered by now!')
 
         PIA_bottomup, PIA_topdown = self._attenuation2pia(specificAttenuation)
 

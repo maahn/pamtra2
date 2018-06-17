@@ -5,7 +5,7 @@ import numpy as np
 import xarray as xr
 import inspect
 
-import refractiveIndex
+from ..libs import refractiveIndex
 
 from .. import units
 from .. import helpers

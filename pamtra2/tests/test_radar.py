@@ -2,7 +2,7 @@ import collections
 import numpy as np
 import pytest
 import pamtra2
-import refractiveIndex
+import pamtra2.libs.refractiveIndex as refractiveIndex
 import xarray as xr
 
 

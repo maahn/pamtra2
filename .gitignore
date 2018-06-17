@@ -13,11 +13,13 @@
 .DS_Store
 *.ipynb_checkpoints
 */docs/build
-*/build
+libs/*/build
+build
+dist
 *egg-info
 refractiveIndex/examples/refractive_indexes.pdf
 */.pytest_cache
 .pytest_cache
 dask-worker-space
-
+MANIFEST
 

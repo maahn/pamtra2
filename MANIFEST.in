@@ -1,0 +1,7 @@
+include LICENSE
+recursive-include doc *
+include libs/refractiveIndex/refractiveIndex/*.dat
+prune doc/_build
+prune doc/generated
+global-exclude .DS_Store
+

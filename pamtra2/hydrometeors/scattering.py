@@ -2,7 +2,7 @@
 import numpy as np
 import xarray as xr
 
-import singleScattering
+from ..libs import singleScattering
 
 # required because apply_ufunc is picky about args and kwargs...
 

@@ -48,7 +48,7 @@ cd singleScattering
 $PYTHON setup.py install $FLAGS
 cd ../
 
-cd pygasabs
+cd pamgasabs
 $PYTHON setup.py install $FLAGS
 cd ../
 

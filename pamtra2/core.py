@@ -195,7 +195,7 @@ class pamtra2(object):
             return
         else:
             self.profile['heightBinDepth'] = helpers.xrGradient(
-                self.parent.profile.height, 'layer')
+                self.profile.height, 'layer')
 
             return self.profile['heightBinDepth']
 

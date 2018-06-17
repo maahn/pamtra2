@@ -4,13 +4,14 @@
 import numpy as np
 import meteo_si
 
-from . import pygasabs_lib
+from . import pamgasabs_lib
 
 __version__ = '0.1'
 
 
 def calculate_gas_absorption_rosenkranz98(
-  frequency, temperature, waterVaporPressure, pressure, sumResults=False):
+  frequency, temperature, waterVaporPressure, pressure, sumResults=False,
+  verbosity=0):
     """
     Microwave Gas absorption accoding to Rosenkranz 1998.
 
@@ -26,6 +27,8 @@ def calculate_gas_absorption_rosenkranz98(
         pressure [Pa]
     sumResults : bool, optional
         Sum absAir and absWv when returning (default False)
+    verbosity : int, optional
+        Verbose level of Fortran module (default 0)
 
     Returns
     -------
@@ -35,12 +38,15 @@ def calculate_gas_absorption_rosenkranz98(
         extinction by water vapor [Np/m]
 
     """
+
+    pamgasabs_lib.report_module.verbose = verbosity
+
     # to GHz
     frequencyGHz = frequency/1e9
 
     absoluteHumidity = meteo_si.humidity.e2a(waterVaporPressure, temperature)
 
-    error, absair, abswv = pygasabs_lib.rosen98_gasabs(
+    error, absair, abswv = pamgasabs_lib.rosen98_gasabs(
         frequencyGHz, temperature, absoluteHumidity, pressure)
 
     # to m
@@ -57,7 +63,7 @@ def calculate_gas_absorption_rosenkranz98(
 
 
 def calculate_gas_absorption_liebe93(
-  frequency, temperature, waterVaporPressure, pressure):
+  frequency, temperature, waterVaporPressure, pressure, verbosity=0):
     """
     Microwave Gas absorption accoding to Rosenkranz 1998.
 
@@ -71,12 +77,17 @@ def calculate_gas_absorption_liebe93(
         water vapor pressure [Pa]
     pres : array_like
         pressure [Pa]
+    verbosity : int, optional
+        Verbose level of Fortran module (default 0)
 
     Returns
     -------
     atmoAbs : array_like
         extinction by moist air [Np/m]
     """
+
+    pamgasabs_lib.report_module.verbose = verbosity
+
     # to GHz
     frequencyGHz = frequency/1e9
     # to kPa
@@ -88,7 +99,7 @@ def calculate_gas_absorption_liebe93(
     # we do hydrometeor attenaution somewhere else
     liquidWaterContent = np.zeros_like(temperature)
 
-    error, atmoAbs = pygasabs_lib.mpm93(
+    error, atmoAbs = pamgasabs_lib.mpm93(
         frequencyGHz,
         pressurekPa,
         waterVaporPressurekPa,
@@ -108,4 +119,3 @@ def calculate_gas_absorption_liebe93(
 def _kelvin2Celsius(kelvin):
     tFreezing = 273.15
     return kelvin - tFreezing
-

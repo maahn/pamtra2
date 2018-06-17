@@ -1,9 +1,9 @@
 !    -*- f90 -*-
 ! Note: the context of this file is case sensitive.
 
-python module pygasabs_lib ! in 
-    interface  ! in :pygasabs_lib
-        module report_module ! in :pygasabs_lib:report_module.f90
+python module pamgasabs_lib ! in 
+    interface  ! in :pamgasabs_lib
+        module report_module ! in :pamgasabs_lib:report_module.f90
             use kinds
             integer(kind=long_bn), optional :: verbose=0
             integer(kind=long_bn), parameter,optional :: nstatus=3
@@ -12,23 +12,23 @@ python module pygasabs_lib ! in
             integer(kind=long_bn), parameter,optional :: fatal=2
             integer(kind=long_bn), parameter,optional :: info=3
             character(len=7), parameter,optional,dimension(4),depend(success,warning,fatal,info) :: status_text=(/'success','warning','fatal','info'/)
-            subroutine report(status,message,nameofroutine) ! in :pygasabs_lib:report_module.f90:report_module
+            subroutine report(status,message,nameofroutine) ! in :pamgasabs_lib:report_module.f90:report_module
                 integer(kind=long_bn) intent(in) :: status
                 character*(*) intent(in) :: message
                 character*(*) intent(in) :: nameofroutine
             end subroutine report
-            subroutine assert_true(error,logic,message) ! in :pygasabs_lib:report_module.f90:report_module
+            subroutine assert_true(error,logic,message) ! in :pamgasabs_lib:report_module.f90:report_module
                 integer intent(inout) :: error
                 logical intent(in) :: logic
                 character*(*) intent(in) :: message
             end subroutine assert_true
-            subroutine assert_false(error,logic,message) ! in :pygasabs_lib:report_module.f90:report_module
+            subroutine assert_false(error,logic,message) ! in :pamgasabs_lib:report_module.f90:report_module
                 integer intent(inout) :: error
                 logical intent(in) :: logic
                 character*(*) intent(in) :: message
             end subroutine assert_false
         end module report_module
-        subroutine rosen98_gasabs(errorstatus,nlayer,freq,tempk,rhowv,pres,absair,abswv) ! in :pygasabs_lib:rosen98_gasabs.f90
+        subroutine rosen98_gasabs(errorstatus,nlayer,freq,tempk,rhowv,pres,absair,abswv) ! in :pamgasabs_lib:rosen98_gasabs.f90
             use kinds, only: dbl,long
             use report_module
             integer(kind=long_bn) intent(out) :: errorstatus
@@ -40,7 +40,7 @@ python module pygasabs_lib ! in
             real(kind=dbl) dimension(nlayer),intent(out),depend(nlayer) :: absair
             real(kind=dbl) dimension(nlayer),intent(out),depend(nlayer) :: abswv
         end subroutine rosen98_gasabs
-        subroutine rosen98_gasabs_one(errorstatus,freq,tempk,rhowv,pres,absair,abswv) ! in :pygasabs_lib:rosen98_gasabs.f90
+        subroutine rosen98_gasabs_one(errorstatus,freq,tempk,rhowv,pres,absair,abswv) ! in :pamgasabs_lib:rosen98_gasabs.f90
             use kinds, only: dbl,long
             use gasabs_module
             use report_module
@@ -52,7 +52,7 @@ python module pygasabs_lib ! in
             real(kind=dbl) intent(out) :: absair
             real(kind=dbl) intent(out) :: abswv
         end subroutine rosen98_gasabs_one
-        subroutine mpm93(errorstatus,nlayer,freq,pbkpa,ekpa,tc,w,abscof) ! in :pygasabs_lib:mpm93.f90
+        subroutine mpm93(errorstatus,nlayer,freq,pbkpa,ekpa,tc,w,abscof) ! in :pamgasabs_lib:mpm93.f90
             use kinds, only: dbl,long
             use report_module
             integer(kind=long_bn) intent(out) :: errorstatus
@@ -64,7 +64,7 @@ python module pygasabs_lib ! in
             real(kind=dbl) dimension(nlayer),intent(in),depend(nlayer) :: w
             real(kind=dbl) dimension(nlayer),intent(out),depend(nlayer) :: abscof
         end subroutine mpm93
-        subroutine mpm93_one(errorstatus,freq,pbkpa,ekpa,tc,w,abscof) ! in :pygasabs_lib:mpm93.f90
+        subroutine mpm93_one(errorstatus,freq,pbkpa,ekpa,tc,w,abscof) ! in :pamgasabs_lib:mpm93.f90
             use kinds, only: dbl,long
             use constants, only: t_abs
             use report_module
@@ -77,7 +77,7 @@ python module pygasabs_lib ! in
             real(kind=dbl) intent(out) :: abscof
         end subroutine mpm93_one
     end interface 
-end python module pygasabs_lib
+end python module pamgasabs_lib
 
 ! This file was auto-generated with f2py (version:2).
 ! See http://cens.ioc.ee/projects/f2py2e/

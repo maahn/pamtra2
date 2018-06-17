@@ -1,15 +1,15 @@
 
-.. module:: pygasabs
+.. module:: pamgasabs
 
 
 ====================================
-Welcome to pygasabs's documentation!
+Welcome to pamgasabs's documentation!
 ====================================
 
 :Release: |version|
 :Date: |today|
 
-pygasabs is the Pamtra's module to estimate geaseous absorption in the microwave range. 
+pamgasabs is the Pamtra's module to estimate geaseous absorption in the microwave range. 
 
 
 Installation
@@ -25,12 +25,12 @@ Get model from git repository
 *****************************
 The version control system git (http://git-scm.com/) is used to keep track of the code. Get a copy of the model with::
 
-    git clone https://github.com/maahn/pamtra2/pygasabs
+    git clone https://github.com/maahn/pamtra2/pamgasabs
 
 The very basics of git can be found here https://try.github.io/levels/1/challenges/1
 
 
-Build pygasabs
+Build pamgasabs
 **************
 Simply type ::
 
@@ -47,7 +47,7 @@ if you do not have root permissions you can also use instead of the last line::
 
 You can start using pamRaMo in python with ::
 
-  import pygasabs
+  import pamgasabs
 
 See examples for more information.
 
@@ -58,7 +58,7 @@ Provided Routines
 .. autosummary::
    :toctree: generated/
 
-.. currentmodule:: pygasabs.core
+.. currentmodule:: pamgasabs.core
 
 .. autofunction:: calculate_gas_absorption
 

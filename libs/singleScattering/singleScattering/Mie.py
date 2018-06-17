@@ -20,14 +20,15 @@
 Mie spherical scatterer object and member functions
 
 """
+import sys
 
 from .scatterer import Scatterer
-from singleScattering import cMie
+from . import cMie
 
 import numpy as np
 
 try:
-    from refractiveIndex import utilities as ref_utils
+    import pamtra2.libs.refractiveIndex.utilities as ref_utils
 except:
     sys.path.append('../../refractiveIndex/')
     from refractiveIndex import utilities as ref_utils

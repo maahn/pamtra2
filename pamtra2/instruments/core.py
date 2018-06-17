@@ -3,7 +3,7 @@
 import numpy as np
 import xarray as xr
 
-import pygasabs
+from ..libs import pamgasabs
 
 from .. import units
 from .. import helpers
@@ -119,9 +119,9 @@ class microwaveInstrument(instrument):
 
         if self.settings['gaseousAttenuationModel'] == 'Rosenkranz98':
             kwargs['sumResults'] = True
-            func = pygasabs.calculate_gas_absorption_rosenkranz98
+            func = pamgasabs.calculate_gas_absorption_rosenkranz98
         elif self.settings['gaseousAttenuationModel'] == 'Liebe93':
-            func = pygasabs.calculate_gas_absorption_rosenkranz98
+            func = pamgasabs.calculate_gas_absorption_rosenkranz98
         else:
             raise ValueError('Do not recognize gaseousAttenuationModel: %s' %
                              self.settings['gaseousAttenuationModel'])

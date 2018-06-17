@@ -27,7 +27,7 @@ import sys
 from .scatterer import Scatterer
 
 try:
-    from refractiveIndex import utilities as ref_utils
+    import pamtra2.libs.refractiveIndex.utilities as ref_utils
 except:
     sys.path.append('../../refractiveIndex/')
     from refractiveIndex import utilities as ref_utils
