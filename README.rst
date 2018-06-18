@@ -27,6 +27,7 @@ First install all required python packages ::
     json
     dask
     numba
+    cython
 
 with e.g. `pip install ...` or `conda install`. Then, you can install pamtra2 
 with ::
@@ -47,4 +48,5 @@ For building the documentation, please install ::
     nbsphinx
     ipykernel
     pandoc
+    nbconvert
 

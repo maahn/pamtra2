@@ -15,6 +15,7 @@
 */docs/build
 libs/*/build
 build
+doc/build
 dist
 *egg-info
 refractiveIndex/examples/refractive_indexes.pdf
