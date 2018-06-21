@@ -27,11 +27,7 @@ from . import cMie
 
 import numpy as np
 
-try:
-    import pamtra2.libs.refractiveIndex.utilities as ref_utils
-except:
-    sys.path.append('../../refractiveIndex/')
-    from refractiveIndex import utilities as ref_utils
+from pamtra2.libs.refractiveIndex import utilities as ref_utils
 
 class MieScatt(Scatterer):
     """

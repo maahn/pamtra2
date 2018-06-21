@@ -1,0 +1,10 @@
+*.py[co]
+*~
+*.DS_Store
+_build/
+auto_examples/
+gen_api/
+meteo_si.egg-info/
+._*.py
+build
+dist

@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = meteo_si/*
+include = meteo_si/*
+omit = */setup.py
+[report]
+include = meteo_si/*
