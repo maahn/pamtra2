@@ -1,0 +1,10 @@
+channels:
+- conda-forge
+dependencies:
+- cython
+- python>=3.5
+- numpy
+- scipy
+- xarray
+- dask
+- numba
