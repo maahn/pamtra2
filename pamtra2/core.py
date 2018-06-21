@@ -4,7 +4,7 @@ from collections import OrderedDict
 import numpy as np
 import xarray as xr
 
-import meteo_si
+from .libs import meteo_si
 
 from . import helpers
 from . import units

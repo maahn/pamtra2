@@ -2,7 +2,7 @@
 # (c) M. Maahn, 2018
 
 import numpy as np
-import meteo_si
+from pamtra2.libs import meteo_si
 
 from . import pamgasabs_lib
 

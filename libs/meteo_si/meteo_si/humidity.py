@@ -8,9 +8,9 @@ import numpy as np
 
 # from .due import due, Doi
 
-import meteo_si.constants
-import meteo_si.density
-import meteo_si.temperature
+from . import constants
+from . import density
+from . import temperature
 
 
 __all__ = ['a2e', 'e2a', "e2q", "q2e", "rh2q", "rh2a", "rh_to_iwv",
@@ -36,7 +36,7 @@ def a2e(a, T):
         vapor pressure [Pa]
 
     """
-    e = a * T * meteo_si.constants.Rvapor
+    e = a * T * constants.Rvapor
 
     return e
 
@@ -61,7 +61,7 @@ def e2a(e, T):
 
     """
 
-    a = e / (T * meteo_si.constants.Rvapor)
+    a = e / (T * constants.Rvapor)
 
     return a
 
@@ -84,7 +84,7 @@ def e_sat_gg_water(T):
         saturation pressure [Pa]
 
     """
-    T = meteo_si.temperature.kelvin_2_celsius(T)
+    T = temperature.kelvin_2_celsius(T)
     e_sat_gg_water = 100 * 6.112 * np.exp(17.62 * T / (243.12 + T))
     return e_sat_gg_water
 
@@ -107,7 +107,7 @@ def e_sat_gg_ice(T):
         saturation pressure [Pa]
 
     """
-    T = meteo_si.temperature.kelvin_2_celsius(T)
+    T = temperature.kelvin_2_celsius(T)
     e_sat_gg_ice = 100 * 6.112 * np.exp(22.46 * T / (272.62 + T))
     return e_sat_gg_ice
 
@@ -131,7 +131,7 @@ def e2q(e, p):
         specific humidity [kg / kg]
 
     """
-    q = meteo_si.constants.Mwml * e / (p - (1 - meteo_si.constants.Mwml) * e)
+    q = constants.Mwml * e / (p - (1 - constants.Mwml) * e)
     return q
 
 
@@ -155,7 +155,7 @@ def q2e(q, p):
 
     """
 
-    e = p / ((meteo_si.constants.Mwml / q)+1-meteo_si.constants.Mwml)
+    e = p / ((constants.Mwml / q)+1-constants.Mwml)
     return e
 
 
@@ -222,7 +222,7 @@ def rh2a(rh, T, e_sat_func=e_sat_gg_water):
             raise TypeError("rh must not be in %")
 
     e = rh*e_sat_func(T)
-    a = e / (meteo_si.constants.Rvapor*T)
+    a = e / (constants.Rvapor*T)
     return a
 
 
@@ -249,7 +249,7 @@ def a2rh(a, T, e_sat_func=e_sat_gg_water):
 
     """
 
-    e = a*(meteo_si.constants.Rvapor * T)
+    e = a*(constants.Rvapor * T)
     rh = e / e_sat_func(T)
     return rh
 
@@ -279,8 +279,8 @@ def q2rh(q, T, p, e_sat_func=e_sat_gg_water):
 
     """
 
-    e = p / (meteo_si.constants.Mwml *
-             ((1 / q)+(1 / (meteo_si.constants.Mwml) - 1)))
+    e = p / (constants.Mwml *
+             ((1 / q)+(1 / (constants.Mwml) - 1)))
 
     eStar = e_sat_func(T)
     rh = e / eStar
@@ -319,6 +319,6 @@ def rh_to_iwv(relhum_lev, temp_lev, press_lev, hgt_lev):
     press = -1.*press_lev[..., 0:-1] / xp*(np.exp(-xp*dz)-1.) / dz
 
     q = rh2q(relhum, temp, press)
-    rho_moist = meteo_si.density.moist_rho_q(press, temp, q)
+    rho_moist = density.moist_rho_q(press, temp, q)
 
     return np.sum(q*rho_moist*dz)

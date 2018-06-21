@@ -9,8 +9,8 @@ import numpy as np
 
 # from .due import due, Doi
 
-import meteo_si.constants
-import meteo_si.humidity
+from . import constants
+from . import humidity
 
 
 __all__ = ["kelvin_2_celsius", "celsius_to_kelvin", "T_virt_rh", "T_virt_q"]
@@ -39,7 +39,7 @@ def kelvin_2_celsius(T):
 
     """
 
-    return T + meteo_si.constants.Tnull
+    return T + constants.Tnull
 
 
 def celsius_to_kelvin(C):
@@ -58,7 +58,7 @@ def celsius_to_kelvin(C):
        Temperature in Kelvin.
     """
 
-    return C - meteo_si.constants.Tnull
+    return C - constants.Tnull
 
 
 def T_virt_rh(T, rh, p):
@@ -85,7 +85,7 @@ def T_virt_rh(T, rh, p):
         if np.any(rh > 5):
             raise TypeError("rh must not be in %")
 
-    return T_virt_q(T, meteo_si.humidity.rh2q(rh, T, p))
+    return T_virt_q(T, humidity.rh2q(rh, T, p))
 
 
 def T_virt_q(T, q):
@@ -105,4 +105,4 @@ def T_virt_q(T, q):
     T_virt
         Virtual temperature in K
     '''
-    return T + T * (meteo_si.constants.Rvapor/meteo_si.constants.Rair-1) * q
+    return T + T * (constants.Rvapor/constants.Rair-1) * q
