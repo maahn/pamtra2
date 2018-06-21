@@ -26,11 +26,7 @@ import sys
 
 from .scatterer import Scatterer
 
-try:
-    from refractiveIndex import utilities as ref_utils
-except:
-    sys.path.append('../../refractiveIndex/')
-    from refractiveIndex import utilities as ref_utils
+from pamtra2.libs.refractiveIndex import utilities as ref_utils
 
 class T_Matrix(Scatterer):
     """

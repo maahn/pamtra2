@@ -28,12 +28,8 @@ import numpy as np
 import sys
 from . import scattering_utilities as scatt_utils
 
-try:
-    import pamtra2.libs.refractiveIndex.utilities as ref_utils
-except:
-    sys.path.append('../../refractiveIndex/')
-    from refractiveIndex import utilities as ref_utils
-    
+from pamtra2.libs.refractiveIndex import utilities as ref_utils
+
 light_speed = 299792458.
 
 class Scatterer(object):

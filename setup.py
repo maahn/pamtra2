@@ -109,9 +109,10 @@ pyramom = Extension(
     libraries=['fftw3', 'lapack'],
     **kw)
 
-refractiveIndex_path = 'libs/refractiveIndex/refractiveIndex/'
+refractiveIndex_path = 'libs/refractiveIndex/refractiveIndex'
+meteo_si_path = 'libs/meteo_si/meteo_si'
 
-singleScattering_path = 'libs/singleScattering/'
+singleScattering_path = 'libs/singleScattering'
 singleScattering = Extension(
     "pamtra2.libs.singleScattering.cMie",
     sources=["%s/Mie/cython/cMie.pyx" % singleScattering_path,
@@ -134,22 +135,21 @@ if __name__ == "__main__":
                   'pamtra2.libs.pyPamtraRadarMoments',
                   'pamtra2.libs.refractiveIndex',
                   'pamtra2.libs.singleScattering',
+                  'pamtra2.libs.meteo_si',
                   ],
         package_dir={
             'pamtra2.libs.pamgasabs': pamgasabs_path,
             'pamtra2.libs.pyPamtraRadarSimulator': pyrasim_path,
             'pamtra2.libs.pyPamtraRadarMoments': pyramom_path,
             'pamtra2.libs.refractiveIndex': refractiveIndex_path,
+            'pamtra2.libs.meteo_si': meteo_si_path,
             'pamtra2.libs.singleScattering': '%s/singleScattering' %
             singleScattering_path,
         },
         package_data={
             # Don't aks me why, but I need an extra random character in front
             # of the *dat files...
-            'pamtra2.libs.refractiveIndex': [
-                '?iwabuchi_ice_eps.dat',
-                '?IOP_2008_ASCIItable.dat'
-            ],
+            'pamtra2.libs.refractiveIndex': ['*.dat'],
         },
         platforms=['any'],
         requires=['numpy', 'scipy', 'xarray', 'json', 'dask', 'numba',
