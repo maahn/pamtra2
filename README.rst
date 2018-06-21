@@ -1,3 +1,8 @@
+.. image:: //readthedocs.org/projects/pamtra2/badge/?version=latest
+:target: https://pamtra2.readthedocs.io/en/latest/?badge=latest
+:alt: Documentation Status
+
+
 Pamtra2
 #######
 
@@ -10,6 +15,8 @@ Included Modules
 
 All other packages are provided in `/libs`. They are installed as part of pamtra2 in `pamtra2.libs`, but can be also installed separately with the provided `setup.py` files:
 
+* meteo_si - Meteo SI is a collection of functions for atmospheric sciences following the 
+SI-convention (unless stated otherwise)
 * pamgasabs - Estimate gaseous absorption
 * pyPamtraRadarSimulator - Simulate a radar Doppler spectrum
 * pyPamtraRadarMoments - Estimate the moments of the radar Doppler spectrum
@@ -24,7 +31,6 @@ First install all required python packages ::
     numpy
     scipy
     xarray
-    json
     dask
     numba
     cython
