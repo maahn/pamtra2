@@ -1,4 +1,4 @@
-.. image:: //readthedocs.org/projects/pamtra2/badge/?version=latest
+.. image:: https://readthedocs.org/projects/pamtra2/badge/?version=latest
     :target: https://pamtra2.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
