@@ -1,7 +1,5 @@
-.. image:: //readthedocs.org/projects/pamtra2/badge/?version=latest
-:target: https://pamtra2.readthedocs.io/en/latest/?badge=latest
-:alt: Documentation Status
-
+[![Documentation Status](//readthedocs.org/projects/pamtra2/badge/?version=latest)](https://pamtra2.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://www.travis-ci.org/maahn/pamtra2.svg?branch=master)](https://www.travis-ci.org/maahn/pamtra2)
 
 Pamtra2
 #######
