@@ -2,7 +2,7 @@ requirements_file:
   doc/requirements.txt
 
 conda:
-    file: environment.yml
+    file: doc/environment.yml
 
 build:
     image: latest
