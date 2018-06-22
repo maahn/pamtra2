@@ -20,10 +20,10 @@ before_install:
 - sudo apt-get install -qq gcc gfortran liblapack-dev libfftw3-dev 
 - pip install Cython 
 - pip install numpy
+- pip install pytest coveralls
 install:
-  - pip install -r requirements.txt
-  - pip install pytest coveralls
+- python setup.py install
 script:
-  - pytest 
+- pytest 
 after_success:
-  - coveralls
+- coveralls
