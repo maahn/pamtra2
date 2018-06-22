@@ -156,6 +156,8 @@ if __name__ == "__main__":
         install_requires=['numpy', 'scipy', 'xarray', 'dask[complete]', 'numba',
                   'cython'],
         build_requires=['numpy', 'cython'],
+        setup_requires=["pytest-runner"],
+        tests_require=["pytest"],
         ext_modules=cythonize(
             [singleScattering, pamgasabs, pyrasim, pyramom]),
 
