@@ -12,3 +12,4 @@ dependencies:
 - nbsphinx
 - ipykernel
 - pandoc
+- gcc
