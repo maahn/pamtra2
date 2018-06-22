@@ -12,6 +12,6 @@ dependencies:
 - nbsphinx
 - ipykernel
 - pandoc
-- gcc
+- gxx_linux-64
 - fftw
 - lapack
