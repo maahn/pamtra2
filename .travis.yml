@@ -1,0 +1,6 @@
+language: python
+sudo: required 
+dist: trusty
+before_install:
+- sudo apt-get update -qq
+- sudo apt-get install -qq gcc gfortran libnetcdff5 netcdf-bin libnetcdf-dev liblapack-dev libzip-dev git gitk
