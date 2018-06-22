@@ -45,11 +45,12 @@ they are not respected
 
 """
 
+from os import path
+
 import numpy as np
 import pandas as pd
 from scipy import interpolate
 
-from os import path
 module_path = path.split(path.abspath(__file__))[0]
 warren_ice_table = pd.read_csv(
     module_path+'/IOP_2008_ASCIItable.dat',

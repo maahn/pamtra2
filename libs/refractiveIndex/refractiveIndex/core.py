@@ -56,12 +56,9 @@ dielectric model and raises ValueError in case they are not respected
 
 """
 
-from . import ice
-from . import snow
-from . import water
-from . import utilities
-
 import numpy as np
+
+from . import ice, snow, utilities, water
 
 substances_list = ['ice', 'water', 'snow']
 
@@ -175,5 +172,3 @@ def magnetic2electric_ratio(size=None, frequency=None, wavelength=None,
 
     k = utilities.wavenumber(frequency, wavelength)
     return (k*size)**2.0 * ((eps.real)**2.0 + eps.imag**2.0)/90.0
-
-

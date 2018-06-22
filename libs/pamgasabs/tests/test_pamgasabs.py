@@ -1,5 +1,6 @@
-import pamtra2.libs.pamgasabs as pamgasabs
 import numpy as np
+import pamtra2.libs.pamgasabs as pamgasabs
+
 
 '''
 Values are NOT compared with any reference...

@@ -1,7 +1,6 @@
 import numpy as np
-import pytest
-
 import pamtra2
+import pytest
 
 
 class TestAspectRatio(object):

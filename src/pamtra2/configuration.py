@@ -2,9 +2,11 @@
 # from __future__ import division, absolute_import, print_function
 # from builtins import super
 
-from copy import deepcopy
 import json
+from copy import deepcopy
+
 import numpy as np
+
 from . import constants
 
 

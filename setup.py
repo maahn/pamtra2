@@ -1,14 +1,13 @@
 import os
 import sys
 from glob import glob
-import numpy
 
+import numpy
 import setuptools
-from numpy.distutils.misc_util import Configuration
+from Cython.Build import cythonize
 from numpy.distutils.core import setup
 from numpy.distutils.extension import Extension
-
-from Cython.Build import cythonize
+from numpy.distutils.misc_util import Configuration
 
 
 def read(fname):

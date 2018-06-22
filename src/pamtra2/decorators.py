@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from functools import wraps
-from copy import deepcopy
-import numpy as np
 import pickle
+from copy import deepcopy
+from functools import wraps
+
+import numpy as np
 
 
 class MemoizeMutable:

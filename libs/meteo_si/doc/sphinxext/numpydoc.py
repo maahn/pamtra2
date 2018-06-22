@@ -16,20 +16,25 @@ It will:
 .. [1] https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt
 
 """
-from __future__ import division, absolute_import, print_function
+from __future__ import absolute_import, division, print_function
 
-import sys
-import re
-import pydoc
-import sphinx
-import inspect
 import collections
+import inspect
+import pydoc
+import re
+import sys
+
+import sphinx
+from docutils.statemachine import ViewList
+from sphinx.domains.c import CDomain
+from sphinx.domains.python import PythonDomain
+from sphinx.util.compat import Directive
+
+from docscrape_sphinx import SphinxDocString, get_doc_object
 
 if sphinx.__version__ < '1.0.1':
     raise RuntimeError("Sphinx 1.0.1 or newer is required")
 
-from docscrape_sphinx import get_doc_object, SphinxDocString
-from sphinx.util.compat import Directive
 
 if sys.version_info[0] >= 3:
     sixu = lambda s: s
@@ -138,9 +143,6 @@ def setup(app, get_doc_object_=get_doc_object):
 # Docstring-mangling domains
 # ------------------------------------------------------------------------------
 
-from docutils.statemachine import ViewList
-from sphinx.domains.c import CDomain
-from sphinx.domains.python import PythonDomain
 
 
 class ManglingDomainBase(object):

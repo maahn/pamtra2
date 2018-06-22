@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+
 # from numba import vectorize, float64, float32
 from .. import constants
 

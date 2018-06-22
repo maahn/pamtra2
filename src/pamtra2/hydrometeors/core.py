@@ -1,23 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import inspect
 import warnings
+
 import numpy as np
 import xarray as xr
-import inspect
 
+from . import (aspectRatio, crossSectionArea, density, fallVelocity, mass,
+               scattering, size, sizeDistribution)
+from .. import helpers, units
 from ..libs import refractiveIndex
-
-from .. import units
-from .. import helpers
-
-from . import aspectRatio
-from . import crossSectionArea
-from . import density
-from . import fallVelocity
-from . import mass
-from . import scattering
-from . import size
-from . import sizeDistribution
 
 
 def DEFAULT_CALCULATION_ORDER():

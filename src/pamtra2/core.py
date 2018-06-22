@@ -1,16 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
+
 import numpy as np
 import xarray as xr
 
+from . import constants, dimensions, helpers, units
 from .libs import meteo_si
-
-from . import helpers
-from . import units
-from . import dimensions
-from . import constants
-
 
 __version__ = 0.2
 

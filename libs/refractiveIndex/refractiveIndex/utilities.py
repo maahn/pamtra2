@@ -27,6 +27,7 @@ radar dielectric factor K2 which is of great importance in radar applications
 """
 
 from __future__ import absolute_import
+
 import numpy as np
 
 speed_of_light = 299792458.0
@@ -84,5 +85,3 @@ def K2(eps):
     """
     K_complex = (eps-1.0)/(eps+2.0)
     return (K_complex*K_complex.conj()).real
-
-

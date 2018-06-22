@@ -22,12 +22,12 @@ Mie spherical scatterer object and member functions
 """
 import sys
 
-from .scatterer import Scatterer
-from . import cMie
-
 import numpy as np
-
 from pamtra2.libs.refractiveIndex import utilities as ref_utils
+
+from . import cMie
+from .scatterer import Scatterer
+
 
 class MieScatt(Scatterer):
     """
@@ -70,4 +70,3 @@ class MieScatt(Scatterer):
         #self.S2 = self.S1*np.cos(self.scatt_angle)
         #self.S3 = 0.0
         #self.S4 = 0.0
-

@@ -183,4 +183,3 @@ intersphinx_mapping = {'https://docs.python.org/': None}
 
 # Don't show full module names
 add_module_names = False
-

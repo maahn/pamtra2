@@ -83,4 +83,3 @@ def boundsWidth(sizeBounds):
         width of size bounds
     """
     return np.diff(sizeBounds)
-

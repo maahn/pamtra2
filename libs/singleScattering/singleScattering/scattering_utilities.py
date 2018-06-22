@@ -22,6 +22,7 @@ scatterer geometry and the conversion among diverse scattering frameworks
 
 import numpy as np
 
+
 class amplitude_matrix(object):
     """ Complex 2x2 amplitude matrix as defined in Bohren and Huffman
     | S2   S3 |

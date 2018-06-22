@@ -5,15 +5,12 @@ Spyder Editor
 This is a temporary script file.
 """
 
-from pytmatrix import tmatrix
-from pytmatrix import tmatrix_aux
-from pytmatrix import refractive
-from pytmatrix import scatter
-import matplotlib.pyplot as plt
-
-import numpy as np
-
 import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
+from pytmatrix import refractive, scatter, tmatrix, tmatrix_aux
+
 sys.path.append('../')
 
 wl = tmatrix_aux.wl_S

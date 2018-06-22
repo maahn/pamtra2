@@ -21,12 +21,13 @@ Tmatrix spheroid scatterer object and member functions
 
 """
 
-import numpy as np
 import sys
+
+import numpy as np
+from pamtra2.libs.refractiveIndex import utilities as ref_utils
 
 from .scatterer import Scatterer
 
-from pamtra2.libs.refractiveIndex import utilities as ref_utils
 
 class T_Matrix(Scatterer):
     """

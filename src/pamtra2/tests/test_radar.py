@@ -1,8 +1,9 @@
 import collections
+
 import numpy as np
-import pytest
 import pamtra2
 import pamtra2.libs.refractiveIndex as refractiveIndex
+import pytest
 import xarray as xr
 
 

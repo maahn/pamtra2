@@ -20,6 +20,7 @@ Authors
 from docutils import nodes, utils
 from docutils.parsers.rst.roles import set_classes
 
+
 def make_link_node(rawtext, app, type, slug, options):
     """Create a link to a github resource.
 

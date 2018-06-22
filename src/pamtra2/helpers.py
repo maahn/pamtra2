@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-import numpy as np
 import collections
-from copy import deepcopy
-import xarray as xr
 import inspect
-from functools import wraps
 from collections import OrderedDict
+from copy import deepcopy
+from functools import wraps
+
+import numpy as np
+import xarray as xr
 
 from . import decorators
 

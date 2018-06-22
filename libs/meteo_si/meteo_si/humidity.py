@@ -4,13 +4,13 @@
 # (c) Maximilian Maahn 2011 (python)
 
 from __future__ import absolute_import, division, print_function
+
 import numpy as np
+
+from . import constants, density, temperature
 
 # from .due import due, Doi
 
-from . import constants
-from . import density
-from . import temperature
 
 
 __all__ = ['a2e', 'e2a', "e2q", "q2e", "rh2q", "rh2a", "rh_to_iwv",

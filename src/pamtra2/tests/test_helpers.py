@@ -1,8 +1,8 @@
 from collections import OrderedDict
-import numpy as np
-import xarray as xr
 
+import numpy as np
 import pamtra2
+import xarray as xr
 
 
 class TestConcatDicts(object):

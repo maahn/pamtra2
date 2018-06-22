@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
-from __future__ import division, absolute_import, print_function
+from __future__ import absolute_import, division, print_function
+
 import warnings
 
 import numpy as np
 import scipy.special
+
+from . import mass
+from .. import units
 
 # input names are not arbritrary and have to follow Pamtra2 defaults!
 
 # if this is too slow think about implementing @vectorize
 # https://numba.pydata.org/numba-doc/dev/user/vectorize.html
 
-from . import mass
-from .. import units
 
 
 def monoDisperse(sizeBoundsWidth, Ntot):

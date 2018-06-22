@@ -5,12 +5,13 @@
 
 
 from __future__ import absolute_import, division, print_function
+
 import numpy as np
+
+from . import constants, humidity
 
 # from .due import due, Doi
 
-from . import constants
-from . import humidity
 
 
 __all__ = ["kelvin_2_celsius", "celsius_to_kelvin", "T_virt_rh", "T_virt_q"]

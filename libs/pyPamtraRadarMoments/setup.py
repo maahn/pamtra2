@@ -1,9 +1,8 @@
 import os
 import sys
-from numpy.distutils.misc_util import Configuration
+
 from numpy.distutils.core import setup
-
-
+from numpy.distutils.misc_util import Configuration
 
 
 def read(fname):
@@ -66,4 +65,3 @@ if __name__ == "__main__":
         # },
         platforms = ['any'],
         requires = ['numpy', 'scipy'])
-

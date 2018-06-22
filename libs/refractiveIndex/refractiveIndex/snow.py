@@ -43,8 +43,8 @@ they are not respected
 """
 
 import numpy as np
-from . import ice
-from . import mixing
+
+from . import ice, mixing
 
 ice_density = 916.7  # kg/m**3
 

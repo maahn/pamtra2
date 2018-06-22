@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -
 # (c) M. Maahn, 2017
 
+import numpy as np
+
 from . import pyPamtraRadarMomentsLib
+
 # from pamtra2 import decorators
 
-import numpy as np
 
 
 __version__ = '0.1'

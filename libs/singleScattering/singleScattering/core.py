@@ -41,16 +41,12 @@ Notes
 All of the argument quatities must be provided in SI units
 """
 
-# Implemented with basic functionality
-from . import scatterer
-from . import Mie
-from . import Rayleigh
-
-# Complementary library
-from . import scattering_utilities
-
 # Generic
 import numpy as np
+
+# Complementary library
+# Implemented with basic functionality
+from . import Mie, Rayleigh, scatterer, scattering_utilities
 
 models_list = ['Rayleigh (Ray)', 'Mie', 'Tmatrix (TMM)', 
                'Self-Similar Rayleigh-Gans (SSRG)', 'LiuDB', 'LeinonenDB', 

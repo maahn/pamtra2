@@ -1,6 +1,8 @@
-import os
 import io
-from setuptools import setup, find_packages
+import os
+
+from setuptools import find_packages, setup
+
 PACKAGES = find_packages()
 
 # Get version and release info, which is all stored in meteo_si/version.py

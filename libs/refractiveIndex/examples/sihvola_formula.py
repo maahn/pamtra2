@@ -1,5 +1,5 @@
-from sympy.solvers import solve
 from sympy import Symbol
+from sympy.solvers import solve
 
 eeff = Symbol('eeff')
 f = Symbol('f')

@@ -24,11 +24,12 @@ common interface to the various scattering models.
 
 """
 
-import numpy as np
 import sys
-from . import scattering_utilities as scatt_utils
 
+import numpy as np
 from pamtra2.libs.refractiveIndex import utilities as ref_utils
+
+from . import scattering_utilities as scatt_utils
 
 light_speed = 299792458.
 

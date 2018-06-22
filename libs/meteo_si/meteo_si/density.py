@@ -4,12 +4,13 @@
 # (c) Maximilian Maahn 2011 (python)
 
 from __future__ import absolute_import, division, print_function
+
 import numpy as np
+
+from . import constants, humidity
 
 # from .due import due, Doi
 
-from . import constants
-from . import humidity
 # from .temperature import *
 
 

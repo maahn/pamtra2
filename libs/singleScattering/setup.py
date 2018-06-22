@@ -19,14 +19,18 @@
 
 import os
 import sys
-import numpy
+from distutils.core import setup
+# Build the cython extension
+from distutils.extension import Extension
+
 import Cython
+import numpy
+from Cython.Distutils import build_ext
 
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
-from distutils.core import setup
 
 # Build the main package, with script etc...
 # ==========================================
@@ -56,9 +60,6 @@ setup(name = 'singleScattering',
 # Build the extensions
 # --------------------
 
-# Build the cython extension
-from distutils.extension import Extension
-from Cython.Distutils import build_ext
 
 cMie = Extension("singleScattering.cMie",
                 sources=["Mie/cython/cMie.pyx",
