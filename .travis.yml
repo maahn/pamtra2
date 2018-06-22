@@ -21,8 +21,7 @@ before_install:
 - pip install Cython 
 - pip install numpy
 - pip install pytest coveralls
-- pip install dask
-- pip install xarray
+- pip install dask[complete]
 install:
 - python setup.py install
 script:
