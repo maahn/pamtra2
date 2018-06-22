@@ -138,6 +138,7 @@ if __name__ == "__main__":
                   'pamtra2.libs.meteo_si',
                   ],
         package_dir={
+            'pamtra2': 'src/pamtra2' ,
             'pamtra2.libs.pamgasabs': pamgasabs_path,
             'pamtra2.libs.pyPamtraRadarSimulator': pyrasim_path,
             'pamtra2.libs.pyPamtraRadarMoments': pyramom_path,
