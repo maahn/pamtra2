@@ -6,6 +6,11 @@
     :target: https://www.travis-ci.org/maahn/pamtra2
     :alt: Build Status
 
+.. image:: https://coveralls.io/repos/github/maahn/pamtra2/badge.svg?branch=master
+    :target: https://coveralls.io/github/maahn/pamtra2?branch=master
+    :alt: Code Coverage
+
+
 Pamtra2
 #######
 
