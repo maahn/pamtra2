@@ -153,7 +153,7 @@ if __name__ == "__main__":
             'pamtra2.libs.refractiveIndex': ['*.dat'],
         },
         platforms=['any'],
-        install_requires=['numpy', 'scipy', 'xarray', 'dask', 'numba',
+        install_requires=['numpy', 'scipy', 'xarray', 'dask[complete]', 'numba',
                   'cython'],
         build_requires=['numpy', 'cython'],
         ext_modules=cythonize(
