@@ -13,3 +13,5 @@ dependencies:
 - ipykernel
 - pandoc
 - gcc
+- fftw
+- lapack
