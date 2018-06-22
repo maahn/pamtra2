@@ -9,11 +9,16 @@ matrix:
     dist: trusty
     sudo: required
     python: '3.6'
+  - os: osx
+    python: '3.6'
+    osx_image: xcode9.4
 git:
   depth: false
 before_install:
-- sudo apt-get update -qq
-- sudo apt-get install -qq gcc gfortran liblapack-dev libfftw3-dev 
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install lapack fftw gfortran; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq ; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq gcc gfortran liblapack-dev libfftw3-dev ; fi
 - pip install Cython 
 - pip install numpy
 - pip install pytest coveralls pytest-cov
