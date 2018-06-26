@@ -20,7 +20,8 @@ def leinonen_coeff(D, elwp):
     gamma = interp(D, table.index.values, table.gamma_z)
     kappa = interp(D, table.index.values, table.kappa_z)
     zeta1 = interp(D, table.index.values, table.zeta1_z)
-    return beta, gamma, kappa, zeta1
+    alpha_eff = interp(D, table.index.values, table.alpha_eff)
+    return beta, gamma, kappa, zeta1, alpha_eff
 
 c = 2.99792458e8
 
@@ -37,6 +38,10 @@ def backscattering(frequency, diameters, n, table=None, mass=None):  # SI units
         mass = min(brandes(diameters*1.0e3), smalles((diameters*1.0e3)))
     volume = mass/917.
 
+    eps = n*n
+    K = (eps-1.0)/(eps+2.0)
+    K2 = (K*K.conjugate()).real
+
     # CONSTANTS FOR MY PARTICLES
     kappa = 0.190031
     beta = 0.030681461
@@ -48,14 +53,11 @@ def backscattering(frequency, diameters, n, table=None, mass=None):  # SI units
         #beta = 3.06939
         #gamma = 2.53192
         #zeta1 = 0.0709529
-        beta, gamma, kappa, zeta1 = leinonen_coeff(diameters, 0.0)
+        beta, gamma, kappa, zeta1, alpha_eff = leinonen_coeff(diameters, 0.0)
+        diameters = diameters*alpha_eff
         gamma = -gamma
+        K2 = 0.21
         # print(kappa, beta, gamma, zeta1)
-    
-
-    eps = n*n
-    K = (eps-1.0)/(eps+2.0)
-    K2 = (K*K.conjugate()).real
 
     k = 2.0*np.pi/wavelength  # wavenumber
     x = k*diameters           # size parameters
