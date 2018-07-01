@@ -2,17 +2,34 @@
 Installation
 ============
 
-First install all required python packages ::
+Note that Python 3.6 is required for pamtra2. A few libraries are required. For Ubuntu Trusty (16.04), do ::
 
-    numpy
-    scipy
-    xarray
-    json
-    dask
-    numba
-    cython
+    sudo apt-get install gcc gfortran liblapack-dev libfftw3-dev 
 
-with e.g. `pip install ...` or `conda install`. Then, you can install pamtra2 
+For mac OS, make sure the developer tools are installed ::
+
+    xcode-select --install
+
+and use a package manager like https://brew.sh/ to install ::
+
+    brew install lapack fftw gcc
+
+or conda ::
+
+   conda install fftw lapack gcc
+
+In order to install the python dependencies, do ::
+
+    pip install numpy scipy xarray json dask numba cython netcdf4
+
+or ::
+
+    conda install numpy scipy xarray json dask numba cython netcdf4
+
+if you are a conda user. Note that for pip, you likely have to use either `sudo`
+or the `--user` flag. 
+
+Then, you can install pamtra2 
 with ::
 
     python setup.py install [flag]
