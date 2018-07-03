@@ -18,6 +18,7 @@ kw = {}
 if sys.platform == 'darwin':
     kw['extra_link_args'] = ['-undefined dynamic_lookup', '-bundle']
 
+library_dirs = ['~/.local/lib/', '/usr/local/lib/', '/opt/local/lib/']
 
 def configuration(parent_package='', top_path=None):
 
@@ -85,7 +86,7 @@ pyrasim = Extension(
         '%s/pyPamtraRadarSimulatorLib/radar_spectrum.f90' % pyrasim_path,
         '%s/pyPamtraRadarSimulatorLib/rho_air.f90' % pyrasim_path,
     ],
-    library_dirs=['~/.local/lib/', '/usr/local/lib/'],
+    library_dirs=library_dirs,
     libraries=['fftw3', 'lapack'],
     **kw)
 
@@ -104,7 +105,7 @@ pyramom = Extension(
         '%s/pyPamtraRadarMomentsLib/smooth_savitzky_golay.f90' % pyramom_path,
         '%s/pyPamtraRadarMomentsLib/calc_moments.f90' % pyramom_path,
     ],
-    library_dirs=['/usr/local/lib/'],
+    library_dirs=library_dirs,
     libraries=['fftw3', 'lapack'],
     **kw)
 
