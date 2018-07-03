@@ -31,8 +31,8 @@ units = collections.defaultdict(
         'specificAttenuation': 'dB/m',
         'temperature': 'K',
         'verticalWind': 'm/s',
-        'wavelenght': 'm',
-
+        'wavelength': 'm',
+        'hydrometeorContent': 'kg/m^3',
     }
 )
 

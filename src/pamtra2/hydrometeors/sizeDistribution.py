@@ -157,7 +157,7 @@ def exponentialField(sizeCenter, temperature, lambd):
 
 
 def exponentialFieldWC(
-  sizeCenter, temperature, waterContent, massSizeA, massSizeB
+  sizeCenter, temperature, hydrometeorContent, massSizeA, massSizeB
   ):
     """classical exponential distribution. N0 is estimated using
     Field et al. (2005 QJRM, end of page 2008 + end of page 2009
@@ -171,7 +171,7 @@ def exponentialFieldWC(
         particle size at center of size bin
     temperature : array_like
         ambient temperature [K]
-    waterContent : array_like
+    hydrometeorContent : array_like
         hydrometeor water content
     massSizeA : float
         pre-factor mass-size power law
@@ -185,7 +185,7 @@ def exponentialFieldWC(
     """
 
     N0 = _exponentialField(temperature)
-    lambd = _exponentialWC2Lambda(N0, waterContent, massSizeA, massSizeB)
+    lambd = _exponentialWC2Lambda(N0, hydrometeorContent, massSizeA, massSizeB)
     return exponential(sizeCenter, N0, lambd)
 
 
@@ -217,7 +217,7 @@ def exponentialFieldReff(sizeCenter, temperature, effectiveRadius):
 def exponentialN0WC(
     sizeCenter,
     N0,
-    waterContent,
+    hydrometeorContent,
     massSizeA=mass.powerLawLiquidPrefactor,
     massSizeB=mass.powerLawLiquidExponent,
 ):
@@ -229,7 +229,7 @@ def exponentialN0WC(
         particle size at center of size bin
     N0 : array_like
         N0 pre-factor
-    waterContent : array_like
+    hydrometeorContent : array_like
         hydrometeor water content
     massSizeA : float
         pre-factor mass-size power law
@@ -244,7 +244,7 @@ def exponentialN0WC(
         calculated size distribution
     """
 
-    lambd = _exponentialWC2Lambda(N0, waterContent, massSizeA, massSizeB)
+    lambd = _exponentialWC2Lambda(N0, hydrometeorContent, massSizeA, massSizeB)
     return exponential(sizeCenter, N0, lambd)
 
 
@@ -288,7 +288,7 @@ def _exponentialWC2Lambda(N0, WC, massSizeA, massSizeB):
     N0 : array_like
         N0 pre-factor
     WC : array_like
-        hydrometeor water content
+        hydrometeor water content [kg/m3]
     massSizeA : float
         pre-factor mass-size power law
     massSizeB : float

@@ -89,7 +89,7 @@ class pamtra2(object):
                 np.float64
             ),
             (
-            'waterContent',
+            'hydrometeorContent',
                 [dimensions.ADDITIONAL, dimensions.LAYER, dimensions.HYDROMETEOR],
                 np.float64
             ),
@@ -253,7 +253,7 @@ class pamtra2(object):
         p = self.profile.pressure
         T = self.profile.temperature
         rh = self.profile.temperature/100.
-        qm = self.profile.waterContent.sum('hydrometeor')
+        qm = self.profile.hydrometeorContent.sum('hydrometeor')
 
         self.profile['airDensity'] = meteo_si.density.moist_rho_rh(
             p, T, rh, qm)

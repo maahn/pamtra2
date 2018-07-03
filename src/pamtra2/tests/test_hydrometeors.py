@@ -226,13 +226,13 @@ class TestSizeDistribution(object):
         temperature = 263
         massSizeA = 0.0121
         massSizeB = 3.
-        waterContent = 1e-4
+        hydrometeorContent = 1e-4
         N = pamtra2.hydrometeors.sizeDistribution.exponentialFieldWC(
-            sizeCenter, temperature, waterContent, massSizeA, massSizeB
+            sizeCenter, temperature, hydrometeorContent, massSizeA, massSizeB
         )
         mass = pamtra2.hydrometeors.mass.powerLaw(
             sizeCenter, massSizeA, massSizeB)
-        assert np.allclose(np.sum(N*mass*sizeWidth), waterContent)
+        assert np.allclose(np.sum(N*mass*sizeWidth), hydrometeorContent)
 
     def testExponentialN0WC(self):
         sizeCenter = np.logspace(-6, 0, 1000)
@@ -240,14 +240,14 @@ class TestSizeDistribution(object):
         N0 = 1e6
         massSizeA = 0.0121
         massSizeB = 3.
-        waterContent = 1e-4
+        hydrometeorContent = 1e-4
 
         N = pamtra2.hydrometeors.sizeDistribution.exponentialN0WC(
-            sizeCenter, N0, waterContent, massSizeA, massSizeB
+            sizeCenter, N0, hydrometeorContent, massSizeA, massSizeB
         )
         mass = pamtra2.hydrometeors.mass.powerLaw(
             sizeCenter, massSizeA, massSizeB)
-        np.allclose(np.sum(N*mass*sizeWidth), waterContent)
+        np.allclose(np.sum(N*mass*sizeWidth), hydrometeorContent)
 
     @pytest.mark.skip(reason="Test fails by a factor of 2?!")
     def testExponentialFieldReff(self):
