@@ -167,11 +167,20 @@ class TestSizeDistribution(object):
 
     def test_monodisperse(self):
         sizeBoundsWidth = np.array([0.1, 0.1])
+        nBins = len(sizeBoundsWidth)
         Ntot = 10
         N = pamtra2.hydrometeors.sizeDistribution.monoDisperse(
-            sizeBoundsWidth, Ntot)
+            sizeBoundsWidth, Ntot, nBins)
         assert np.sum(N*sizeBoundsWidth) == Ntot
         assert N[0] == N[1]
+
+    def test_monoDisperseWC(self):
+        sizeBoundsWidth = np.array([0.1, 0.1])
+        hydrometeorContent = 10
+        mass = np.array([5, 5])
+        N = pamtra2.hydrometeors.sizeDistribution.monoDisperseWC(
+            sizeBoundsWidth, hydrometeorContent, mass)
+        assert N[0] == N[1] == 10
 
     def test_exponential(self):
         sizeCenter = np.arange(1, 11)

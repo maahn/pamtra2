@@ -5,6 +5,7 @@ import warnings
 
 import numpy as np
 import scipy.special
+import xarray as xr
 
 from . import mass
 from .. import units
@@ -15,8 +16,7 @@ from .. import units
 # https://numba.pydata.org/numba-doc/dev/user/vectorize.html
 
 
-
-def monoDisperse(sizeBoundsWidth, Ntot):
+def monoDisperse(sizeBoundsWidth, Ntot, nBins):
     """constant distribution
     Parameters
     ----------
@@ -24,15 +24,41 @@ def monoDisperse(sizeBoundsWidth, Ntot):
         width of size bins
     Ntot : array_like
         total number of particles for the whole size spectruum
+    nBins : int
+        number of size bins
 
     Returns
     -------
     size distribution : array_like
         calculated size distribution
     """
-    N = (Ntot/np.shape(sizeBoundsWidth)[-1])/sizeBoundsWidth
+
+    N = (Ntot/nBins)/sizeBoundsWidth
     return N
 
+
+def monoDisperseWC(sizeBoundsWidth, hydrometeorContent, mass):
+    """constant distribution
+    Parameters
+    ----------
+    sizeBoundsWidth : array_like
+        width of size bins
+    hydrometeorContent : array_like
+        hydrometeor water content [kg/m^3]
+    mass : array_like
+        mass of hydrometeors [kg]
+    Returns
+    -------
+    size distribution : array_like
+        calculated size distribution
+    """
+    if isinstance(mass, xr.DataArray):
+        mass1Bin = mass.sum('sizeCenter')
+    else:
+        mass1Bin = mass.sum(-1)
+    N = (hydrometeorContent / mass1Bin) / sizeBoundsWidth
+
+    return N
 
 def modifiedGamma(sizeCenter, N0, lambd, mu, gamma):
     """classical modified gamma distribution
@@ -111,7 +137,7 @@ def exponential(sizeCenter, N0, lambd):
 
 
 def exponentialMarshallPalmer(sizeCenter, rainRate):
-    """classical exponential distribution for rain followig Marshall
+    """classical exponential distribution for rain following Marshall
     Palmer, 1948.
 
     Parameters
@@ -172,7 +198,7 @@ def exponentialFieldWC(
     temperature : array_like
         ambient temperature [K]
     hydrometeorContent : array_like
-        hydrometeor water content
+        hydrometeor water content [kg/m^3]
     massSizeA : float
         pre-factor mass-size power law
     massSizeB : float
@@ -230,7 +256,7 @@ def exponentialN0WC(
     N0 : array_like
         N0 pre-factor
     hydrometeorContent : array_like
-        hydrometeor water content
+        hydrometeor water content [kg/m^3]
     massSizeA : float
         pre-factor mass-size power law
         (Default value = mass.powerLawLiquidPrefactor)
