@@ -115,7 +115,7 @@ def eps(temperature, frequency, density, model_mix='Bruggeman',
     eps_ice = ice.eps(temperature, frequency)
     eps_air = complex(1.0, 0.0)+0.0*eps_ice
     return mixing.eps([eps_ice, eps_air], [fraction, 1.0-fraction], 
-        model=model_mix)
+        model=model_mix, model_ice=model_ice)
 
 ##############################################################################
 
