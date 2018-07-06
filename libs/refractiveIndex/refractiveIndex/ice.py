@@ -114,7 +114,7 @@ def iwabuchi_yang_2011(temperature, frequency):
     if (frequency < 0).any():
         raise ValueError('A negative frequency value has been passed')
 
-    if frequency.shape == temperature.shape:
+    if True:
         eps_real = iwabuchi_ice_interp_real(temperature.flatten(
         ), frequency.flatten()).diagonal().reshape(frequency.shape)
         eps_imag = iwabuchi_ice_interp_imag(temperature.flatten(
@@ -176,7 +176,7 @@ def warren_brandt_2008(frequency):
     return warren_ice_interpolated(frequency)
 
 
-def matzler_2006(temperature, frequency):
+def matzler_2006(temperature, frequency, checkTemperature=True):
     """Ice complex relative dielectric constant according to Matzler (2006)
     "Thermal Microwave Radiation: application to remote sensing, Chapter 5,
     pp 456-460"
@@ -187,6 +187,8 @@ def matzler_2006(temperature, frequency):
         nd array of temperature [Kelvin]
     frequency : float
         nd array of frequency [Hz]
+    checkTemperature : bool
+        check temperature range for Matzler (2006) (default True)
 
     Returns
     -------
@@ -211,7 +213,7 @@ def matzler_2006(temperature, frequency):
         raise ValueError(
             'Matzler model for refractive index of ice is valid between 10 MHz'
             ' and 300 GHz')
-    if (temperature < 240.).any():
+    if checkTemperature and (temperature < 240.).any():
         raise ValueError(
             'Matzler model for refractive index of ice is only valid above'
             ' 240 K')
@@ -234,7 +236,7 @@ def matzler_2006(temperature, frequency):
     return eps1 + 1j*eps2
 
 ##############################################################################
-def eps(temperature, frequency, model="Matzler_2006"):
+def eps(temperature, frequency, model="Matzler_2006", matzlerCheckTemperature=True):
     """Ice complex relative dielectric constant according to the requested model
 
     Parameters
@@ -245,6 +247,8 @@ def eps(temperature, frequency, model="Matzler_2006"):
         nd array of frequency [Hz]
     model : string
         dielectric model name default to Matzler (2006)
+    matzlerCheckTemperature : bool
+        check temperature range for Matzler (2006) (default True)
 
     Returns
     -------
@@ -265,7 +269,8 @@ def eps(temperature, frequency, model="Matzler_2006"):
         temperature = np.asarray(temperature)
 
     if (model == 'Matzler_2006'):
-        return matzler_2006(temperature, frequency)
+        return matzler_2006(temperature, frequency,
+                            checkTemperature=matzlerCheckTemperature)
     elif (model == 'Warren_2008'):
         return warren_brandt_2008(frequency)
     elif (model == 'Iwabuchi_2011'):
@@ -276,7 +281,7 @@ def eps(temperature, frequency, model="Matzler_2006"):
         return matzler_2006(temperature, frequency)
 
 
-def n(temperature, frequency, model="Matzler_2006"):
+def n(temperature, frequency, model="Matzler_2006",matzlerCheckTemperature=True):
     """Ice complex refractive index according to the requested model
 
     Parameters
@@ -287,6 +292,8 @@ def n(temperature, frequency, model="Matzler_2006"):
         nd array of frequency [Hz]
     model : string
         dielectric model name default to Matzler (2006)
+    matzlerCheckTemperature : bool
+        check temperature range for Matzler (2006) (default True)
 
     Returns
     -------
@@ -299,7 +306,7 @@ def n(temperature, frequency, model="Matzler_2006"):
         If a negative frequency or temperature is passed as an argument
 
     """
-    return np.sqrt(eps(temperature, frequency, model))
+    return np.sqrt(eps(temperature, frequency, model,matzlerCheckTemperature=matzlerCheckTemperature))
 ##############################################################################
 
 

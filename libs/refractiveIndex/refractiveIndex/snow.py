@@ -50,7 +50,7 @@ ice_density = 916.7  # kg/m**3
 
 
 def n(temperature, frequency, density, model_mix='Bruggeman', 
-      model_ice='Matzler_2006'):
+      model_ice='Matzler_2006', matzlerCheckTemperature=True):
     """ Effective refractive index of snow according to the specified models
      for ice dielectric properties, effective medium approximation function
      and effective density of the snowflake
@@ -67,6 +67,8 @@ def n(temperature, frequency, density, model_mix='Bruggeman',
         Effective Medium Approximation model name default to Bruggeman
     model_ice : string
         dielectric model name default to Matzler (2006)
+    matzlerCheckTemperature : bool
+        check temperature range for Matzler (2006) (default True)
 
     Returns
     -------
@@ -75,11 +77,12 @@ def n(temperature, frequency, density, model_mix='Bruggeman',
 
     """
     return np.sqrt(eps(temperature, frequency, density, model_mix=model_mix,
-                       model_ice=model_ice))
+                       model_ice=model_ice,
+                       matzlerCheckTemperature=matzlerCheckTemperature))
 
 
 def eps(temperature, frequency, density, model_mix='Bruggeman',
-        model_ice='Matzler_2006'):
+        model_ice='Matzler_2006',matzlerCheckTemperature=True):
     """ Effective complex relative dielectric constant of snow according to
     the specified models for ice dielectric properties, effective medium
     approximation function and effective density of the snowflake
@@ -96,6 +99,8 @@ def eps(temperature, frequency, density, model_mix='Bruggeman',
         Effective Medium Approximation model name default to Bruggeman
     model_ice : string
         dielectric model name default to Matzler (2006)
+    matzlerCheckTemperature : bool
+        check temperature range for Matzler (2006) (default True)
 
     Returns
     -------
@@ -112,7 +117,7 @@ def eps(temperature, frequency, density, model_mix='Bruggeman',
         density = np.asarray(density)
 
     fraction = density/ice_density
-    eps_ice = ice.eps(temperature, frequency, model=model_ice)
+    eps_ice = ice.eps(temperature, frequency, model=model_ice,matzlerCheckTemperature=matzlerCheckTemperature)
     eps_air = complex(1.0, 0.0)+0.0*eps_ice
     return mixing.eps([eps_ice, eps_air], [fraction, 1.0-fraction], 
         model=model_mix)
