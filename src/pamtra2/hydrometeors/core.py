@@ -41,11 +41,8 @@ class hydrometeor(object):
             pre-calculated discrete properties
         calculationOrder : optional
             order for estimating the properties
-        funcArgs : dict, optional
-            additional arguments for the functions describing the hydrometeor
-            default {}.
         useFuncArgDefaults : bool, optional
-            if parameters are not found in any of funcArgs, discreteProperties,
+            if parameters are not found in any kwarg, discreteProperties,
             parent's profile, then fall back to default values of the function.
             Helpful for debugging. default True.
         **kwargs :
@@ -67,9 +64,6 @@ class hydrometeor(object):
             calculated discrete properties
         calculationOrder
             order for estimating the properties
-        funcArgs : dict
-            additional arguments for the functions describing the hydrometeor
-            default {}.
         useFuncArgDefaults : bool
             if parameters are not found in any of funcArgs, discreteProperties,
             parent's profile, then fall back to default values of the function.
@@ -268,6 +262,35 @@ class hydrometeor(object):
         for k in self.profile.variables:
             self.profile[k].attrs['unit'] = units.units[k]
 
+        # test results
+        varsGreaterZero = [
+            'sizeBoundsWidth',
+            'sizeBounds',
+            'sizeCenter',
+            'mass',
+            'aspectRatio',
+            'density',
+            'crossSectionArea',
+            'relativePermittivity',
+            'fallVelocity',
+            'nBins',
+            'extinctionCrossSection',
+            'scatterCrossSection',
+            'absorptionCrossSection',
+            'backscatterCrossSection',
+        ]
+        varsGreaterEqualZero = [
+            'sizeDistribution',
+        ]
+
+        for key in varsGreaterZero:
+            if key in self.profile[key]:
+                assert (self.profile[key] > 0).all()
+
+        for key in varsGreaterEqualZero:
+            if key in self.profile[key]:
+                assert (self.profile[key] >= 0).all()
+
         return self.profile
 
     def _postProcessing(self):
@@ -318,44 +341,339 @@ class softEllipsoidMassSize(hydrometeor):
         return super().__init__(*args, **kwargs)
 
 
-class cloudDroplet(hydrometeor):
-    """hydrometeor class with presets for cloud droplets.  """
+class cloud(softEllipsoidFixedDensity):
+    """hydrometeor class for cloud droplets. 
+
+        Parameters
+        ----------
+        parent : pamtra2 object
+            content of parent's class
+        name : str, optional
+            name of the hydrometeor
+        nBins : int, optional
+            number of bins. Note taht the spectral radar simulator requires
+            >= 2 hydrometeor bins. (default 2)
+        sizeDistribution : func, optional
+            Function to describe the size distribution. default:
+            sizeDistribution.monoDisperseWC which requires hydrometeorContent
+            either as kwarg or in pamtra2's profile
+        scattering : func, optional
+            Function to describe the single scattering of the hydrometeor.
+            default: scattering.Mie
+        Dmin : float, optional
+            Smallest boundary of size distribution. Note that Dmin != Dmax
+            is required also for a monodisperse distribution. (default
+            1e-5 - 1e-10)
+        Dmax :   float, optional
+            Largest boundary of size distribution. Note that Dmin != Dmax
+            is required also for a monodisperse distribution. (default
+            1e-5 + 1e-10)
+        useFuncArgDefaults : bool, optional
+            if parameters are not found in any of kwargs, discreteProperties,
+            parent's profile, then fall back to default values of the function.
+            Helpful for debugging. default True.
+        **kwargs :
+            Further properties if required. Also the parameters defined in
+            defaultArgs (see source) can be overwritten if provided.
+
+        Attributes
+        ----------
+        name : str, optional
+            name of the hydrometeor
+        index : int
+            hydrometeor index in parent
+        kind :  {'liquid', 'ice'}
+            liquid or frozen hydrometeor?
+        nBins : int
+            number of size bins
+        discreteProperties : xr.Dataset
+            calculated discrete properties
+        calculationOrder
+            order for estimating the properties
+        useFuncArgDefaults : bool
+            if parameters are not found in any of funcArgs, discreteProperties,
+            parent's profile, then fall back to default values of the function.
+            Helpful for debugging. default True.
+        description : dict
+            All properties of the hydrometeor. Most hydrometeors require at
+            least 'sizeCenter', 'aspectRatio', 'mass', 'density',
+            'crossSectionArea', and 'sizeDistribution'.
+
+    """
 
     def __init__(
         self,
         *args,
         nBins=2,
-        sizeBounds=size.linspaceBounds,
-        sizeCenter=size.boundsToMid,
-        sizeBoundsWidth=size.boundsWidth,
-        sizeDistribution=sizeDistribution.monoDisperse,
-        aspectRatio=1.0,
-        mass=mass.ellipsoid,
-        density=density.water,
-        crossSectionArea=crossSectionArea.sphere,
-        relativePermittivity=refractiveIndex.water.turner_kneifel_cadeddu,
-        scattering=scattering.Rayleigh,
-        fallVelocity=fallVelocity.khvorostyanov01_drops,
+        sizeDistribution=sizeDistribution.monoDisperseWC,
+        scattering=scattering.Mie,
         Dmin=1e-5 - 1e-10,
         Dmax=1e-5 + 1e-10,
-        Ntot=1e9,
         **kwargs,
     ):
 
+        defaultArgs = {}
+        defaultArgs['aspectRatio'] = 1.0
+        defaultArgs['mass'] = mass.ellipsoid
+        defaultArgs['density'] = density.water
+        defaultArgs['crossSectionArea'] = crossSectionArea.sphere
+        defaultArgs['sizeCenter'] = size.boundsToMid
+        defaultArgs['sizeBounds'] = size.linspaceBounds
+        defaultArgs['sizeBoundsWidth'] = size.boundsWidth
+        defaultArgs['fallVelocity'] = fallVelocity.khvorostyanov01_drops
+        defaultArgs['relativePermittivity'] = refractiveIndex.water.\
+            turner_kneifel_cadeddu
+
         kwargs['nBins'] = nBins
-        kwargs['sizeBounds'] = sizeBounds
-        kwargs['sizeCenter'] = sizeCenter
-        kwargs['sizeBoundsWidth'] = sizeBoundsWidth
         kwargs['sizeDistribution'] = sizeDistribution
-        kwargs['aspectRatio'] = aspectRatio
-        kwargs['mass'] = mass
-        kwargs['density'] = density
-        kwargs['crossSectionArea'] = crossSectionArea
-        kwargs['relativePermittivity'] = relativePermittivity
         kwargs['scattering'] = scattering
-        kwargs['fallVelocity'] = fallVelocity
         kwargs['Dmin'] = Dmin
         kwargs['Dmax'] = Dmax
-        kwargs['Ntot'] = Ntot
 
-        return super().__init__(*args, **kwargs)
+        defaultArgs.update(kwargs)
+
+        return super().__init__(*args, **defaultArgs)
+
+
+class rain(softEllipsoidFixedDensity):
+    """hydrometeor class for rain.
+
+        Parameters
+        ----------
+        parent : pamtra2 object
+            content of parent's class
+        name : str, optional
+            name of the hydrometeor
+        nBins : int, optional
+            number of bins. Note taht the spectral radar simulator requires
+            >= 2 hydrometeor bins. (default 50)
+        sizeDistribution : func, optional
+            Function to describe the size distribution. default:
+            sizeDistribution.exponentialN0WC which requires hydrometeorContent
+            either as kwarg or in pamtra2's profile. In addition, N0 has to be
+            provided
+        scattering : func, optional
+            Function to describe the single scattering of the hydrometeor.
+            default: scattering.Mie
+        aspectRatio : float, optional
+            hydrometeor aspect ratio (default 1.0)
+        Dmin : float, optional
+            Smallest boundary of size distribution. Note that Dmin != Dmax
+            is required also for a monodisperse distribution. (default
+            1e-6)
+        Dmax :   float, optional
+            Largest boundary of size distribution. Note that Dmin != Dmax
+            is required also for a monodisperse distribution. (default
+            0.008)
+        N0 : float, optional
+            N0 of exponential distribution. (default 8e6)
+        useFuncArgDefaults : bool, optional
+            if parameters are not found in any of kwargs, discreteProperties,
+            parent's profile, then fall back to default values of the function.
+            Helpful for debugging. default True.
+        **kwargs :
+            Further properties if required. Also the parameters defined in
+            defaultArgs (see source) can be overwritten if provided.
+
+        Attributes
+        ----------
+        name : str, optional
+            name of the hydrometeor
+        index : int
+            hydrometeor index in parent
+        kind :  {'liquid', 'ice'}
+            liquid or frozen hydrometeor?
+        nBins : int
+            number of size bins
+        discreteProperties : xr.Dataset
+            calculated discrete properties
+        calculationOrder
+            order for estimating the properties
+        useFuncArgDefaults : bool
+            if parameters are not found in any of funcArgs, discreteProperties,
+            parent's profile, then fall back to default values of the function.
+            Helpful for debugging. default True.
+        description : dict
+            All properties of the hydrometeor. Most hydrometeors require at
+            least 'sizeCenter', 'aspectRatio', 'mass', 'density',
+            'crossSectionArea', and 'sizeDistribution'.
+
+    """
+    def __init__(
+        self,
+        *args,
+        nBins=50,
+        sizeDistribution=sizeDistribution.exponentialN0WC,
+        scattering=scattering.Mie,
+        aspectRatio=1.0,  # TODO add non 1 values
+        Dmin=1e-6,
+        Dmax=0.008,
+        N0=8.e6,  # from COSMO 1 moments scheme...
+        **kwargs,
+    ):
+
+        defaultArgs = {}
+        defaultArgs['mass'] = mass.ellipsoid
+        defaultArgs['density'] = density.water
+        defaultArgs['crossSectionArea'] = crossSectionArea.sphere  # TODO add
+        # elliptical
+        defaultArgs['sizeCenter'] = size.boundsToMid  # TODO add log version
+        defaultArgs['sizeBounds'] = size.logspaceBounds
+        defaultArgs['sizeBoundsWidth'] = size.boundsWidth
+        defaultArgs['fallVelocity'] = fallVelocity.khvorostyanov01_drops
+        defaultArgs['relativePermittivity'] = refractiveIndex.water.\
+            turner_kneifel_cadeddu
+
+        kwargs['nBins'] = nBins
+        kwargs['sizeDistribution'] = sizeDistribution
+        kwargs['scattering'] = scattering
+        kwargs['aspectRatio'] = aspectRatio
+        kwargs['Dmin'] = Dmin
+        kwargs['Dmax'] = Dmax
+
+        defaultArgs.update(kwargs)
+
+        return super().__init__(*args, **defaultArgs)
+
+
+class ice(softEllipsoidFixedDensity):
+    """hydrometeor class for ice. 
+
+        Parameters
+        ----------
+        parent : pamtra2 object
+            content of parent's class
+        name : str, optional
+            name of the hydrometeor
+        nBins : int, optional
+            number of bins. Note taht the spectral radar simulator requires
+            >= 2 hydrometeor bins. (default 2)
+        sizeDistribution : func, optional
+            Function to describe the size distribution. default:
+            sizeDistribution.monoDisperseWC which requires hydrometeorContent
+            either as kwarg or in pamtra2's profile
+        scattering : func, optional
+            Function to describe the single scattering of the hydrometeor.
+            default: scattering.Mie
+        Dmin : float, optional
+            Smallest boundary of size distribution. Note that Dmin != Dmax
+            is required also for a monodisperse distribution. (default
+            1e-5 - 1e-10)
+        Dmax :   float, optional
+            Largest boundary of size distribution. Note that Dmin != Dmax
+            is required also for a monodisperse distribution. (default
+            1e-5 + 1e-10)
+        useFuncArgDefaults : bool, optional
+            if parameters are not found in any of kwargs, discreteProperties,
+            parent's profile, then fall back to default values of the function.
+            Helpful for debugging. default True.
+        **kwargs :
+            Further properties if required. Also the parameters defined in
+            defaultArgs (see source) can be overwritten if provided.
+
+        Attributes
+        ----------
+        name : str, optional
+            name of the hydrometeor
+        index : int
+            hydrometeor index in parent
+        kind :  {'liquid', 'ice'}
+            liquid or frozen hydrometeor?
+        nBins : int
+            number of size bins
+        discreteProperties : xr.Dataset
+            calculated discrete properties
+        calculationOrder
+            order for estimating the properties
+        useFuncArgDefaults : bool
+            if parameters are not found in any of funcArgs, discreteProperties,
+            parent's profile, then fall back to default values of the function.
+            Helpful for debugging. default True.
+        description : dict
+            All properties of the hydrometeor. Most hydrometeors require at
+            least 'sizeCenter', 'aspectRatio', 'mass', 'density',
+            'crossSectionArea', and 'sizeDistribution'.
+
+    """
+
+    def __init__(
+        self,
+        *args,
+        nBins=2,
+        sizeDistribution=sizeDistribution.monoDisperseWC,
+        scattering=scattering.Mie,
+        Dmin=1e-4 - 1e-10,
+        Dmax=1e-4 + 1e-10,
+        **kwargs,
+    ):
+
+        defaultArgs = {}
+        defaultArgs['aspectRatio'] = 1.0
+        defaultArgs['mass'] = mass.ellipsoid
+        defaultArgs['density'] = density.ice
+        defaultArgs['crossSectionArea'] = crossSectionArea.sphere
+        defaultArgs['sizeCenter'] = size.boundsToMid
+        defaultArgs['sizeBounds'] = size.linspaceBounds
+        defaultArgs['sizeBoundsWidth'] = size.boundsWidth
+        defaultArgs['fallVelocity'] = fallVelocity.heymsfield10_particles
+        defaultArgs['relativePermittivity'] = refractiveIndex.ice.matzler_2006
+
+        kwargs['nBins'] = nBins
+        kwargs['sizeDistribution'] = sizeDistribution
+        kwargs['scattering'] = scattering
+        kwargs['Dmin'] = Dmin
+        kwargs['Dmax'] = Dmax
+
+        defaultArgs.update(kwargs)
+
+        return super().__init__(*args, **defaultArgs)
+
+
+class snow(softEllipsoidMassSize):
+    """hydrometeor class for snow.  """
+
+    def __init__(
+        self,
+        *args,
+        nBins=2,
+        aspectRatio=1.0,  # TODO: implement 0.6
+        sizeDistribution=sizeDistribution.exponentialN0WC,  # TODO:change to WC
+        scattering=scattering.Mie,
+        Dmin=0.5e-8,
+        Dmax=1.e-2,
+        N0=1e5,
+        massSizeA=0.0121,
+        massSizeB=1.9,
+        areaSizeA=0.4,
+        areaSizeB=1.8,
+        minDensity=100,
+        **kwargs,
+    ):
+
+        defaultArgs = {}
+        defaultArgs['mass'] = mass.powerLaw
+        defaultArgs['crossSectionArea'] = crossSectionArea.powerLaw
+        defaultArgs['density'] = density.softEllipsoid,
+        defaultArgs['sizeCenter'] = size.boundsToMid
+        defaultArgs['sizeBounds'] = size.logspaceBounds
+        defaultArgs['sizeBoundsWidth'] = size.boundsWidth
+        defaultArgs['fallVelocity'] = fallVelocity.heymsfield10_particles
+        # TODO: make relativePermittivity mixing more flexible!
+        defaultArgs['relativePermittivity'] = refractiveIndex.snow.eps
+
+        kwargs['nBins'] = nBins
+        kwargs['aspectRatio'] = aspectRatio
+        kwargs['sizeDistribution'] = sizeDistribution
+        kwargs['scattering'] = scattering
+        kwargs['Dmin'] = Dmin
+        kwargs['Dmax'] = Dmax
+        kwargs['N0'] = N0
+        kwargs['massSizeA'] = massSizeA
+        kwargs['massSizeB'] = massSizeB
+        kwargs['areaSizeA'] = areaSizeA
+        kwargs['areaSizeB'] = areaSizeB
+        kwargs['minDensity'] = minDensity
+
+        defaultArgs.update(kwargs)
+
+        return super().__init__(*args, **defaultArgs)

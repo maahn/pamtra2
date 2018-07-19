@@ -253,6 +253,25 @@ def createRadarSpectrum(
     assert np.ndim(verticalWind) == 1
     assert np.shape(verticalWind) == np.shape(wavelength)
 
+    assert np.all(diameterSpec > 0)
+    assert np.all(specWidth > 0)
+    assert np.all(backSpec >= 0)
+    assert np.all(np.isreal(fallVelSpec))
+    assert np.all(wavelength > 0)
+    assert radarMaxV >= 0
+    assert radarMinV <= 0
+    assert radarMaxV > radarMinV
+    assert radarAliasingNyquistInterv >= 0
+    assert radarNFFT > 0
+    assert type(radarAirmotion) is bool
+    assert radarAirmotionModel in ['constant', 'step', 'linear']
+    assert np.isreal(radarAirmotionVmin)
+    assert np.isreal(radarAirmotionVmax)
+    assert radarAirmotionLinearSteps > 0
+    assert radarAirmotionStepVmin > 0
+    assert radarK2 > 0
+    assert verbosity >= 0
+
     rsLib.report_module.verbose = verbosity
 
     radarNFFTAliased = radarNFFT * (1 + 2 * radarAliasingNyquistInterv)
@@ -354,6 +373,26 @@ def simulateRadarSpectrum(
     -------
 
     """
+
+    assert np.all(height > 0)
+    assert np.all(eddyDissipationRate > 0)
+    assert np.all(horizontalWind >= 0)
+    assert np.all(mergedParticleSpec >= 0)
+    assert np.all(pathIntegratedAttenuation >= 0)
+    assert np.all(wavelength > 0)
+    assert radarMaxV >= 0
+    assert radarMinV <= 0
+    assert radarMaxV > radarMinV
+    assert radarAliasingNyquistInterv >= 0
+    assert radarNFFT > 0
+    assert np.isreal(radarPNoise1000)
+    assert radarK2 > 0
+    assert radarNAve >= 0
+    assert radarBeamwidthDeg > 0
+    assert radarIntegrationTime >= 0
+    assert seed >= 0
+    assert verbosity >= 0
+
     rsLib.report_module.verbose = verbosity
 
     # In case we are using a fixed seed, make sure we start the beginning

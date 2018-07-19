@@ -20,7 +20,7 @@ units = collections.defaultdict(
         'horizontalWind': 'm/s',
         'mass': 'kg',
         'noiseMean': 'dB',
-        'particleSizeDistribution': 'm^(-4)',
+        'sizeDistribution': 'm^(-4)',
         'pathIntegratedAttBottomUp': 'dB',
         'pathIntegratedAttTopDown': 'dB',
         'pressure': 'Pa',

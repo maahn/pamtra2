@@ -71,6 +71,7 @@ contains
          print*, 'nbins', SHAPE(nbins), nbins
          print*, 'n_heights', SHAPE(n_heights), n_heights
          print*, '1 diameter_spec', SHAPE(diameter_spec), diameter_spec
+         print*, '1a spec_width', SHAPE(spec_width), spec_width
          print*, '2 back_spec', SHAPE(back_spec), back_spec
          print*, '10 fallVel', fallVel
          print*, '8 atmo_wind_w', SHAPE(atmo_wind_w), atmo_wind_w

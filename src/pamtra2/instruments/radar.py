@@ -91,7 +91,6 @@ class simpleRadar(microwaveInstrument):
             layer=attenuation.coords[dim].values[::-1])
         return PIA_bottomup, PIA_topdown
 
-
 class dopplerRadarPamtra(simpleRadar):
 
     def __init__(
@@ -250,7 +249,7 @@ class dopplerRadarPamtra(simpleRadar):
                 1 + 2*kwargs['radarAliasingNyquistInterv']
             )
 
-            radarSpec = xr.apply_ufunc(
+        radarSpec = xr.apply_ufunc(
                 pyPamtraRadarSimulator.createRadarSpectrum,
                 *args,
                 kwargs=kwargs,
@@ -260,7 +259,7 @@ class dopplerRadarPamtra(simpleRadar):
                 output_sizes={'dopplerVelocityAliased': nfft},
                 dask='parallelized',
             )
-            radarSpecs.append(radarSpec)
+        radarSpecs.append(radarSpec)
         radarSpecs = xr.concat(radarSpecs, dim='hydrometeor')
         radarSpecs = radarSpecs.sum('hydrometeor').unstack('merged')
 

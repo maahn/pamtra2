@@ -44,6 +44,10 @@ def calc_hildebrandSekhon(spectrum, radarNAve=1, verbosity=0):
         specShape) <= 2,  ('spectrum must not have more than two dimensions' +
                            ' (height, nfft)')
 
+    assert np.all(spectrum > 0)
+    assert radarNAve > 0
+    assert verbosity >= 0
+
     if len(specShape) == 1:
         spectrum = spectrum.reshape((1, specShape[0]))
 
@@ -137,12 +141,27 @@ def calc_radarMoments(spectrum,
         specShape) <= 2, ('spectrum must not have more than two dimensions' +
                           ' (height, nfft)')
 
+    assert np.all(spectrum > 0)
+    assert radarNAve > 0
+    assert verbosity >= 0
+    assert radarMaxV >= 0
+    assert radarMinV <= 0
+    assert radarMaxV > radarMinV
+    assert momentsNPeaks > 0
+    assert momentsNoiseDistanceFactor >= 0
+    assert momentsPeakMinBins > 0
+    assert np.isreal(momentsPeakMinSnr)
+    assert np.isreal(momentsReceiverMiscalibration)
+    assert type(momentsSmoothSpectrum) is bool
+    assert type(momentsUseWiderPeak) is bool
+
     if (momentsSpecNoiseMean is None):
         momentsSpecNoiseMean, momentsSpecNoiseMaxHilde = calc_hildebrandSekhon(
             spectrum, radarNAve=radarNAve, verbosity=verbosity)
     if (momentsSpecNoiseMax is None):
         if momentsNoiseDistanceFactor > 0:
-            momentsSpecNoiseMax = momentsSpecNoiseMean * momentsNoiseDistanceFactor
+            momentsSpecNoiseMax = momentsSpecNoiseMean \
+              * momentsNoiseDistanceFactor
         else:
             momentsSpecNoiseMax = momentsSpecNoiseMaxHilde
 
