@@ -7,7 +7,7 @@ import numpy as np
 import xarray as xr
 
 from . import (aspectRatio, crossSectionArea, density, fallVelocity, mass,
-               scattering, size, sizeDistribution)
+               scattering, size, sizeDistribution, relativePermittivity)
 from .. import helpers, units
 from ..libs import refractiveIndex
 
@@ -424,8 +424,8 @@ class cloud(softEllipsoidFixedDensity):
         defaultArgs['sizeBounds'] = size.linspaceBounds
         defaultArgs['sizeBoundsWidth'] = size.boundsWidth
         defaultArgs['fallVelocity'] = fallVelocity.khvorostyanov01_drops
-        defaultArgs['relativePermittivity'] = refractiveIndex.water.\
-            turner_kneifel_cadeddu
+        defaultArgs['relativePermittivity'] = relativePermittivity.\
+            water_turner_kneifel_cadeddu
 
         kwargs['nBins'] = nBins
         kwargs['sizeDistribution'] = sizeDistribution
@@ -434,6 +434,7 @@ class cloud(softEllipsoidFixedDensity):
         kwargs['Dmax'] = Dmax
 
         defaultArgs.update(kwargs)
+
 
         return super().__init__(*args, **defaultArgs)
 
@@ -524,8 +525,8 @@ class rain(softEllipsoidFixedDensity):
         defaultArgs['sizeBounds'] = size.logspaceBounds
         defaultArgs['sizeBoundsWidth'] = size.boundsWidth
         defaultArgs['fallVelocity'] = fallVelocity.khvorostyanov01_drops
-        defaultArgs['relativePermittivity'] = refractiveIndex.water.\
-            turner_kneifel_cadeddu
+        defaultArgs['relativePermittivity'] = relativePermittivity.\
+            water_turner_kneifel_cadeddu
 
         kwargs['nBins'] = nBins
         kwargs['sizeDistribution'] = sizeDistribution
@@ -619,7 +620,8 @@ class ice(softEllipsoidFixedDensity):
         defaultArgs['sizeBounds'] = size.linspaceBounds
         defaultArgs['sizeBoundsWidth'] = size.boundsWidth
         defaultArgs['fallVelocity'] = fallVelocity.heymsfield10_particles
-        defaultArgs['relativePermittivity'] = refractiveIndex.ice.matzler_2006
+        defaultArgs['relativePermittivity'] = relativePermittivity.\
+            ice_matzler_2006
 
         kwargs['nBins'] = nBins
         kwargs['sizeDistribution'] = sizeDistribution
@@ -661,8 +663,10 @@ class snow(softEllipsoidMassSize):
         defaultArgs['sizeBounds'] = size.logspaceBounds
         defaultArgs['sizeBoundsWidth'] = size.boundsWidth
         defaultArgs['fallVelocity'] = fallVelocity.heymsfield10_particles
-        # TODO: make relativePermittivity mixing more flexible!
-        defaultArgs['relativePermittivity'] = refractiveIndex.snow.eps
+        defaultArgs['relativePermittivityIce'] = relativePermittivity.\
+            ice_matzler_2006
+        defaultArgs['relativePermittivity'] = relativePermittivity.\
+            mixing_sihvola
 
         kwargs['nBins'] = nBins
         kwargs['aspectRatio'] = aspectRatio
