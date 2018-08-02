@@ -107,8 +107,8 @@ def bruggeman(eps, mix):
     Bruggeman model has the advantage with respect to MG of beeing symmetric
     """
 
-    f1 = mix[0]/sum(mix)
-    f2 = mix[1]/sum(mix)
+    f1 = mix[0]/np.sum(mix)
+    f2 = mix[1]/np.sum(mix)
     e1 = eps[0]
     e2 = eps[1]
     a = -2*(f1+f2)
@@ -167,7 +167,7 @@ def sihvola(eps, mix, ni=0.85):
     em_imag = eps[1].imag*(-1.0*(em_real - eps[0]) + mix*(em_real + 2.0*eps[0] + ni*(em_real - eps[0]))) / (
         (eps[1].real + 2.0*eps[0] + 2.0*ni*(em_real - eps[0])) - mix*(1.0 + ni)*(eps[1].real - eps[0]))
 
-    return complex(em_real, em_imag)
+    return em_real + (1j * em_imag)
 
 
 def sihvola_paper(eps, mix, ni=0.85):
@@ -237,7 +237,17 @@ def sihvola_paper(eps, mix, ni=0.85):
     # c = -e0*e1 - 2.0*e0**2.0 + v*e0**2 - 2.0*f*e1 * \
     #     e0 + f*e1*v*e0 + 2.0*f*e0**2.0 - f*v*e0**2.0
 
-    return 0.5*(-e0*f*v - e0*f + 2.0*e0*v - 2.0*e0 + e1*f*v + e1*f - e1 - np.sqrt(e0**2*f**2*v**2 + 2.0*e0**2*f**2*v + e0**2*f**2 - 8.0*e0**2*f*v + 4.0*e0**2*f + 4.0*e0**2 - 2.0*e0*e1*f**2*v**2 - 4.0*e0*e1*f**2*v - 2.0*e0*e1*f**2 + 10.0*e0*e1*f*v - 2.0*e0*e1*f + 4.0*e0*e1 + e1**2*f**2*v**2 + 2.0*e1**2*f**2*v + e1**2*f**2 - 2.0*e1**2*f*v - 2.0*e1**2*f + e1**2))/v, 0.5*(-e0*f*v - e0*f + 2.0*e0*v - 2.0*e0 + e1*f*v + e1*f - e1 + np.sqrt(e0**2*f**2*v**2 + 2.0*e0**2*f**2*v + e0**2*f**2 - 8.0*e0**2*f*v + 4.0*e0**2*f + 4.0*e0**2 - 2.0*e0*e1*f**2*v**2 - 4.0*e0*e1*f**2*v - 2.0*e0*e1*f**2 + 10.0*e0*e1*f*v - 2.0*e0*e1*f + 4.0*e0*e1 + e1**2*f**2*v**2 + 2.0*e1**2*f**2*v + e1**2*f**2 - 2.0*e1**2*f*v - 2.0*e1**2*f + e1**2))/v
+    return 0.5*(-e0*f*v - e0*f + 2.0*e0*v - 2.0*e0 + e1*f*v + e1*f - e1 -
+        np.sqrt(e0**2*f**2*v**2 + 2.0*e0**2*f**2*v + e0**2*f**2 -
+        8.0*e0**2*f*v + 4.0*e0**2*f + 4.0*e0**2 - 2.0*e0*e1*f**2*v**2 -
+        4.0*e0*e1*f**2*v - 2.0*e0*e1*f**2 + 10.0*e0*e1*f*v - 2.0*e0*e1*f +
+        4.0*e0*e1 + e1**2*f**2*v**2 + 2.0*e1**2*f**2*v + e1**2*f**2 -
+        2.0*e1**2*f*v - 2.0*e1**2*f + e1**2))/v, 0.5*(-e0*f*v - e0*f +
+        2.0*e0*v - 2.0*e0 + e1*f*v + e1*f - e1 + np.sqrt(e0**2*f**2*v**2 +
+        2.0*e0**2*f**2*v + e0**2*f**2 - 8.0*e0**2*f*v + 4.0*e0**2*f +
+        4.0*e0**2 - 2.0*e0*e1*f**2*v**2 - 4.0*e0*e1*f**2*v - 2.0*e0*e1*f**2 +
+        10.0*e0*e1*f*v - 2.0*e0*e1*f + 4.0*e0*e1 + e1**2*f**2*v**2 +
+        2.0*e1**2*f**2*v + e1**2*f**2 - 2.0*e1**2*f*v - 2.0*e1**2*f + e1**2))/v
 
     raise NotImplementedError
 

@@ -111,14 +111,22 @@ def iwabuchi_yang_2011(temperature, frequency):
         If a negative frequency or temperature is passed as an argument
     """
 
+    if not hasattr(frequency, '__array__'):
+        frequency = np.asarray(frequency)
+    if not hasattr(temperature, '__array__'):
+        temperature = np.asarray(temperature)
+
     if (frequency < 0).any():
         raise ValueError('A negative frequency value has been passed')
 
-    if True:
+    if (temperature.size == frequency.size) and (frequency.size<1):
         eps_real = iwabuchi_ice_interp_real(temperature.flatten(
         ), frequency.flatten()).diagonal().reshape(frequency.shape)
         eps_imag = iwabuchi_ice_interp_imag(temperature.flatten(
         ), frequency.flatten()).diagonal().reshape(frequency.shape)
+    elif (temperature.size == 1) and (frequency.size ==1):
+        eps_real = iwabuchi_ice_interp_real(temperature, frequency)
+        eps_imag = iwabuchi_ice_interp_imag(temperature, frequency)
     elif temperature.size == 1:
         temps = temperature*np.ones(frequency.shape)
         eps_real = iwabuchi_ice_interp_real(
@@ -170,7 +178,7 @@ def warren_brandt_2008(frequency):
         If a negative frequency or temperature is passed as an argument
 
     """
-    if (frequency < 0).any():
+    if (np.asarray(frequency) < 0).any():
         raise ValueError('A negative frequency value has been passed')
 
     return warren_ice_interpolated(frequency)
@@ -203,7 +211,7 @@ def matzler_2006(temperature, frequency, checkTemperature=True):
 
     """
 
-    if (frequency < 0).any():
+    if (np.asarray(frequency) < 0).any():
         raise ValueError(
             'refractive: A negative frequency value has been passed')
     if (temperature < 0).any():
