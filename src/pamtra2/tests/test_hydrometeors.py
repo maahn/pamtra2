@@ -142,6 +142,31 @@ class TestMass(object):
             sizeCenter, aspectRatio, density)
         assert np.all(sp1 == sp2)
 
+    def testProlateEllipsoid(self):
+        sizeCenter = np.arange(1, 11)
+        sp1 = pamtra2.hydrometeors.mass.waterSphere(sizeCenter)
+        density = 1000
+        aspectRatio = 1
+        sp2 = pamtra2.hydrometeors.mass.prolateEllipsoid(
+            sizeCenter, aspectRatio, density)
+        aspectRatio = 2
+        sp3 = pamtra2.hydrometeors.mass.prolateEllipsoid(
+            sizeCenter, aspectRatio, density)
+        assert np.all(sp1 == sp2)
+        assert np.all(sp1 > sp3)
+
+    def testOblateEllipsoid(self):
+        sizeCenter = np.arange(1, 11)
+        sp1 = pamtra2.hydrometeors.mass.waterSphere(sizeCenter)
+        density = 1000
+        aspectRatio = 1
+        sp2 = pamtra2.hydrometeors.mass.oblateEllipsoid(
+            sizeCenter, aspectRatio, density)
+        aspectRatio = 0.5
+        sp3 = pamtra2.hydrometeors.mass.oblateEllipsoid(
+            sizeCenter, aspectRatio, density)
+        assert np.all(sp1 == sp2)
+        assert np.all(sp1 > sp3)
 
 class TestSizeBounds(object):
     def test_lin(self):

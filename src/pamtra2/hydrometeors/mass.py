@@ -90,11 +90,74 @@ def ellipsoid(sizeCenter, aspectRatio, density):
         particle mass
     """
 
-    if np.any(aspectRatio != 1):
-        raise NotImplementedError(
-            'aspectRatio!=1 not implemented yet. Patch this function.')
+    if np.all(aspectRatio <= 1):
+        mass = oblateEllipsoid(
+            sizeCenter, aspectRatio, density)
+    elif np.all(aspectRatio > 1):
+        mass = prolateEllipsoid(
+            sizeCenter, aspectRatio, density)
+    else:
+        mass = oblateEllipsoid(
+            sizeCenter, aspectRatio, density)
+        mass[aspectRatio > 1] = prolateEllipsoid(
+            sizeCenter, aspectRatio, density)[aspectRatio > 1]
+    return mass
 
-    massSizeA = np.pi/6 * density
-    massSizeB = 3.
 
-    return powerLaw(sizeCenter, massSizeA, massSizeB)
+def oblateEllipsoid(sizeCenter, aspectRatio, density):
+    """mass of a fixed-density oblate ellipsoid
+
+    Parameters
+    ----------
+    sizeCenter : array_like
+        particle size at center of size bin
+    density : array_like
+        fixed particle density
+    aspectRatio : array_like
+        particle aspect ratio <1
+
+    Returns
+    -------
+    mass : array_like
+        particle mass
+    """
+
+    if np.any(aspectRatio > 1):
+        raise ValueError(
+            'oblate ellipsoids only')
+
+    A = B = sizeCenter
+    C = sizeCenter * aspectRatio
+    volume = np.pi/6 * A * B * C
+
+    return volume * density
+
+
+def prolateEllipsoid(sizeCenter, aspectRatio, density):
+    """mass of a fixed-density prolate ellipsoid
+
+    Parameters
+    ----------
+    sizeCenter : array_like
+        particle size at center of size bin
+    density : array_like
+        fixed particle density
+    aspectRatio : array_like
+        particle aspect ratio > 1
+
+    Returns
+    -------
+    mass : array_like
+        particle mass
+    """
+
+    if np.any(aspectRatio < 1):
+        raise ValueError(
+            'prolate ellipsoids only')
+
+    A = B = sizeCenter / aspectRatio
+    C = sizeCenter
+    volume = np.pi/6 * A * B * C
+
+    return volume * density
+
