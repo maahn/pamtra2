@@ -14,56 +14,96 @@ def create_simple_cloud_creator():
         edr=1e-3,
         Ntot=[1],
         scattering=pamtra2.hydrometeors.scattering.Rayleigh,
+        relativePermittivity=pamtra2.hydrometeors.relativePermittivity.
+        water_turner_kneifel_cadeddu,
         radarPNoise1000=-30,
+        temperature=250,
         instrument='simple',
         dask=False,
         additionalDims=collections.OrderedDict(),
-        size=0.001
+        size=0.001,
+        hydrometeor='cloud',
+        hydrometeorContent=0.0001,
+        **kwargs
     ):
 
         additionalDims = additionalDims
 
         pam2 = pamtra2.pamtra2(
             nLayer=nHeights,
-            hydrometeors=['cloud'],
+            hydrometeors=['hydrometeor'],
             additionalDims=additionalDims,
             frequencies=[3e9],
         )
 
         pam2.profile.height[:] = 1000
-        pam2.profile.temperature[:] = 250
+        pam2.profile.temperature[:] = temperature
         pam2.profile.relativeHumidity[:] = 90
         pam2.profile.pressure[:] = 100000
         pam2.profile.eddyDissipationRate[:] = edr
         pam2.profile.horizontalWind[:] = 10
+        pam2.profile.hydrometeorContent[:] = hydrometeorContent
+
         pam2.profile['heightBinDepth'] = 10
         pam2.addMissingVariables()
 
-        pam2.describeHydrometeor(
-            pamtra2.hydrometeors.softEllipsoidFixedDensity,
-            name='cloud',  # or None, then str(index)
-            nBins=2,
-            sizeBounds=pamtra2.hydrometeors.size.linspaceBounds,
-            sizeCenter=pamtra2.hydrometeors.size.boundsToMid,
-            sizeBoundsWidth=pamtra2.hydrometeors.size.boundsWidth,
-            sizeDistribution=pamtra2.hydrometeors.sizeDistribution.\
-            monoDisperse,
-            aspectRatio=1.0,
-            mass=pamtra2.hydrometeors.mass.ellipsoid,
-            density=pamtra2.hydrometeors.density.water,
-            crossSectionArea=pamtra2.hydrometeors.crossSectionArea.sphere,
-            relativePermittivity=refractiveIndex.water.turner_kneifel_cadeddu,
-            scattering=scattering,
-            fallVelocity=pamtra2.hydrometeors.fallVelocity.\
-            khvorostyanov01_drops,
-            Dmin=size - .5e-10,
-            Dmax=size + .5e-10,
-            Ntot=xr.DataArray(Ntot, coords=[pam2.profile.layer]),
-            useFuncArgDefaults=False,
-        )
+        if hydrometeor == 'cloud':
+            pam2.describeHydrometeor(
+                pamtra2.hydrometeors.softEllipsoidFixedDensity,
+                name='hydrometeor',  # or None, then str(index)
+                nBins=2,
+                sizeBounds=pamtra2.hydrometeors.size.linspaceBounds,
+                sizeCenter=pamtra2.hydrometeors.size.boundsToMid,
+                sizeBoundsWidth=pamtra2.hydrometeors.size.boundsWidth,
+                sizeDistribution=pamtra2.hydrometeors.sizeDistribution.\
+                monoDisperse,
+                aspectRatio=1.0,
+                mass=pamtra2.hydrometeors.mass.ellipsoid,
+                density=pamtra2.hydrometeors.density.water,
+                crossSectionArea=pamtra2.hydrometeors.crossSectionArea.sphere,
+                relativePermittivity=relativePermittivity,
+                scattering=scattering,
+                fallVelocity=pamtra2.hydrometeors.fallVelocity.\
+                khvorostyanov01_drops,
+                Dmin=size - .5e-10,
+                Dmax=size + .5e-10,
+                Ntot=xr.DataArray(Ntot, coords=[pam2.profile.layer]),
+                checkTemperatureForRelativePermittivity=False,
+                useFuncArgDefaults=False,
+                **kwargs,
+            )
+        elif hydrometeor == 'snow':
+            pam2.describeHydrometeor(
+                pamtra2.hydrometeors.softEllipsoidMassSize,
+                name='hydrometeor',  # or None, then str(index)
+                nBins=10,
+                sizeBounds=pamtra2.hydrometeors.size.linspaceBounds,
+                sizeCenter=pamtra2.hydrometeors.size.boundsToMid,
+                sizeBoundsWidth=pamtra2.hydrometeors.size.boundsWidth,
+                sizeDistribution=pamtra2.hydrometeors.sizeDistribution.
+                exponentialFieldWC,
+                aspectRatio=1.0,
+                mass=pamtra2.hydrometeors.mass.powerLaw,
+                density=pamtra2.hydrometeors.density.softEllipsoid,
+                crossSectionArea=pamtra2.hydrometeors.crossSectionArea.sphere,
+                relativePermittivity=relativePermittivity,
+                scattering=scattering,
+                fallVelocity=pamtra2.hydrometeors.fallVelocity.
+                heymsfield10_particles,
+                Dmin=size,
+                Dmax=size + 0.01,
+                Ntot=xr.DataArray(Ntot, coords=[pam2.profile.layer]),
+                checkTemperatureForRelativePermittivity=False,
+                useFuncArgDefaults=False,
+                massSizeA=0.0121,
+                massSizeB=1.9,
+                minDensity=100,
+                maxDensity=pamtra2.constants.rhoIce,
+                **kwargs,
+            )
 
         pam2.profile['pathIntegratedAtenuattion'] = xr.zeros_like(
-            pam2.hydrometeors.cloud.profile.backscatterCrossSection.isel(
+            pam2.hydrometeors.hydrometeor.profile.backscatterCrossSection.isel(
                 sizeBin=0))
 
         if dask:
@@ -172,6 +212,93 @@ def test_dask(create_simple_cloud_creator):
     assert np.allclose(dask.results.radarReflectivity.values.flatten(),
                        nodask.results.radarReflectivity.values.flatten(),
                        rtol=1e-01, atol=2e-01)
+
+
+def test_refractiveIndex_liquid(create_simple_cloud_creator):
+    turner_kneifel_cadeddu = create_simple_cloud_creator(
+        nHeights=2,
+        Ntot=[1, 2],
+        temperature=273.15
+    ).results.radarReflectivity.values
+    ellison = create_simple_cloud_creator(
+        nHeights=2,
+        Ntot=[1, 2],
+        temperature=273.15,
+        relativePermittivity=pamtra2.hydrometeors.relativePermittivity.
+        water_ellison
+    ).results.radarReflectivity.values
+    assert np.allclose(turner_kneifel_cadeddu, ellison, rtol=1e-01, atol=1e-01)
+
+
+def test_refractiveIndex_ice(create_simple_cloud_creator):
+    ice_warren_brandt_2008 = create_simple_cloud_creator(
+        nHeights=1,
+        Ntot=[1],
+        temperature=260.15,
+        relativePermittivity=pamtra2.hydrometeors.relativePermittivity.
+        ice_warren_brandt_2008
+    ).results.radarReflectivity.values
+    ice_matzler_2006 = create_simple_cloud_creator(
+        nHeights=1,
+        Ntot=[1],
+        temperature=260.15,
+        relativePermittivity=pamtra2.hydrometeors.relativePermittivity.
+        ice_matzler_2006
+    ).results.radarReflectivity.values
+    ice_iwabuchi_yang_2011 = create_simple_cloud_creator(
+        nHeights=1,
+        Ntot=[1],
+        temperature=[260.15],
+        relativePermittivity=pamtra2.hydrometeors.relativePermittivity.
+        ice_iwabuchi_yang_2011
+    ).results.radarReflectivity.values
+    assert np.allclose(ice_warren_brandt_2008,
+                       ice_matzler_2006, rtol=1e-01, atol=1e-01)
+    assert np.allclose(ice_iwabuchi_yang_2011,
+                       ice_matzler_2006, rtol=1e-01, atol=1e-01)
+
+
+def test_refractiveIndex_mixing(create_simple_cloud_creator):
+
+    mixing_maxwell_garnett = create_simple_cloud_creator(
+        nHeights=2,
+        Ntot=[1, 2],
+        temperature=273.15,
+        hydrometeor='snow',
+        relativePermittivity=pamtra2.hydrometeors.relativePermittivity.
+        mixing_maxwell_garnett,
+        relativePermittivityIce=pamtra2.hydrometeors.relativePermittivity.
+        ice_iwabuchi_yang_2011,
+
+    ).results.radarReflectivity.values
+
+    mixing_bruggeman = create_simple_cloud_creator(
+        nHeights=2,
+        Ntot=[1, 2],
+        temperature=273.15,
+        hydrometeor='snow',
+        relativePermittivity=pamtra2.hydrometeors.relativePermittivity.
+        mixing_bruggeman,
+        relativePermittivityIce=pamtra2.hydrometeors.relativePermittivity.
+        ice_iwabuchi_yang_2011,
+
+    ).results.radarReflectivity.values
+
+    mixing_sihvola = create_simple_cloud_creator(
+        nHeights=2,
+        Ntot=[1, 2],
+        temperature=273.15,
+        hydrometeor='snow',
+        relativePermittivity=pamtra2.hydrometeors.relativePermittivity.
+        mixing_sihvola,
+        relativePermittivityIce=pamtra2.hydrometeors.relativePermittivity.
+        ice_iwabuchi_yang_2011,
+
+    ).results.radarReflectivity.values
+    assert np.allclose(mixing_maxwell_garnett,
+                       mixing_bruggeman, rtol=1e-01, atol=1e-01)
+    assert np.allclose(mixing_maxwell_garnett,
+                       mixing_sihvola, rtol=1e-01, atol=1e-01)
 
 
 @pytest.mark.parametrize("noise", [

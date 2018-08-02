@@ -8,5 +8,6 @@ from . import density
 from . import aspectRatio
 from . import scattering
 from . import fallVelocity
+from . import relativePermittivity
 
 from .core import *

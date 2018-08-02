@@ -53,7 +53,7 @@ def monoDisperseWC(sizeBoundsWidth, hydrometeorContent, mass):
         calculated size distribution
     """
     if isinstance(mass, xr.DataArray):
-        mass1Bin = mass.sum('sizeCenter')
+        mass1Bin = mass.sum('sizeBin')
     else:
         mass1Bin = mass.sum(-1)
     N = (hydrometeorContent / mass1Bin) / sizeBoundsWidth

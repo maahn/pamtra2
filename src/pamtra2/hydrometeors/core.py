@@ -338,6 +338,9 @@ class softEllipsoidMassSize(hydrometeor):
                 'density'
             )
 
+            ii = kwargs['calculationOrder'].index('sizeDistribution')
+            kwargs['calculationOrder'].insert(ii, 'relativePermittivityIce')
+
         return super().__init__(*args, **kwargs)
 
 
@@ -537,7 +540,7 @@ class rain(softEllipsoidFixedDensity):
 
 
 class ice(softEllipsoidFixedDensity):
-    """hydrometeor class for ice. 
+    """hydrometeor class for ice.
 
         Parameters
         ----------
