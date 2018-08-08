@@ -239,7 +239,7 @@ class pamtra2(object):
 
         p = self.profile.pressure
         T = self.profile.temperature
-        rh = self.profile.temperature/100.
+        rh = self.profile.relativeHumidity/100.
 
         self.profile['dryAirDensity'] = meteo_si.density.moist_rho_rh(p, T, rh)
 
@@ -252,7 +252,7 @@ class pamtra2(object):
 
         p = self.profile.pressure
         T = self.profile.temperature
-        rh = self.profile.temperature/100.
+        rh = self.profile.relativeHumidity/100.
         try:
             qm = self.profile.hydrometeorContent.sum('hydrometeor')
         except ValueError:
