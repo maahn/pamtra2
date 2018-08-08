@@ -130,7 +130,8 @@ class pamtra2(object):
         else:
             self.profile = profile
 
-        self['wavelength'] = constants.speedOfLight/self.frequency
+        self.profile['wavelength'] = constants.speedOfLight /\
+            self.profile.frequency
 
         self.additionalDims = additionalDims
         self.hydrometeors = helpers.AttrDict()
@@ -262,6 +263,14 @@ class pamtra2(object):
         try:
             qm = self.profile.hydrometeorContent.sum('hydrometeor')
         except ValueError:
+            warnings.warn('hydrometeor content not considered when calculating'
+                          ' air density, because hydrometeor dimension is '
+                          'missing. ')
+            qm = 0
+        except AttributeError:
+            warnings.warn('hydrometeor content not considered when calculating'
+                          ' air density, because hydrometeorContent variable'
+                          ' is missing.')
             qm = 0
 
         self.profile['airDensity'] = meteo_si.density.moist_rho_rh(
