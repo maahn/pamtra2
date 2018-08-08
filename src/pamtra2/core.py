@@ -38,8 +38,6 @@ class customProfile (xr.Dataset):
                     attrs={'unit': units.units[var]},
                 )
 
-            self['wavelength'] = constants.speedOfLight/self.frequency
-
             return
 
 
@@ -131,6 +129,8 @@ class pamtra2(object):
             )
         else:
             self.profile = profile
+
+        self['wavelength'] = constants.speedOfLight/self.frequency
 
         self.additionalDims = additionalDims
         self.hydrometeors = helpers.AttrDict()
