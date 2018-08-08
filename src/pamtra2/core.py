@@ -48,6 +48,9 @@ class pamtra2(object):
 
     def __init__(
         self,
+        nLayer,
+        hydrometeors,
+        frequencies,
         profileVars=[
             (
             'height',
@@ -86,13 +89,12 @@ class pamtra2(object):
             ),
             (
             'hydrometeorContent',
-                [dimensions.ADDITIONAL, dimensions.LAYER, dimensions.HYDROMETEOR],
+                [dimensions.ADDITIONAL, dimensions.LAYER,
+                 dimensions.HYDROMETEOR],
                 np.float64
             ),
         ],
-        nLayer=None,
-        hydrometeors=None,
-        frequencies=None,
+        profile=None,
         additionalDims={},
     ):
 
@@ -122,10 +124,14 @@ class pamtra2(object):
                                   % k2)
                     del self.coords[k1][k2]
 
-        self.profile = customProfile(
-            self,
-            profileVars=profileVars,
-        )
+        if profile is None:
+            self.profile = customProfile(
+                self,
+                profileVars=profileVars,
+            )
+        else:
+            self.profile = profile
+
         self.additionalDims = additionalDims
         self.hydrometeors = helpers.AttrDict()
         for hh in hydrometeors:
