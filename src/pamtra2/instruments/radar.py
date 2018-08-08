@@ -30,34 +30,39 @@ class simpleRadar(microwaveInstrument):
 
     def solve(self):
 
-        crossSections = self.parent.getIntegratedScatteringCrossSections(
-            crossSections=['backscatterCrossSection'],
-            frequencies=self.frequencies,
-        )
-
         self._calcPIA()
 
-        back = crossSections['backscatterCrossSection']
-        wavelength = self.parent.profile.wavelength.sel(
-            frequency=self.frequencies)
-        K2 = self.settings['radarK2']
+        if self.parent.nHydrometeors > 0:
 
-        Ze_back = 1.e18*(1.e0/(K2*np.pi**5))*back*(wavelength)**4
+            crossSections = self.parent.getIntegratedScatteringCrossSections(
+                crossSections=['backscatterCrossSection'],
+                frequencies=self.frequencies,
+            )
 
-        self.results['radarReflectivity'] = 10*np.log10(Ze_back)
+            back = crossSections['backscatterCrossSection']
+            wavelength = self.parent.profile.wavelength.sel(
+                frequency=self.frequencies)
+            K2 = self.settings['radarK2']
 
-        if self.settings['applyAttenuation'] is None:
-            pass
-        elif self.settings['applyAttenuation'] == 'bottomUp':
-            self.results['radarReflectivity'] -= self.results[
-                'pathIntegratedAttBottomUp']
-        elif self.settings['applyAttenuation'] == 'topDown':
-            self.results['radarReflectivity'] -= self.results[
-                'pathIntegratedAttTopDown']
+            Ze_back = 1.e18*(1.e0/(K2*np.pi**5))*back*(wavelength)**4
+
+            self.results['radarReflectivity'] = 10*np.log10(Ze_back)
+
+            if self.settings['applyAttenuation'] is None:
+                pass
+            elif self.settings['applyAttenuation'] == 'bottomUp':
+                self.results['radarReflectivity'] -= self.results[
+                    'pathIntegratedAttBottomUp']
+            elif self.settings['applyAttenuation'] == 'topDown':
+                self.results['radarReflectivity'] -= self.results[
+                    'pathIntegratedAttTopDown']
+            else:
+                raise ValueError('Do not understand applyAttenuation: %s. Must'
+                                 ' be None, "bottomUp" or "topDown"' %
+                                 self.settings['applyAttenuation'])
         else:
-            raise ValueError('Do not understand applyAttenuation: %s. Must be'
-                             'None, "bottomUp" or "topDown"' %
-                             self.settings['applyAttenuation'])
+            warnings.warn('No hydrometeors found. Calculating only gaseous '
+                          'attenuation.')
 
         for vv in self.results.variables:
             self.results[vv].attrs['unit'] = units.units[vv]
@@ -90,6 +95,7 @@ class simpleRadar(microwaveInstrument):
         PIA_topdown = PIA_topdown.isel(
             layer=attenuation.coords[dim].values[::-1])
         return PIA_bottomup, PIA_topdown
+
 
 class dopplerRadarPamtra(simpleRadar):
 
@@ -175,9 +181,11 @@ class dopplerRadarPamtra(simpleRadar):
                                  'spectral radar simulator!')
 
         self._calcPIA()
-        self._calcRadarSpectrum()
-        self._simulateRadar()
-        self._calcMoments()
+        if self.parent.nHydrometeors > 0:
+
+            self._calcRadarSpectrum()
+            self._simulateRadar()
+            self._calcMoments()
 
         for vv in self.results.variables:
             self.results[vv].attrs['unit'] = units.units[vv]
@@ -250,15 +258,15 @@ class dopplerRadarPamtra(simpleRadar):
             )
 
         radarSpec = xr.apply_ufunc(
-                pyPamtraRadarSimulator.createRadarSpectrum,
-                *args,
-                kwargs=kwargs,
-                input_core_dims=input_core_dims,
-                output_core_dims=[('dopplerVelocityAliased',)],
-                output_dtypes=[mergedProfile.backscatterCrossSection.dtype],
-                output_sizes={'dopplerVelocityAliased': nfft},
-                dask='parallelized',
-            )
+            pyPamtraRadarSimulator.createRadarSpectrum,
+            *args,
+            kwargs=kwargs,
+            input_core_dims=input_core_dims,
+            output_core_dims=[('dopplerVelocityAliased',)],
+            output_dtypes=[mergedProfile.backscatterCrossSection.dtype],
+            output_sizes={'dopplerVelocityAliased': nfft},
+            dask='parallelized',
+        )
         radarSpecs.append(radarSpec)
         radarSpecs = xr.concat(radarSpecs, dim='hydrometeor')
         radarSpecs = radarSpecs.sum('hydrometeor').unstack('merged')

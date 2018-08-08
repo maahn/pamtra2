@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import warnings
 from collections import OrderedDict
 
 import numpy as np
@@ -18,10 +18,6 @@ class customProfile (xr.Dataset):
         self,
         parent,
         profileVars=[],
-        nLayer=None,
-        hydrometeors=None,
-        frequencies=None,
-        additionalDims={},
     ):
 
         if isinstance(profileVars, xr.Dataset):
@@ -118,13 +114,17 @@ class pamtra2(object):
             self.coords[dimensions.FREQUENCY],
         )
 
+        # remove length zero coordinates
+        for k1 in self.coords.keys():
+            for k2 in list(self.coords[k1].keys()):
+                if len(self.coords[k1][k2]) == 0:
+                    warnings.warn('Dimension %s has length 0 and was removed'
+                                  % k2)
+                    del self.coords[k1][k2]
+
         self.profile = customProfile(
             self,
             profileVars=profileVars,
-            nLayer=nLayer,
-            hydrometeors=hydrometeors,
-            frequencies=frequencies,
-            additionalDims=additionalDims
         )
         self.additionalDims = additionalDims
         self.hydrometeors = helpers.AttrDict()
@@ -253,7 +253,10 @@ class pamtra2(object):
         p = self.profile.pressure
         T = self.profile.temperature
         rh = self.profile.temperature/100.
-        qm = self.profile.hydrometeorContent.sum('hydrometeor')
+        try:
+            qm = self.profile.hydrometeorContent.sum('hydrometeor')
+        except ValueError:
+            qm = 0
 
         self.profile['airDensity'] = meteo_si.density.moist_rho_rh(
             p, T, rh, qm)

@@ -85,10 +85,15 @@ class microwaveInstrument(instrument):
         xr.DataArray
             absorption coefficient
         '''
-        hydroAbs = self.parent.getIntegratedScatteringCrossSections(
-            crossSections=['extinctionCrossSection'],
-            frequencies=self.frequencies,
-        )['extinctionCrossSection']
+        if self.parent.nHydrometeors>0:
+
+            hydroAbs = self.parent.getIntegratedScatteringCrossSections(
+                crossSections=['extinctionCrossSection'],
+                frequencies=self.frequencies,
+            )['extinctionCrossSection']
+
+        else:
+            hydroAbs = 0
 
         return hydroAbs
 
@@ -100,11 +105,12 @@ class microwaveInstrument(instrument):
         xr.DataArray
             absorption coefficient
         '''
-        thisProf = self.parent.profile.stack(merged=helpers.concatDicts(
+        coords = helpers.concatDicts(
             self.parent.coords['additional'],
             self.parent.coords['layer'],
             self.parent.coords['frequency']
-        ))
+        )
+        thisProf = self.parent.profile.stack(merged=coords)
 
         kwargs = {}
 
