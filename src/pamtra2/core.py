@@ -182,12 +182,12 @@ class pamtra2(object):
     def addMissingVariables(self):
 
         self.addHeightBinDepth()
+        self.addSpecificHumidity()
+        self.addAbsoluteHumidity()
         self.addDryAirDensity()
         self.addAirDensity()
         self.addDynamicViscosity()
         self.addKinematicViscosity()
-        self.addSpecificHumidity()
-        self.addAbsoluteHumidity()
         self.addWaterVaporPressure()
 
         return self.profile
@@ -207,10 +207,18 @@ class pamtra2(object):
         add absolute humidity
         '''
 
-        self.profile['absoluteHumidity'] = meteo_si.humidity.rh2a(
+        args = (
             self.profile.relativeHumidity/100.,
             self.profile.temperature
         )
+
+        self.profile['absoluteHumidity'] = xr.apply_ufunc(
+                meteo_si.humidity.rh2a,
+                *args,
+                kwargs={},
+                output_dtypes=[np.float64],
+                dask='parallelized',
+            )
 
         return self.profile['absoluteHumidity']
 
@@ -219,11 +227,19 @@ class pamtra2(object):
         add specific humidity
         '''
 
-        self.profile['specificHumidity'] = meteo_si.humidity.rh2q(
+        args = (
             self.profile.relativeHumidity/100.,
             self.profile.temperature,
             self.profile.pressure,
         )
+
+        self.profile['specificHumidity'] = xr.apply_ufunc(
+                meteo_si.humidity.rh2q,
+                *args,
+                kwargs={},
+                output_dtypes=[np.float64],
+                dask='parallelized',
+            )
 
         return self.profile['specificHumidity']
 
@@ -232,10 +248,18 @@ class pamtra2(object):
         add waterVaporPressure
         '''
 
-        self.profile['waterVaporPressure'] = meteo_si.humidity.q2e(
+        args = (
             self.profile['specificHumidity'],
             self.profile.pressure
         )
+
+        self.profile['waterVaporPressure'] = xr.apply_ufunc(
+                meteo_si.humidity.q2e,
+                *args,
+                kwargs={},
+                output_dtypes=[np.float64],
+                dask='parallelized',
+            )
 
         return self.profile['waterVaporPressure']
 
@@ -246,10 +270,16 @@ class pamtra2(object):
 
         p = self.profile.pressure
         T = self.profile.temperature
-        rh = self.profile.relativeHumidity/100.
+        q = 0
 
-        self.profile['dryAirDensity'] = meteo_si.density.moist_rho_rh(p, T, rh)
-
+        args = (p, T, q)
+        self.profile['dryAirDensity'] = xr.apply_ufunc(
+                meteo_si.density.moist_rho_q,
+                *args,
+                kwargs={},
+                output_dtypes=[np.float64],
+                dask='parallelized',
+            )
         return self.profile['dryAirDensity']
 
     def addAirDensity(self):
@@ -257,9 +287,12 @@ class pamtra2(object):
         add air density
         '''
 
+        if 'specificHumidity' not in self.profile.keys():
+            self.addSpecificHumidity()
+
         p = self.profile.pressure
         T = self.profile.temperature
-        rh = self.profile.relativeHumidity/100.
+        q = self.profile.specificHumidity
         try:
             qm = self.profile.hydrometeorContent.sum('hydrometeor')
         except ValueError:
@@ -273,8 +306,14 @@ class pamtra2(object):
                           ' is missing.')
             qm = 0
 
-        self.profile['airDensity'] = meteo_si.density.moist_rho_rh(
-            p, T, rh, qm)
+        args = (p, T, q, qm)
+        self.profile['airDensity'] = xr.apply_ufunc(
+                meteo_si.density.moist_rho_q,
+                *args,
+                kwargs={},
+                output_dtypes=[np.float64],
+                dask='parallelized',
+            )
 
         return self.profile['airDensity']
 
@@ -283,8 +322,13 @@ class pamtra2(object):
         dynamic viscosity of dry air
         '''
 
-        self.profile['dynamicViscosity'] = _dynamic_viscosity_air(
-            self.profile.temperature)
+        self.profile['dynamicViscosity'] = xr.apply_ufunc(
+                _dynamic_viscosity_air,
+                self.profile.temperature,
+                kwargs={},
+                output_dtypes=[np.float64],
+                dask='parallelized',
+            )
 
         return self.profile['dynamicViscosity']
 
