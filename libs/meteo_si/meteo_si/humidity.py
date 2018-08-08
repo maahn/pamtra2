@@ -183,9 +183,6 @@ def rh2q(rh, T, p, e_sat_func=e_sat_gg_water):
         specific humidity [kg / kg]
 
     """
-    with np.errstate(divide='ignore', invalid='ignore'):
-        if np.any(rh > 5):
-            raise TypeError("rh must not be in %")
 
     eStar = e_sat_func(T)
     e = rh*eStar
@@ -216,10 +213,6 @@ def rh2a(rh, T, e_sat_func=e_sat_gg_water):
         absolute humidity [kg / m3]
 
     """
-
-    with np.errstate(divide='ignore', invalid='ignore'):
-        if np.any(rh > 5):
-            raise TypeError("rh must not be in %")
 
     e = rh*e_sat_func(T)
     a = e / (constants.Rvapor*T)

@@ -44,10 +44,6 @@ def moist_rho_rh(p, T, rh, qm=0):
     moist_rho_rh(p,T,rh,q_ice,q_snow,q_rain,q_cloud,q_graupel,q_hail)
 
     """
-    with np.errstate(divide='ignore', invalid='ignore'):
-        if np.any(rh > 5):
-            raise TypeError("rh must not be in %")
-
     q = humidity.rh2q(rh, T, p)
 
     return moist_rho_q(p, T, q, qm)
@@ -84,9 +80,5 @@ def moist_rho_q(p, T, q, qm=0):
     moist_rho_q = p / (constants.Rair * T *
                        (1 + (constants.Rvapor /
                         constants.Rair-1) * q - qm))
-
-    if np.any(moist_rho_q < 0):
-        if np.any(moist_rho_q < -0.001):
-            raise ValueError("calculated negative densities!")
 
     return moist_rho_q
