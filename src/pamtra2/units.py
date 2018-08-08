@@ -39,3 +39,7 @@ units = collections.defaultdict(
 
 def kelvin2Celsius(kelvin):
     return kelvin - constants.tFreezing
+
+
+def celsius2Kelvin(celsius):
+    return celsius + constants.tFreezing
