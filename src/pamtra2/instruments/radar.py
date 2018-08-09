@@ -236,7 +236,7 @@ class dopplerRadarPamtra(simpleRadar):
 
             mergedProfile['bcsINTEGRATED'] = (
                 mergedProfile['backscatterCrossSection'] *
-                mergedProfile['sizeDistribution']
+                mergedProfile['sizeDistribution'].fillna(0)
             )
 
             argNames, kwargNames = helpers.provideArgKwargNames(
@@ -269,7 +269,9 @@ class dopplerRadarPamtra(simpleRadar):
         )
         radarSpecs.append(radarSpec)
         radarSpecs = xr.concat(radarSpecs, dim='hydrometeor')
-        radarSpecs = radarSpecs.sum('hydrometeor').unstack('merged')
+        radarSpecs = radarSpecs.sum('hydrometeor')
+        radarSpecs = xr.Dataset({'radarSpecs': radarSpecs})
+        radarSpecs = helpers.xrFastUnstack(radarSpecs, 'merged').radarSpecs
 
         self.results['radarIdealizedSpectrum'] = radarSpecs
         self.results['radarIdealizedSpectrum'].attrs['unit'] = units.units[
@@ -338,7 +340,9 @@ class dopplerRadarPamtra(simpleRadar):
             output_dtypes=[mergedProfile.radarIdealizedSpectrum.dtype],
             output_sizes={'dopplerVelocity': 256},
             dask='parallelized',
-        ).unstack('merged')
+        )
+        radarSpec = xr.Dataset({'radarSpec': radarSpec})
+        radarSpec = helpers.xrFastUnstack(radarSpec, 'merged').radarSpec
 
         self.results['radarSpectrum'] = radarSpec.assign_coords(
             dopplerVelocity=np.linspace(
@@ -416,7 +420,7 @@ class dopplerRadarPamtra(simpleRadar):
             output_sizes=output_sizes,
             dask='parallelized',
         )
-        moments = moments.unstack('merged')
+        moments = helpers.xrFastUnstack(moments, 'merged')
 
         moments = moments.assign_coords(
             peak=np.arange(1, self.settings['momentsNPeaks']+1)

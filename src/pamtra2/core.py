@@ -167,7 +167,7 @@ class pamtra2(object):
             perHydro = []
             for name in self.hydrometeors.keys():
                 sizeDistribution = self.hydrometeors[
-                    name].profile.sizeDistribution
+                    name].profile.sizeDistribution.fillna(0)
                 sizeWidth = self.hydrometeors[
                     name].profile.sizeBoundsWidth
                 crossSec = self.hydrometeors[name].profile[crossSection]
