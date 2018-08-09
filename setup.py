@@ -135,7 +135,7 @@ if __name__ == "__main__":
                   'pamtra2.libs.pyPamtraRadarMoments',
                   'pamtra2.libs.refractiveIndex',
                   'pamtra2.libs.singleScattering',
-                  'pamtra2.libs.meteo_si',
+                  'pamtra2.libs.meteo_si','pamtra2.importer'
                   ],
         package_dir={
             'pamtra2': 'src/pamtra2' ,
