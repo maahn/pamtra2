@@ -18,17 +18,20 @@ python module pamgasabs_lib ! in
                 character*(*) intent(in) :: nameofroutine
             end subroutine report
             subroutine assert_true(error,logic,message) ! in :pamgasabs_lib:report_module.f90:report_module
+                threadsafe 
                 integer intent(inout) :: error
                 logical intent(in) :: logic
                 character*(*) intent(in) :: message
             end subroutine assert_true
             subroutine assert_false(error,logic,message) ! in :pamgasabs_lib:report_module.f90:report_module
+                threadsafe 
                 integer intent(inout) :: error
                 logical intent(in) :: logic
                 character*(*) intent(in) :: message
             end subroutine assert_false
         end module report_module
         subroutine rosen98_gasabs(errorstatus,nlayer,freq,tempk,rhowv,pres,absair,abswv) ! in :pamgasabs_lib:rosen98_gasabs.f90
+            threadsafe 
             use kinds, only: dbl,long
             use report_module
             integer(kind=long_bn) intent(out) :: errorstatus
@@ -41,6 +44,7 @@ python module pamgasabs_lib ! in
             real(kind=dbl) dimension(nlayer),intent(out),depend(nlayer) :: abswv
         end subroutine rosen98_gasabs
         subroutine rosen98_gasabs_one(errorstatus,freq,tempk,rhowv,pres,absair,abswv) ! in :pamgasabs_lib:rosen98_gasabs.f90
+            threadsafe 
             use kinds, only: dbl,long
             use gasabs_module
             use report_module
@@ -53,6 +57,7 @@ python module pamgasabs_lib ! in
             real(kind=dbl) intent(out) :: abswv
         end subroutine rosen98_gasabs_one
         subroutine mpm93(errorstatus,nlayer,freq,pbkpa,ekpa,tc,w,abscof) ! in :pamgasabs_lib:mpm93.f90
+            threadsafe 
             use kinds, only: dbl,long
             use report_module
             integer(kind=long_bn) intent(out) :: errorstatus
@@ -65,6 +70,7 @@ python module pamgasabs_lib ! in
             real(kind=dbl) dimension(nlayer),intent(out),depend(nlayer) :: abscof
         end subroutine mpm93
         subroutine mpm93_one(errorstatus,freq,pbkpa,ekpa,tc,w,abscof) ! in :pamgasabs_lib:mpm93.f90
+            threadsafe 
             use kinds, only: dbl,long
             use constants, only: t_abs
             use report_module

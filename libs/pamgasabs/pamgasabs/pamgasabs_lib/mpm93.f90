@@ -1,4 +1,5 @@
 SUBROUTINE mpm93(errorstatus,nLayer, freq, Pbkpa, Ekpa, Tc, W, abscof)
+!f2py threadsafe
  
   !****************************************************************** 
   ! Computes volume absorption coefficient for an atmospheric
@@ -67,6 +68,7 @@ SUBROUTINE mpm93(errorstatus,nLayer, freq, Pbkpa, Ekpa, Tc, W, abscof)
 END SUBROUTINE mpm93
 
 SUBROUTINE mpm93_one(errorstatus,freq, Pbkpa, Ekpa, Tc, W, abscof)
+!f2py threadsafe
   !  MPM93 - subroutines adapted by Jeff Haferman (NASA/GSFC 5/97)
   !  from Liebe's MPM93 model.  His comments are included below.
   !  I've based this adaptation on Frank Evans' MPM92 extraction.

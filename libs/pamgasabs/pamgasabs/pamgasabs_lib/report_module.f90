@@ -79,6 +79,7 @@ contains
    End Subroutine report
 
    Subroutine assert_true(error, logic, message)
+!f2py threadsafe
       ! Description:
       ! Subroutine to simplify unit checks
       !
@@ -119,6 +120,7 @@ contains
    End Subroutine assert_true
 
    Subroutine assert_false(error, logic, message)
+!f2py threadsafe
       ! Description see assert_true
       implicit none
       integer, intent(inout) :: error

@@ -8,6 +8,7 @@ subroutine rosen98_gasabs &
     pres, & ! in
     absAir, & ! out
     absWv) ! out
+!f2py threadsafe
 
    use kinds, only:dbl, & ! integer parameter specifying double precision
       long ! integer parameter specifying long integer
@@ -66,6 +67,7 @@ subroutine rosen98_gasabs_one &
     pres, & ! in
     absAir, & ! out
     absWv) ! out
+!f2py threadsafe
 
 ! Description:
 !  Based on frequency, temperature, water vapor density, and pressure, this routine

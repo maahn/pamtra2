@@ -84,6 +84,7 @@ contains
    !
    !**************************************************************
    function absn2(tempK, pres, freq)
+!f2py threadsafe
 
       use kinds, only:dbl
 
@@ -107,6 +108,7 @@ contains
    !
    !
    function o2abs(tempK, pres, vapden, freq)
+!f2py threadsafe
       !
       !     PURPOSE: RETURNS ABSORPTION COEFFICIENT DUE TO OXYGEN IN AIR,
       !              IN NEPERS/KM
@@ -215,6 +217,7 @@ contains
 
    !*************************************************************
    function abh2o(tempK, pres, rho, freq)
+!f2py threadsafe
       !
       !  NAME- ABH2O    LANGUAGE- FORTRAN 77
       !
@@ -336,6 +339,7 @@ contains
    end function abh2o
    !*************************************************************
    function abliq(water, freq, tempK)
+!f2py threadsafe
       ! D.Ori - to me it seems this function is not called by anywhere else and could be dropped
       ! from comparison with other routines it also seems that it does not return Np/km which would be inconsistent
       ! with the other routines of this module and can cause confusion
