@@ -61,6 +61,39 @@ class instrument(object):
 
         self.results = xr.Dataset()
 
+    def to_netcdf(
+        self,
+        fname,
+        resultVariables='all',
+        profileVariables=['height'],
+        **kwargs,
+    ):
+        '''Store result as netcdf file
+
+        Parameters
+        ----------
+
+        fname : str
+            filename
+        resultVariables : 'all' or list of str, optional
+            variales to store in result (default 'all')
+        profileVariables : 'all' or list of str, optional
+            profile variables to include in file (default ['height'])
+        **kwargs : kwargs to pass to xarray's to_netcdf function.
+
+        '''
+        if resultVariables == 'all':
+            results = self.results
+        else:
+            results = self.results[resultVariables]
+
+        if profileVariables == 'all':
+            profile = self.parent.profile
+        else:
+            profile = self.parent.profile[profileVariables]
+
+        results.merge(profile).to_netcdf(fname, **kwargs)
+
 
 class microwaveInstrument(instrument):
     def __init__(
