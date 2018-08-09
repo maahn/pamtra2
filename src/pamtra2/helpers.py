@@ -7,6 +7,7 @@ from functools import wraps
 
 import numpy as np
 import xarray as xr
+import pandas as pd
 
 from . import decorators
 
@@ -196,7 +197,7 @@ def apply_ufunc_extended(
                 range(output_sizes[cc]),
                 name=cc,
                 dims=[cc]
-                ) for cc in output_core_dims[kk]]
+            ) for cc in output_core_dims[kk]]
 
         this_result[key] = xr.DataArray(this_result[key], coords=this_ccords)
         ii += this_len
@@ -212,3 +213,60 @@ def xrGradient(data, dimension=None):
     else:
         axis = data.get_axis_num(dimension)
     return xr.DataArray(np.gradient(data, axis=axis), coords=data.coords)
+
+
+from collections import OrderedDict
+from xarray.core.variable import IndexVariable
+# https://github.com/pydata/xarray/issues/1560
+
+
+def xrFastUnstack(dataset, dim):
+    """
+    Faster version of xarray's unstack. Required until
+    https://github.com/pydata/xarray/issues/1560 is closed.
+
+    Unstack an existing dimension corresponding to a MultiIndex into
+    multiple new dimensions.
+    New dimensions will be added at the end.
+    Parameters
+    ----------
+    dim : str
+        Name of the existing dimension to unstack.
+    Returns
+    -------
+    unstacked : Dataset
+        Dataset with unstacked data.
+    See also
+    --------
+    Dataset.stack
+    """
+    if dim not in dataset.dims:
+        raise ValueError('invalid dimension: %s' % dim)
+
+    index = dataset.get_index(dim)
+    if not isinstance(index, pd.MultiIndex):
+        raise ValueError('cannot unstack a dimension that does not have '
+                         'a MultiIndex')
+    new_dim_names = index.names
+    new_dim_sizes = [lev.size for lev in index.levels]
+
+    full_idx = pd.MultiIndex.from_product(index.levels, names=index.names)
+    if not index.equals(full_idx):
+        obj = dataset.reindex(copy=False, **{dim: full_idx})
+    else:
+        obj = dataset
+    variables = OrderedDict()
+    for name, var in obj.variables.items():
+        if name != dim:
+            if dim in var.dims:
+                new_dims = OrderedDict(zip(new_dim_names, new_dim_sizes))
+                variables[name] = var.unstack(**{dim: new_dims})
+            else:
+                variables[name] = var
+
+    for name, lev in zip(new_dim_names, index.levels):
+        variables[name] = IndexVariable(name, lev)
+
+    coord_names = set(dataset._coord_names) - set([dim]) | set(new_dim_names)
+
+    return dataset._replace_vars_and_dims(variables, coord_names)
