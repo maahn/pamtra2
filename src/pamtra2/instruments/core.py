@@ -136,6 +136,9 @@ class microwaveInstrument(instrument):
             kwargs=kwargs,
             dask='parallelized',
             output_dtypes=[args[1].dtype],
-        ).unstack('merged')
+        )
+
+        gasAbs = xr.Dataset({'gasAbs': gasAbs})
+        gasAbs = helpers.xrFastUnstack(gasAbs, 'merged').gasAbs
 
         return gasAbs
