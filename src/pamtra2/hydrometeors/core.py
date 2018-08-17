@@ -232,19 +232,31 @@ class hydrometeor(object):
             print(key, value)
 
             thisProperty = self._arrayOrFunc(key, value)
-            # to do: what if sizeCenter depends on other coords?
-            if (key in ['sizeCenter', 'sizeBoundsWidth']):
-                thisProperty = xr.DataArray(
-                    thisProperty.data,
-                    coords=[self.profile.sizeBin],
-                    attrs={'unit': units.units[key]},
-                )
-            elif (key in ['sizeBounds']):
-                thisProperty = xr.DataArray(
-                    thisProperty.data,
-                    coords=[self.profile.sizeBin1],
-                    attrs={'unit': units.units[key]},
-                )
+            if (isinstance(thisProperty, xr.DataArray) and
+                    (key in ['sizeCenter', 'sizeBoundsWidth'])):
+                # when sizeCenter and sizeBoundsWidth are estimated from
+                # sizeBounds with numpy, teh dimension name is typically
+                # wrong. So we try to rename:
+                try:
+                    thisProperty = thisProperty.rename({
+                        'sizeBin1': 'sizeBin'
+                    })
+                except ValueError:
+                    pass
+            if not isinstance(thisProperty, xr.DataArray):
+                if (key in ['sizeCenter', 'sizeBoundsWidth']):
+                    # import pdb; pdb.set_trace()
+                    thisProperty = xr.DataArray(
+                        np.asarray(thisProperty.data),
+                        coords=[self.profile.sizeBin],
+                        attrs={'unit': units.units[key]},
+                    )
+                elif (key in ['sizeBounds']):
+                    thisProperty = xr.DataArray(
+                        np.asarray(thisProperty.data),
+                        coords=[self.profile.sizeBin1],
+                        attrs={'unit': units.units[key]},
+                    )
             self.profile[key] = thisProperty
 
             self.profile[key].attrs.update(
@@ -435,7 +447,6 @@ class cloud(softEllipsoidFixedDensity):
 
         defaultArgs.update(kwargs)
 
-
         return super().__init__(*args, **defaultArgs)
 
 
@@ -503,6 +514,7 @@ class rain(softEllipsoidFixedDensity):
             'crossSectionArea', and 'sizeDistribution'.
 
     """
+
     def __init__(
         self,
         *args,
