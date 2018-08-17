@@ -102,9 +102,9 @@ def create_simple_cloud_creator():
                 **kwargs,
             )
 
-        pam2.profile['pathIntegratedAtenuattion'] = xr.zeros_like(
-            pam2.hydrometeors.hydrometeor.profile.backscatterCrossSection.isel(
-                sizeBin=0))
+        # pam2.profile['pathIntegratedAtenuattion'] = xr.zeros_like(
+        #     pam2.hydrometeors.hydrometeor.profile.backscatterCrossSection.isel(
+        #         sizeBin=0))
 
         if dask:
             pam2.profile = pam2.profile.chunk({'layer': 1, 'frequency': 1})
