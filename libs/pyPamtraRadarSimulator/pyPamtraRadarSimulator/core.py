@@ -116,6 +116,11 @@ def radarSimulator(
     for hh in range(nHydro):
         assert not np.all(np.isnan(backSpec[:, hh, :]))
 
+        # make sure we don't have sizes more than once.
+        nUniqueSizes = np.asarray([len(np.unique(diameterSpec[ii, hh, :]))
+                                   for ii in range(diameterSpec.shape[0])])
+        assert np.all(nUniqueSizes[0] == nUniqueSizes)
+
         particleSpec = createRadarSpectrum(
             diameterSpec=diameterSpec[:, hh, :],
             specWidth=specWidth[:, hh, :],
