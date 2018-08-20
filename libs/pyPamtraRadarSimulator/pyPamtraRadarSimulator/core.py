@@ -116,10 +116,6 @@ def radarSimulator(
     for hh in range(nHydro):
         assert not np.all(np.isnan(backSpec[:, hh, :]))
 
-        # make sure we don't have sizes more than once.
-        nUniqueSizes = np.asarray([len(np.unique(diameterSpec[ii, hh, :]))
-                                   for ii in range(diameterSpec.shape[0])])
-        assert np.all(nUniqueSizes[0] == nUniqueSizes)
 
         particleSpec = createRadarSpectrum(
             diameterSpec=diameterSpec[:, hh, :],
@@ -283,6 +279,11 @@ def createRadarSpectrum(
 
     nHeights = verticalWind.shape[0]
     particleSpec = np.zeros((radarNFFTAliased, nHeights))
+
+    # make sure we don't have sizes more than once.
+    nUniqueSizes = np.asarray([len(np.unique(diameterSpec[ii, :]))
+                               for ii in range(diameterSpec.shape[0])])
+    assert np.all(diameterSpec.shape[1] == nUniqueSizes)
 
     # to do: expose vel_spec in case you need nothing else.
 
