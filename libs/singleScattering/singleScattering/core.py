@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-""" refractive module core submodule
+""" single scattering module core submodule
 
     Copyright (C) 2017 - 2018 Davide Ori dori@uni-koeln.de
     Institute for Geophysics and Meteorology - University of Cologne
@@ -117,7 +117,7 @@ def scattering(diameters,
                          **kwargs)
     elif ((model == 'Tmatrix') or (model == 'TMM')):
         raise NotImplementedError(model+" capabilities will be soon added")
-    elif ( (model == 'Self-SImilar Rayleigh-Gans') or (model=='SSRG') ):
+    elif ( (model == 'Self-Similar Rayleigh-Gans') or (model=='SSRG') ):
         raise NotImplementedError(model+" capabilities will be soon added")
     elif ((model == 'LiuDB') ):
         raise NotImplementedError(model+" capabilities will be soon added")

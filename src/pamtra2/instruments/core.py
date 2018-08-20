@@ -43,7 +43,7 @@ class instrument(object):
         self,
         parent,
         frequencies='all',
-        **settings,
+        **settings
     ):
         if frequencies == 'all':
             frequencies = parent.profile.frequency
@@ -66,7 +66,7 @@ class instrument(object):
         fname,
         resultVariables='all',
         profileVariables=['height'],
-        **kwargs,
+        **kwargs
     ):
         '''Store result as netcdf file
 
@@ -101,7 +101,7 @@ class microwaveInstrument(instrument):
         parent,
         frequencies='all',
         gaseousAttenuationModel='Rosenkranz98',
-        **settings,
+        **settings
     ):
         super().__init__(
             parent,

@@ -17,7 +17,7 @@ class simpleRadar(microwaveInstrument):
         radarK2=0.93,
         gaseousAttenuationModel='Rosenkranz98',
         applyAttenuation=None,
-        **kwargs,
+        **kwargs
     ):
         super().__init__(
             parent,
@@ -25,7 +25,7 @@ class simpleRadar(microwaveInstrument):
             radarK2=radarK2,
             applyAttenuation=applyAttenuation,
             gaseousAttenuationModel=gaseousAttenuationModel,
-            **kwargs,
+            **kwargs
         )
 
     def solve(self):

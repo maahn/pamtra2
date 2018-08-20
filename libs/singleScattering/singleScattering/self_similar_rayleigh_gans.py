@@ -32,7 +32,7 @@ brandes = lambda D: 7.9e-5*D**2.1
 smalles = lambda D: 4.1e-5*D**2.5
 
 
-def backscattering(frequency, diameters, n, table=None, mass=None):  # SI units
+def backscattering(frequency, diameters, n, table=None, ELWP=None, mass=None):  # SI units
     wavelength = c/frequency
     if mass is None:
         mass = min(brandes(diameters*1.0e3), smalles((diameters*1.0e3)))
@@ -53,7 +53,7 @@ def backscattering(frequency, diameters, n, table=None, mass=None):  # SI units
         #beta = 3.06939
         #gamma = 2.53192
         #zeta1 = 0.0709529
-        beta, gamma, kappa, zeta1, alpha_eff = leinonen_coeff(diameters, 0.0)
+        beta, gamma, kappa, zeta1, alpha_eff = leinonen_coeff(diameters, ELWP)
         diameters = diameters*alpha_eff
         gamma = -gamma
         K2 = 0.21
