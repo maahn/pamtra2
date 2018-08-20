@@ -481,7 +481,8 @@ contains
       else
          !no air motion, just rescale
          if (verbose >= 3) call report(info, "Averaging spectrum and Adding without vertical air motion", nameOfRoutine)
-         call rescale_spectra(err, nbins, radar_nfft_aliased, .true., vel_spec, back_vel_spec, out_radar_velo_aliased, particle_spec) ! particle_spec in [mm⁶/m³/m * m/(m/s)]
+         call rescale_spectra(err, nbins, radar_nfft_aliased, .true., vel_spec,&
+         back_vel_spec, out_radar_velo_aliased, particle_spec) ! particle_spec in [mm⁶/m³/m * m/(m/s)]
       end if
 
       if (err /= 0) then
