@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-""" refractive module core submodule
+""" single scattering module core submodule
 
     Copyright (C) 2017 - 2018 Davide Ori dori@uni-koeln.de
     Institute for Geophysics and Meteorology - University of Cologne
@@ -46,7 +46,7 @@ import numpy as np
 
 # Complementary library
 # Implemented with basic functionality
-from . import Mie, Rayleigh, scatterer, scattering_utilities
+from . import Mie, Rayleigh, Tmatrix, scatterer, scattering_utilities
 
 models_list = ['Rayleigh (Ray)', 'Mie', 'Tmatrix (TMM)', 
                'Self-Similar Rayleigh-Gans (SSRG)', 'LiuDB', 'LeinonenDB', 
@@ -116,8 +116,11 @@ def scattering(diameters,
                          refractive_indices, dielectric_permittivities,
                          **kwargs)
     elif ((model == 'Tmatrix') or (model == 'TMM')):
-        raise NotImplementedError(model+" capabilities will be soon added")
-    elif ( (model == 'Self-SImilar Rayleigh-Gans') or (model=='SSRG') ):
+        scatt = Tmatrix.TmatrixScatt(diameters,
+                         frequencies, wavelengths,
+                         refractive_indices, dielectric_permittivities,
+                         **kwargs)
+    elif ( (model == 'Self-Similar Rayleigh-Gans') or (model=='SSRG') ):
         raise NotImplementedError(model+" capabilities will be soon added")
     elif ((model == 'LiuDB') ):
         raise NotImplementedError(model+" capabilities will be soon added")

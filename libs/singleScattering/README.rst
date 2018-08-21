@@ -1,4 +1,4 @@
-singleScattering - single scattering properties of particles
+Single scattering properties of particles
 #########
 
 

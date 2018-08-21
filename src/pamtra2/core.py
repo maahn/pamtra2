@@ -366,7 +366,7 @@ class pamtra2(object):
         self,
         hydrometeorClass,
         solve=True,
-        **kwargs,
+        **kwargs
     ):
         """
         Add hydrometeor properties for one hydrometeor. Hydrometeor is added
@@ -402,7 +402,7 @@ class pamtra2(object):
         name=None,
         frequencies=[],
         solve=True,
-        **kwargs,
+        **kwargs
     ):
         """
 

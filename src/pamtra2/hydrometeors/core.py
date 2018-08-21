@@ -424,7 +424,7 @@ class cloud(softEllipsoidFixedDensity):
         scattering=scattering.Mie,
         Dmin=1e-5 - 1e-10,
         Dmax=1e-5 + 1e-10,
-        **kwargs,
+        **kwargs
     ):
 
         defaultArgs = {}
@@ -525,7 +525,7 @@ class rain(softEllipsoidFixedDensity):
         Dmin=1e-6,
         Dmax=0.008,
         N0=8.e6,  # from COSMO 1 moments scheme...
-        **kwargs,
+        **kwargs
     ):
 
         defaultArgs = {}
@@ -620,7 +620,7 @@ class ice(softEllipsoidFixedDensity):
         scattering=scattering.Mie,
         Dmin=1e-4 - 1e-10,
         Dmax=1e-4 + 1e-10,
-        **kwargs,
+        **kwargs
     ):
 
         defaultArgs = {}
@@ -664,7 +664,7 @@ class snow(softEllipsoidMassSize):
         areaSizeA=0.4,
         areaSizeB=1.8,
         minDensity=100,
-        **kwargs,
+        **kwargs
     ):
 
         defaultArgs = {}
