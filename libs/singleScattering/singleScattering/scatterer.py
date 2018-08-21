@@ -165,14 +165,6 @@ class Scatterer(object):
                                                         self.phi_inc,
                                                         self.phi_sca)
 
-
-
-class T_Matrix(Scatterer):
-    def __init__(self):
-        Scatterer.__init__(self)
-        print('I am a T_Matrix instance')
-        raise NotImplementedError('T_Matrix is not implemented yet')
-
 class Liu_DB(Scatterer):
     def __init__(self):
         Scatterer.__init__(self)

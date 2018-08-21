@@ -46,7 +46,7 @@ import numpy as np
 
 # Complementary library
 # Implemented with basic functionality
-from . import Mie, Rayleigh, scatterer, scattering_utilities
+from . import Mie, Rayleigh, Tmatrix, scatterer, scattering_utilities
 
 models_list = ['Rayleigh (Ray)', 'Mie', 'Tmatrix (TMM)', 
                'Self-Similar Rayleigh-Gans (SSRG)', 'LiuDB', 'LeinonenDB', 
@@ -116,7 +116,10 @@ def scattering(diameters,
                          refractive_indices, dielectric_permittivities,
                          **kwargs)
     elif ((model == 'Tmatrix') or (model == 'TMM')):
-        raise NotImplementedError(model+" capabilities will be soon added")
+        scatt = Tmatrix.TmatrixScatt(diameters,
+                         frequencies, wavelengths,
+                         refractive_indices, dielectric_permittivities,
+                         **kwargs)
     elif ( (model == 'Self-Similar Rayleigh-Gans') or (model=='SSRG') ):
         raise NotImplementedError(model+" capabilities will be soon added")
     elif ((model == 'LiuDB') ):
