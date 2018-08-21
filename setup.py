@@ -113,15 +113,24 @@ refractiveIndex_path = 'libs/refractiveIndex/refractiveIndex'
 meteo_si_path = 'libs/meteo_si/meteo_si'
 
 singleScattering_path = 'libs/singleScattering'
-singleScattering = Extension(
-    "pamtra2.libs.singleScattering.cMie",
-    sources=["%s/Mie/cython/cMie.pyx" % singleScattering_path,
+cMie = Extension(
+    name = "pamtra2.libs.singleScattering.cMie",
+    sources = ["%s/Mie/cython/cMie.pyx" % singleScattering_path,
              "%s/Mie/src/cMie.c" % singleScattering_path],
-    include_dirs=[numpy.get_include()],
-    extra_compile_args=["-O3", "-ffast-math",
-                        "-Wall", "-lm", "-fPIC", "-std=c99"],
+    include_dirs = [numpy.get_include()],
+    extra_compile_args = ["-O3", "-ffast-math",
+                          "-Wall", "-lm", "-fPIC", "-std=c99"],
     # language='c'
 )
+
+fTMat = Extension(
+    name = 'pamtra2.libs.singleScattering.fTMat',
+    sources = [
+        '%s/Tmatrix/ampld.lp.f' % singleScattering_path,
+        '%s/Tmatrix/lpd.f' % singleScattering_path,
+        '%s/Tmatrix/pytmatrix.pyf' % singleScattering_path,
+    ],
+    **kw)
 
 
 if __name__ == "__main__":
@@ -159,6 +168,6 @@ if __name__ == "__main__":
         setup_requires=["pytest-runner"],
         tests_require=["pytest"],
         ext_modules=cythonize(
-            [singleScattering, pamgasabs, pyrasim, pyramom]),
+            [cMie, fTMat, pamgasabs, pyrasim, pyramom]),
 
     )
