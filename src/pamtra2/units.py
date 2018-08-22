@@ -15,6 +15,7 @@ units = collections.defaultdict(
         'aspectRatio': '-',
         'crossSectionArea': 'm^2',
         'density': 'kg/m^3',
+        'fallVelocity': 'm/s',
         'frequency': 'Hz',
         'height': 'm',
         'horizontalWind': 'm/s',
