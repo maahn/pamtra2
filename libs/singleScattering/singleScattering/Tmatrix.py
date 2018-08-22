@@ -22,14 +22,13 @@ Tmatrix spheroid scatterer object and member functions
 """
 
 import sys
-
 import numpy as np
+from scipy.integrate import dblquad
+
 from pamtra2.libs.refractiveIndex import utilities as ref_utils
 
 from .scatterer import Scatterer
 from pamtra2.libs.singleScattering import fTMat
-
-from scipy.integrate import dblquad
 
 RADIUS_EQUAL_VOLUME = 1.0
 RADIUS_EQUAL_AREA = 0.0
@@ -38,6 +37,9 @@ RADIUS_MAXIMUM = 2.0
 SHAPE_SPHEROID = -1
 SHAPE_CYLINDER = -2
 SHAPE_CHEBYSHEV = 1
+
+deg2rad = np.pi/180.0
+rad2deg = 180.0/np.pi
 
 class TmatrixScatt(Scatterer):
     """
@@ -79,17 +81,17 @@ class TmatrixScatt(Scatterer):
         self.beta = beta
         
         self._init_tmatrix()
+        
         self.S, self.Z = self.get_SZ()
-        print(self.S,self.Z)
         self.Csca = self.scattering_xsect()
-        self.Cext = 2.*self.wavelength*self.S[1,1].imag  # horizontal polarization
-        self.Cbck = 2.*np.pi*(self.Z[0,0]-self.Z[0,1]-self.Z[1,0]+self.Z[1,1])  # horizontal polarization
+        self.Cext = self.extinction_xsect()
+        self.Cbck = self.backscatter_xsect()
         self.Cabs = self.Cext-self.Csca 
+
 
     def _init_tmatrix(self):
         """Initialize the T-matrix.
         """
-
         if self.radius_type == RADIUS_MAXIMUM:
             # Maximum radius is not directly supported in the original
             # so we convert it to equal volume radius
@@ -106,6 +108,7 @@ class TmatrixScatt(Scatterer):
                                    self.aspect_ratio, self.shape, self.ddelt,
                                    self.ndgs)
 
+
     def get_SZ(self, alpha=None, beta=None):
         """Get the S and Z matrices for a single orientation.
         """
@@ -114,14 +117,28 @@ class TmatrixScatt(Scatterer):
         if beta == None:
             beta = self.beta
             
-        (self._S_single, self._Z_single) = fTMat.calcampl(self.nmax,
-                                                          self.wavelength,
-                                                          self.theta_inc,
-                                                          self.theta_sca,
-                                                          self.phi_inc,
-                                                          self.phi_sca,
-                                                          alpha, beta)
-        return (self._S_single, self._Z_single)
+        (S, Z) = fTMat.calcampl(self.nmax, self.wavelength, 
+                                self.theta_inc*rad2deg, self.theta_sca*rad2deg,
+                                self.phi_inc*rad2deg, self.phi_sca*rad2deg,
+                                alpha, beta)
+
+        return (S, Z)
+    
+
+    def extinction_xsect(self):
+        """Calculates the total extinction cross section
+        """
+        old_theta = self.theta_sca
+        old_phi = self.phi_sca
+        self.theta_sca = self.theta_inc # forward scattering must be set
+        self.phi_sca = self.phi_inc
+        
+        S, Z = self.get_SZ()
+        self.theta_sca = old_theta
+        self.phi_sca = old_phi
+
+        return 2.*self.wavelength*S[1,1].imag  # horizontal polarization
+                
 
     def scattering_xsect(self):
         """Calculates the scattering cross section by integrating over the all
@@ -131,18 +148,36 @@ class TmatrixScatt(Scatterer):
         old_phi = self.phi_sca
         
         def diff_xsect(theta, phi):
-            """Differential scattering cross section multiplied by sin(theta) to be
+            """Differential scattering X section multiplied by sin(theta) to be
                integrated over 4pi in order to get the scattering cross section
             """
             self.theta_sca = theta
-            self.phi_sca = phi        
-            S, Z = self.get_SZ()        
+            self.phi_sca = phi
+            S, Z = self.get_SZ()
             I = Z[0, 0] - Z[0, 1] # horizontal polarization
             return I * np.sin(theta)
 
-        xsect = dblquad(diff_xsect, 0.0, 2*np.pi,
-                        lambda x: 0.0, lambda x: np.pi)[0]
+        try:
+            xsect = dblquad(diff_xsect, 0.0, 2*np.pi, lambda x: 0.0, lambda x: np.pi)
+        finally:
+            self.theta_sca = old_theta
+            self.phi_sca = old_phi
+
+        return xsect[0]
+
+
+    def backscatter_xsect(self):
+        """Calculates the backscattering cross section for the current incident
+           angle. 
+        """
+        old_theta = self.theta_sca
+        old_phi = self.phi_sca
+        self.theta_sca = np.pi-self.theta_inc
+        p1 = np.pi+self.phi_inc
+        self.phi_sca = p1 - 2.*np.pi*(p1//(2.*np.pi))
+        S,Z = self.get_SZ()
+        Cbck = 2.*np.pi*(Z[0,0]-Z[0,1]-Z[1,0]+Z[1,1])  # horizontal polarization
         self.theta_sca = old_theta
         self.phi_sca = old_phi
-        return xsect
-
+        return Cbck
+        
