@@ -1,4 +1,4 @@
-""" scattering.scattering_utilities.py
+""" singleScattering.scattering_utilities.py
 
     Copyright (C) 2017 - 2018 Davide Ori dori@uni-koeln.de
     Institute for Geophysics and Meteorology - University of Cologne
@@ -112,7 +112,7 @@ class spheroid(object):
     def effective_volume_diameter(self):
         raise NotImplementedError
 
-def scattering_angle(theta_inc,theta_sca,phi_inc,phi_sca):
+def scattering_angle(theta_inc, theta_sca, phi_inc, phi_sca):
     """ Calculates the scattering angle in radians given the full set of four
     angles that defines the scattering geometry from the incident and the
     scattered wave directions

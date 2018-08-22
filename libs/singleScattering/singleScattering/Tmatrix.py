@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-""" scattering.Tmatrix.py
+""" singleScattering.Tmatrix.py
 
     Copyright (C) 2017 - 2018 Davide Ori dori@uni-koeln.de
     Institute for Geophysics and Meteorology - University of Cologne

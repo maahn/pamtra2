@@ -1,17 +1,74 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Nov 21 18:41:17 2017
+""" singleScattering.self_similar_rayleigh_gans.py
 
-@author: dori
+    Copyright (C) 2017 - 2018 Davide Ori dori@uni-koeln.de
+    Institute for Geophysics and Meteorology - University of Cologne
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Self-Similar-Rayleigh-Gans approximation for non-spherical scatterer object 
+and member functions
+
 """
 
 import numpy as np
 import pandas as pd
 from scipy import interp
 
+class SsrgScatt(Scatterer):
+    """
+    This is class implement the Self-Similar Rayleigh-Gans model of scattering
+    for a non-spherical particle
+    """
+    def __init__(self,
+                 diameter = 1.0e-3,
+                 frequency = None,
+                 wavelength = None,
+                 refractive_index=None,
+                 dielectric_permittivity=None,
+                 theta_inc = 0.0,
+                 phi_inc = 0.0,
+                 theta_sca = 0.0,
+                 phi_sca = 0.0,
+                 aspect_ratio=1.0):
+        
+        Scatterer.__init__(self,
+                           diameter = diameter,
+                           frequency = frequency,
+                           refractive_index=refractive_index,
+                           dielectric_permittivity=dielectric_permittivity,
+                           theta_inc = theta_inc,
+                           phi_inc = phi_inc,
+                           theta_sca = theta_sca,
+                           phi_sca = phi_sca)
+                                
+        self.geometric_cross_section = np.pi*self.diameter*self.diameter*0.25
+        self.K = ref_utils.K(self.dielectric_permittivity)
+        self.aspect_ratio = aspect_ratio
+       
+        self.Csca = 0.0
+        self.Cext = 0.0
+        self.Cbck = 0.0
+        self.Cabs = 0.0
+
+
+
+
+################## OLD CODE I STILL NEED #######################################
+
 leinonen_table = pd.read_csv('/home/dori/develop/pyPamtra2/libs/singleScattering/singleScattering/ssrg_coeffs_jussiagg_simult.dat',
                              delim_whitespace=True)
-
 
 def leinonen_coeff(D, elwp):
     table = leinonen_table[leinonen_table.ELWP == elwp].set_index('D')
