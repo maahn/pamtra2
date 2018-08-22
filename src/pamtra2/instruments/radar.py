@@ -199,7 +199,7 @@ class dopplerRadarPamtra(simpleRadar):
             'sizeBoundsWidth',
             'backscatterCrossSection',
             'fallVelocity',
-            'sizeDistribution',
+            'numberConcentration',
         ]
         profileVars = [
             'verticalWind',
@@ -208,7 +208,7 @@ class dopplerRadarPamtra(simpleRadar):
         funcArgVars = [
             'sizeCenter',
             'sizeBoundsWidth',
-            'bcsINTEGRATED',
+            'bcsWEIGHTED',
             'fallVelocity',
         ] + profileVars
 
@@ -234,9 +234,9 @@ class dopplerRadarPamtra(simpleRadar):
                 )
             )
 
-            mergedProfile['bcsINTEGRATED'] = (
+            mergedProfile['bcsWEIGHTED'] = (
                 mergedProfile['backscatterCrossSection'] *
-                mergedProfile['sizeDistribution'].fillna(0)
+                mergedProfile['numberConcentration'].fillna(0) 
             )
 
             argNames, kwargNames = helpers.provideArgKwargNames(
@@ -257,17 +257,17 @@ class dopplerRadarPamtra(simpleRadar):
                 1 + 2*kwargs['radarAliasingNyquistInterv']
             )
 
-        radarSpec = xr.apply_ufunc(
-            pyPamtraRadarSimulator.createRadarSpectrum,
-            *args,
-            kwargs=kwargs,
-            input_core_dims=input_core_dims,
-            output_core_dims=[('dopplerVelocityAliased',)],
-            output_dtypes=[mergedProfile.backscatterCrossSection.dtype],
-            output_sizes={'dopplerVelocityAliased': nfft},
-            dask='parallelized',
-        )
-        radarSpecs.append(radarSpec)
+            radarSpec = xr.apply_ufunc(
+                pyPamtraRadarSimulator.createRadarSpectrum,
+                *args,
+                kwargs=kwargs,
+                input_core_dims=input_core_dims,
+                output_core_dims=[('dopplerVelocityAliased',)],
+                output_dtypes=[mergedProfile.backscatterCrossSection.dtype],
+                output_sizes={'dopplerVelocityAliased': nfft},
+                dask='parallelized',
+            )
+            radarSpecs.append(radarSpec)
         radarSpecs = xr.concat(radarSpecs, dim='hydrometeor')
         radarSpecs = radarSpecs.sum('hydrometeor')
         radarSpecs = xr.Dataset({'radarSpecs': radarSpecs})

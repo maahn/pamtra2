@@ -21,6 +21,7 @@ units = collections.defaultdict(
         'horizontalWind': 'm/s',
         'mass': 'kg',
         'noiseMean': 'dB',
+        'numberConcentration': 'm^(-3)',
         'sizeDistribution': 'm^(-4)',
         'pathIntegratedAttBottomUp': 'dB',
         'pathIntegratedAttTopDown': 'dB',

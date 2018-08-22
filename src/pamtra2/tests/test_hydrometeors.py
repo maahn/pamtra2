@@ -188,53 +188,57 @@ class TestSizeBounds(object):
         assert len(D1) == len(DM)+1
 
 
-class TestSizeDistribution(object):
+class TestNumberConcentration(object):
 
     def test_monodisperse(self):
-        sizeBoundsWidth = np.array([0.1, 0.1])
-        nBins = len(sizeBoundsWidth)
+        nBins = 2
         Ntot = 10
-        N = pamtra2.hydrometeors.sizeDistribution.monoDisperse(
-            sizeBoundsWidth, Ntot, nBins)
-        assert np.sum(N*sizeBoundsWidth) == Ntot
+        sizeCenter = np.array([1, 2])
+        N = pamtra2.hydrometeors.numberConcentration.monoDisperse(
+            sizeCenter, Ntot, nBins)
+        assert np.sum(N) == Ntot
         assert N[0] == N[1]
 
     def test_monoDisperseWC(self):
-        sizeBoundsWidth = np.array([0.1, 0.1])
         hydrometeorContent = 10
         mass = np.array([5, 5])
-        N = pamtra2.hydrometeors.sizeDistribution.monoDisperseWC(
-            sizeBoundsWidth, hydrometeorContent, mass)
-        assert N[0] == N[1] == 10
+        # nBins = len(mass)
+        # sizeCenter = np.array([1, 2])
+        N = pamtra2.hydrometeors.numberConcentration.monoDisperseWC(
+            hydrometeorContent, mass)
+        assert N[0] == N[1] == 1
 
     def test_exponential(self):
         sizeCenter = np.arange(1, 11)
+        sizeBoundsWidth = 1
         N0 = 10
         lamb = 4
-        sd1 = pamtra2.hydrometeors.sizeDistribution.exponential(
-            sizeCenter, N0, lamb)
-        sd2 = N0 * np.exp(-lamb * sizeCenter)
+        sd1 = pamtra2.hydrometeors.numberConcentration.exponential(
+            sizeCenter, sizeBoundsWidth, N0, lamb)
+        sd2 = N0 * np.exp(-lamb * sizeCenter) * sizeBoundsWidth
         np.all(sd1 == sd2)
 
     def test_gamma(self):
         sizeCenter = np.arange(1, 11)
+        sizeBoundsWidth = 1
         N0 = 10
         lamb = 4
         mu = 2
-        sd1 = pamtra2.hydrometeors.sizeDistribution.gamma(
-            sizeCenter, N0, lamb, mu)
-        sd2 = N0 * sizeCenter ** mu * np.exp(-lamb * sizeCenter)
+        sd1 = pamtra2.hydrometeors.numberConcentration.gamma(
+            sizeCenter, sizeBoundsWidth, N0, lamb, mu)
+        sd2 = N0 * sizeCenter ** mu * np.exp(-lamb * sizeCenter) * sizeBoundsWidth
         np.all(sd1 == sd2)
 
     def test_modGamma(self):
         sizeCenter = np.arange(1, 11)
+        sizeBoundsWidth = 1
         N0 = 10
         lamb = 4
         mu = 2
         gamm = 2
-        sd1 = pamtra2.hydrometeors.sizeDistribution.modifiedGamma(
-            sizeCenter, N0, lamb, mu, gamm)
-        sd2 = N0 * sizeCenter ** mu * np.exp(-lamb * sizeCenter**gamm)
+        sd1 = pamtra2.hydrometeors.numberConcentration.modifiedGamma(
+            sizeCenter, sizeBoundsWidth, N0, lamb, mu, gamm)
+        sd2 = N0 * sizeCenter ** mu * np.exp(-lamb * sizeCenter**gamm) * sizeBoundsWidth
         np.all(sd1 == sd2)
 
     def testMarshallPalmer(self):
@@ -244,57 +248,58 @@ class TestSizeDistribution(object):
             [993929.97473809],
         ])
         sizeCenter = np.array([0.001])
+        sizeBoundsWidth = 1
         for rr, rainRate in enumerate([1, 5, 25]):
-            N = pamtra2.hydrometeors.sizeDistribution.exponentialMarshallPalmer(
-                sizeCenter, rainRate)
+            N = pamtra2.hydrometeors.numberConcentration.exponentialMarshallPalmer(
+                sizeCenter, sizeBoundsWidth, rainRate)
             assert np.allclose(N, result[rr])
 
     def testField(self):
         N0_1 = 7.628e6 * np.exp(-0.107 * pamtra2.units.kelvin2Celsius(263))
-        N0_2 = pamtra2.hydrometeors.sizeDistribution._exponentialField(263)
+        N0_2 = pamtra2.hydrometeors.numberConcentration._exponentialField(263)
         assert N0_1 == N0_2
 
     def testExponentialFieldWC(self):
         sizeCenter = np.logspace(-6, 0, 1000)
-        sizeWidth = np.gradient(sizeCenter)
+        sizeBoundsWidth = np.gradient(sizeCenter)
         temperature = 263
         massSizeA = 0.0121
         massSizeB = 3.
         hydrometeorContent = 1e-4
-        N = pamtra2.hydrometeors.sizeDistribution.exponentialFieldWC(
-            sizeCenter, temperature, hydrometeorContent, massSizeA, massSizeB
+        N = pamtra2.hydrometeors.numberConcentration.exponentialFieldWC(
+            sizeCenter, sizeBoundsWidth, temperature, hydrometeorContent, massSizeA, massSizeB
         )
         mass = pamtra2.hydrometeors.mass.powerLaw(
             sizeCenter, massSizeA, massSizeB)
-        assert np.allclose(np.sum(N*mass*sizeWidth), hydrometeorContent)
+        assert np.allclose(np.sum(N*mass), hydrometeorContent)
 
     def testExponentialN0WC(self):
         sizeCenter = np.logspace(-6, 0, 1000)
-        sizeWidth = np.gradient(sizeCenter)
+        sizeBoundsWidth = np.gradient(sizeCenter)
         N0 = 1e6
         massSizeA = 0.0121
         massSizeB = 3.
         hydrometeorContent = 1e-4
 
-        N = pamtra2.hydrometeors.sizeDistribution.exponentialN0WC(
-            sizeCenter, N0, hydrometeorContent, massSizeA, massSizeB
+        N = pamtra2.hydrometeors.numberConcentration.exponentialN0WC(
+            sizeCenter, sizeBoundsWidth, N0, hydrometeorContent, massSizeA, massSizeB
         )
         mass = pamtra2.hydrometeors.mass.powerLaw(
             sizeCenter, massSizeA, massSizeB)
-        np.allclose(np.sum(N*mass*sizeWidth), hydrometeorContent)
+        np.allclose(np.sum(N*mass), hydrometeorContent)
 
     @pytest.mark.skip(reason="Test fails by a factor of 2?!")
     def testExponentialFieldReff(self):
         sizeCenter = np.logspace(-6, 0, 1000)
-        sizeWidth = np.gradient(sizeCenter)
+        sizeBoundsWidth = np.gradient(sizeCenter)
         temperature = 263
 
         effectiveRadius = 1e-3
 
-        N = pamtra2.hydrometeors.sizeDistribution.exponentialFieldReff(
-            sizeCenter, temperature, effectiveRadius)
-        M3 = np.sum((sizeCenter/2)**3 * N * (sizeWidth/2))
-        M2 = np.sum((sizeCenter/2)**2 * N * (sizeWidth/2))
+        N = pamtra2.hydrometeors.numberConcentration.exponentialFieldReff(
+            sizeCenter, sizeBoundsWidth, temperature, effectiveRadius)
+        M3 = np.sum((sizeCenter/2)**3 * N)
+        M2 = np.sum((sizeCenter/2)**2 * N)
 
         np.allclose(M3/M2, effectiveRadius)
 
