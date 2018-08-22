@@ -213,7 +213,7 @@ contains
       real(kind=dbl), dimension(nbins), intent(in):: diameter_spec
       real(kind=dbl), dimension(nbins), intent(in):: spec_width
       real(kind=dbl), dimension(nbins), intent(in):: back_spec
-      real(kind=dbl), dimension(nbins) :: fallVel
+      real(kind=dbl), dimension(nbins), intent(in) :: fallVel
       real(kind=dbl), intent(in):: wavelength
       real(kind=dbl), intent(in):: atmo_wind_w
       real(kind=dbl), intent(in) ::  radar_max_V
@@ -233,7 +233,8 @@ contains
 
       real(kind=dbl):: back
       real(kind=dbl), dimension(nbins):: dD_dU, back_vel_spec, back_spec_ref, &
-                                         del_v_model, diameter_spec_cp
+                                         del_v_model, diameter_spec_cp, &
+                                         diameter_spec_cp2, back_spec_cp
       real(kind=dbl), dimension(nbins) :: vel_spec_ext, back_vel_spec_ext
       real(kind=dbl), dimension(:, :), allocatable :: particle_spec_ext
       real(kind=dbl), dimension(radar_nfft_aliased):: out_radar_velo_aliased
@@ -295,6 +296,8 @@ contains
       K2 = radar_K2
 
       diameter_spec_cp(:) = diameter_spec(:)
+      diameter_spec_cp2(:) = diameter_spec(:)
+      back_spec_cp(:) = back_spec(:)
 
       ! rho = rho_air(temp, press)
       ! call viscosity_air(temp, viscosity)
@@ -332,6 +335,23 @@ contains
 
       vel_spec(:) = fallVel
 
+
+      ! to do: make tis more efficient and sort all three arrays at once!
+      call dsort(err, diameter_spec_cp, back_spec_cp, nbins, 2)
+      if (err /= 0) then
+         msg = 'error in dsort!'
+         call report(err, msg, nameOfRoutine)
+         errorstatus = err
+         return
+      end if
+      call dsort(err, diameter_spec_cp2, vel_spec, nbins, 2)
+      if (err /= 0) then
+         msg = 'error in dsort!'
+         call report(err, msg, nameOfRoutine)
+         errorstatus = err
+         return
+      end if
+
       !if in-situ measurements are used, mass or area might be zero (since corresponding ndens=0 as well)
       ! where ((area == 0.d0) .or. (mass == 0.d0))
       ! vel_spec = 0.d0
@@ -346,7 +366,7 @@ contains
          return
       end if
 
-      back_spec_ref = (1d0/(K2*pi**5))*back_spec*(wavelength)**4 ![m⁶/m⁴]
+      back_spec_ref = (1d0/(K2*pi**5))*back_spec_cp*(wavelength)**4 ![m⁶/m⁴]
       back_spec_ref = back_spec_ref*1d18 !now non-SI: [mm⁶/m³/m]
 
       !spetial output for testing the radar simulator
