@@ -305,6 +305,12 @@ contains
       end if
    end if
 
+      if (verbose >= 10) print *, "turb_spectra_aliased"
+      if (verbose >= 10) print *, SHAPE(turb_spectra_aliased)
+      if (verbose >= 10) print *, turb_spectra_aliased
+
+
+
    call assert_false(err, (ANY(ISNAN(turb_spectra_aliased)) .or. ANY(turb_spectra_aliased < 0.d0)), &
                      "got nan or negative value in linear turb_spectra_aliased")
    ! call assert_false(err,(ALL(turb_spectra_aliased==0)),&

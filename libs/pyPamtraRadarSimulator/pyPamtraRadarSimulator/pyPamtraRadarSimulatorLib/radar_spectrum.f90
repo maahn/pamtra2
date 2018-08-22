@@ -336,7 +336,7 @@ contains
       vel_spec(:) = fallVel
 
 
-      ! to do: make tis more efficient and sort all three arrays at once!
+      ! to do: make this more efficient and sort all three arrays at once!
       call dsort(err, diameter_spec_cp, back_spec_cp, nbins, 2)
       if (err /= 0) then
          msg = 'error in dsort!'
@@ -385,7 +385,7 @@ contains
       !move from dimension to velocity!
       do jj = 1, nbins - 1
          dD_dU(jj) = (diameter_spec_cp(jj + 1) - diameter_spec_cp(jj))/(vel_spec(jj + 1) - vel_spec(jj)) ![m/(m/s)]
-         !         is all particles fall with the same velocity, dD_dU gets infinitive!
+         ! if all particles fall with the same velocity, dD_dU gets infinitive!
          if (abs(dD_dU(jj)) .ge. huge(dD_dU(jj))) then
             !             print*, jj,(diameter_spec_cp(jj+1)-diameter_spec_cp(jj)), (vel_spec(jj+1)-vel_spec(jj))
             !             errorstatus = fatal
@@ -394,6 +394,7 @@ contains
             !             return
             dD_dU(jj) = 0.d0
          end if
+
          if (verbose >= 4) print *, "jj,diameter_spec_cp(jj),vel_spec(jj), back_spec_ref(jj),dD_dU(jj)", jj, &
             diameter_spec_cp(jj), vel_spec(jj), back_spec_ref(jj), dD_dU(jj)
          del_v_model(jj) = ABS(vel_spec(jj + 1) - vel_spec(jj))
