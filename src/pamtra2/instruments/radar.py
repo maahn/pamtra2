@@ -199,7 +199,7 @@ class dopplerRadarPamtra(simpleRadar):
             'sizeBoundsWidth',
             'backscatterCrossSection',
             'fallVelocity',
-            'sizeDistribution',
+            'numberConcentration',
         ]
         profileVars = [
             'verticalWind',
@@ -208,7 +208,7 @@ class dopplerRadarPamtra(simpleRadar):
         funcArgVars = [
             'sizeCenter',
             'sizeBoundsWidth',
-            'bcsINTEGRATED',
+            'bcsWEIGHTED',
             'fallVelocity',
         ] + profileVars
 
@@ -234,9 +234,9 @@ class dopplerRadarPamtra(simpleRadar):
                 )
             )
 
-            mergedProfile['bcsINTEGRATED'] = (
+            mergedProfile['bcsWEIGHTED'] = (
                 mergedProfile['backscatterCrossSection'] *
-                mergedProfile['sizeDistribution'].fillna(0)
+                mergedProfile['numberConcentration'].fillna(0)
             )
 
             argNames, kwargNames = helpers.provideArgKwargNames(
@@ -300,6 +300,8 @@ class dopplerRadarPamtra(simpleRadar):
         mergedProfile = self.parent.profile.copy()
         mergedProfile['radarIdealizedSpectrum'] = self.results[
             'radarIdealizedSpectrum']
+
+        mergedProfile = mergedProfile.sel(frequency=self.frequencies)
 
         if self.settings['applyAttenuation'] is None:
             mergedProfile['pathIntegratedAttenuation'] = xr.zeros_like(
@@ -392,12 +394,14 @@ class dopplerRadarPamtra(simpleRadar):
         input_core_dims = [['dopplerVelocity', ]]
 
         args = [
-            self.results.radarSpectrum.stack(merged=helpers.concatDicts(
-                self.parent.coords['additional'],
-                self.parent.coords['layer'],
-                self.parent.coords['frequency']
-            )
-            )
+            self.results.radarSpectrum.sel(
+                frequency=self.frequencies
+            ).stack(merged=helpers.concatDicts(
+                    self.parent.coords['additional'],
+                    self.parent.coords['layer'],
+                    self.parent.coords['frequency']
+                    )
+                    )
         ]
 
         # take care of settings

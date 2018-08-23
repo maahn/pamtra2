@@ -7,7 +7,7 @@ import numpy as np
 import xarray as xr
 
 from . import (aspectRatio, crossSectionArea, density, fallVelocity, mass,
-               scattering, size, sizeDistribution, relativePermittivity)
+               scattering, size, numberConcentration, relativePermittivity)
 from .. import helpers, units
 from ..libs import refractiveIndex
 
@@ -21,7 +21,7 @@ def DEFAULT_CALCULATION_ORDER():
         'density',
         'mass',
         'crossSectionArea',
-        'sizeDistribution',
+        'numberConcentration',
         'relativePermittivity',
         'scattering',
         'fallVelocity',
@@ -48,7 +48,7 @@ class hydrometeor(object):
         **kwargs :
             All properties of the hydrometeor. Most hydrometeors require at
             least 'sizeCenter', 'aspectRatio', 'mass', 'density',
-            'crossSectionArea', and 'sizeDistribution'.
+            'crossSectionArea', and 'numberConcentration'.
 
         Attributes
         ----------
@@ -71,7 +71,7 @@ class hydrometeor(object):
         description : dict
             All properties of the hydrometeor. Most hydrometeors require at
             least 'sizeCenter', 'aspectRatio', 'mass', 'density',
-            'crossSectionArea', and 'sizeDistribution'.
+            'crossSectionArea', and 'numberConcentration'.
 
     """
 
@@ -82,6 +82,7 @@ class hydrometeor(object):
         discreteProperties=None,
         calculationOrder=None,
         useFuncArgDefaults=True,
+        verbosity=0,
         **kwargs
     ):
 
@@ -93,6 +94,7 @@ class hydrometeor(object):
         self.index = np.where(parent.profile.hydrometeor.values == name)[0][0]
         self._parentFull = parent
         self.coords = parent.coords
+        self.verbosity = verbosity
 
         if discreteProperties is None:
             discreteProperties = xr.Dataset(
@@ -155,7 +157,8 @@ class hydrometeor(object):
         """
 
         if callable(thisDesription):
-            print('callable')
+            if self.verbosity >= 1:
+                print('callable')
 
             func = thisDesription
 
@@ -199,9 +202,12 @@ class hydrometeor(object):
                                    'functions\'s defaultArgs for '
                                    ' %s' % (k, thisKey))
 
+            if self.verbosity >= 2:
+                print('kw4Func', kw4Func)
             thisProperty = func(**kw4Func)
         else:
-            print('not callable', thisDesription)
+            if self.verbosity >= 1:
+                print('not callable')
             thisProperty = thisDesription
 
         return thisProperty
@@ -229,7 +235,8 @@ class hydrometeor(object):
         for key in self.calculationOrder:
 
             value = self.description[key]
-            print(key, value)
+            if self.verbosity >= 1:
+                print(key, value)
 
             thisProperty = self._arrayOrFunc(key, value)
             if (isinstance(thisProperty, xr.DataArray) and
@@ -292,7 +299,7 @@ class hydrometeor(object):
             'backscatterCrossSection',
         ]
         varsGreaterEqualZero = [
-            'sizeDistribution',
+            'numberConcentration',
         ]
 
         for key in varsGreaterZero:
@@ -350,7 +357,7 @@ class softEllipsoidMassSize(hydrometeor):
                 'density'
             )
 
-            ii = kwargs['calculationOrder'].index('sizeDistribution')
+            ii = kwargs['calculationOrder'].index('numberConcentration')
             kwargs['calculationOrder'].insert(ii, 'relativePermittivityIce')
 
         return super().__init__(*args, **kwargs)
@@ -368,9 +375,9 @@ class cloud(softEllipsoidFixedDensity):
         nBins : int, optional
             number of bins. Note taht the spectral radar simulator requires
             >= 2 hydrometeor bins. (default 2)
-        sizeDistribution : func, optional
+        numberConcentration : func, optional
             Function to describe the size distribution. default:
-            sizeDistribution.monoDisperseWC which requires hydrometeorContent
+            numberConcentration.monoDisperseWC which requires hydrometeorContent
             either as kwarg or in pamtra2's profile
         scattering : func, optional
             Function to describe the single scattering of the hydrometeor.
@@ -412,7 +419,7 @@ class cloud(softEllipsoidFixedDensity):
         description : dict
             All properties of the hydrometeor. Most hydrometeors require at
             least 'sizeCenter', 'aspectRatio', 'mass', 'density',
-            'crossSectionArea', and 'sizeDistribution'.
+            'crossSectionArea', and 'numberConcentration'.
 
     """
 
@@ -420,7 +427,7 @@ class cloud(softEllipsoidFixedDensity):
         self,
         *args,
         nBins=2,
-        sizeDistribution=sizeDistribution.monoDisperseWC,
+        numberConcentration=numberConcentration.monoDisperseWC,
         scattering=scattering.Mie,
         Dmin=1e-5 - 1e-10,
         Dmax=1e-5 + 1e-10,
@@ -440,7 +447,7 @@ class cloud(softEllipsoidFixedDensity):
             water_turner_kneifel_cadeddu
 
         kwargs['nBins'] = nBins
-        kwargs['sizeDistribution'] = sizeDistribution
+        kwargs['numberConcentration'] = numberConcentration
         kwargs['scattering'] = scattering
         kwargs['Dmin'] = Dmin
         kwargs['Dmax'] = Dmax
@@ -462,9 +469,9 @@ class rain(softEllipsoidFixedDensity):
         nBins : int, optional
             number of bins. Note taht the spectral radar simulator requires
             >= 2 hydrometeor bins. (default 50)
-        sizeDistribution : func, optional
+        numberConcentration : func, optional
             Function to describe the size distribution. default:
-            sizeDistribution.exponentialN0WC which requires hydrometeorContent
+            numberConcentration.exponentialN0WC which requires hydrometeorContent
             either as kwarg or in pamtra2's profile. In addition, N0 has to be
             provided
         scattering : func, optional
@@ -511,7 +518,7 @@ class rain(softEllipsoidFixedDensity):
         description : dict
             All properties of the hydrometeor. Most hydrometeors require at
             least 'sizeCenter', 'aspectRatio', 'mass', 'density',
-            'crossSectionArea', and 'sizeDistribution'.
+            'crossSectionArea', and 'numberConcentration'.
 
     """
 
@@ -519,7 +526,7 @@ class rain(softEllipsoidFixedDensity):
         self,
         *args,
         nBins=50,
-        sizeDistribution=sizeDistribution.exponentialN0WC,
+        numberConcentration=numberConcentration.exponentialN0WC,
         scattering=scattering.Mie,
         aspectRatio=1.0,  # TODO add non 1 values
         Dmin=1e-6,
@@ -541,7 +548,7 @@ class rain(softEllipsoidFixedDensity):
             water_turner_kneifel_cadeddu
 
         kwargs['nBins'] = nBins
-        kwargs['sizeDistribution'] = sizeDistribution
+        kwargs['numberConcentration'] = numberConcentration
         kwargs['scattering'] = scattering
         kwargs['aspectRatio'] = aspectRatio
         kwargs['Dmin'] = Dmin
@@ -564,9 +571,9 @@ class ice(softEllipsoidFixedDensity):
         nBins : int, optional
             number of bins. Note taht the spectral radar simulator requires
             >= 2 hydrometeor bins. (default 2)
-        sizeDistribution : func, optional
+        numberConcentration : func, optional
             Function to describe the size distribution. default:
-            sizeDistribution.monoDisperseWC which requires hydrometeorContent
+            numberConcentration.monoDisperseWC which requires hydrometeorContent
             either as kwarg or in pamtra2's profile
         scattering : func, optional
             Function to describe the single scattering of the hydrometeor.
@@ -608,7 +615,7 @@ class ice(softEllipsoidFixedDensity):
         description : dict
             All properties of the hydrometeor. Most hydrometeors require at
             least 'sizeCenter', 'aspectRatio', 'mass', 'density',
-            'crossSectionArea', and 'sizeDistribution'.
+            'crossSectionArea', and 'numberConcentration'.
 
     """
 
@@ -616,7 +623,7 @@ class ice(softEllipsoidFixedDensity):
         self,
         *args,
         nBins=2,
-        sizeDistribution=sizeDistribution.monoDisperseWC,
+        numberConcentration=numberConcentration.monoDisperseWC,
         scattering=scattering.Mie,
         Dmin=1e-4 - 1e-10,
         Dmax=1e-4 + 1e-10,
@@ -636,7 +643,7 @@ class ice(softEllipsoidFixedDensity):
             ice_matzler_2006
 
         kwargs['nBins'] = nBins
-        kwargs['sizeDistribution'] = sizeDistribution
+        kwargs['numberConcentration'] = numberConcentration
         kwargs['scattering'] = scattering
         kwargs['Dmin'] = Dmin
         kwargs['Dmax'] = Dmax
@@ -654,7 +661,7 @@ class snow(softEllipsoidMassSize):
         *args,
         nBins=2,
         aspectRatio=1.0,  # TODO: implement 0.6
-        sizeDistribution=sizeDistribution.exponentialN0WC,  # TODO:change to WC
+        numberConcentration=numberConcentration.exponentialN0WC,  # TODO:change to WC
         scattering=scattering.Mie,
         Dmin=0.5e-8,
         Dmax=1.e-2,
@@ -682,7 +689,7 @@ class snow(softEllipsoidMassSize):
 
         kwargs['nBins'] = nBins
         kwargs['aspectRatio'] = aspectRatio
-        kwargs['sizeDistribution'] = sizeDistribution
+        kwargs['numberConcentration'] = numberConcentration
         kwargs['scattering'] = scattering
         kwargs['Dmin'] = Dmin
         kwargs['Dmax'] = Dmax
