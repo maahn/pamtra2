@@ -23,10 +23,10 @@ The core classes and routines of pamtra2 are:
    :members: 
    :undoc-members:
 
-`pamtra2.hydrometeors.sizeDistribution`
+`pamtra2.hydrometeors.numberConcentration`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: pamtra2.hydrometeors.sizeDistribution
+.. automodule:: pamtra2.hydrometeors.numberConcentration
    :members: 
    :undoc-members:
 
