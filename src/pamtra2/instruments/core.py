@@ -143,7 +143,9 @@ class microwaveInstrument(instrument):
             self.parent.coords['layer'],
             self.parent.coords['frequency']
         )
-        thisProf = self.parent.profile.stack(merged=coords)
+        thisProf = self.parent.profile.sel(
+            frequency=self.frequencies
+            ).stack(merged=coords)
 
         kwargs = {}
 
