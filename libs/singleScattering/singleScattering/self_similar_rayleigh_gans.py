@@ -63,7 +63,31 @@ class SsrgScatt(Scatterer):
         self.Cabs = 0.0
 
 
+def first(x, kappa):
+    """Compute the first term in the braces in Eq. 4 of Hogan (2017)
+       scattering by the mean ice distribution in the particles' population.
+    """
+    scale_term = np.cos(x)*((1.+kappa/3.)*(1./(2.*x+np.pi)-1./(2.*x-np.pi))-
+                            kappa*(1./(2.*x+3.*np.pi)-1./(2.*x-3.*np.pi)))
+    return scale_term**2.
+    
 
+def summation(x, beta, gamma, zeta1):
+    """
+    provide the summation component of the phi shape function for ssrga.
+    the second term in the braces in Eq. 4 of Hogan (2017)
+    related to scattering by the modulation of ice distribution with respect
+    to the mean.
+    """
+    jmax = int(5.*x/np.pi + 1.)
+    
+    summ = zeta1*2.**(-1.*gamma)*((0.5/(x+np.pi*j))**2.+(0.5/(x-np.pi*j))**2.)
+    
+    for j in range(2,jmax):
+        term_a = (2.*j)**(-1.*gamma)
+        term_b = (0.5/(xeff+np.pi*j))**2.+(0.5/(xeff-np.pi*j))**2.
+        summ = summ + term_a*term_b
+    return summ*beta*np.sin(xeff)**2.
 
 ################## OLD CODE I STILL NEED #######################################
 
