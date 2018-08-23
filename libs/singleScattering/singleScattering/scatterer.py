@@ -130,8 +130,11 @@ class Scatterer(object):
         
         if (refractive_index is None):
             if (dielectric_permittivity is None):
-                raise AttributeError('Dielectric permittivity or refractive' +
-                    ' index should be defined')
+               # raise AttributeError('Dielectric permittivity or refractive' +
+               #    ' index should be defined')
+               # need to allow this for DB based scattering
+                self.refractive_index = None
+                self.dielectric_permittivity = None
             else:
                 self.dielectric_permittivity = np.array(dielectric_permittivity)
                 self.refractive_index = ref_utils.eps2n(self.dielectric_permittivity)

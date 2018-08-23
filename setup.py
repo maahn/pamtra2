@@ -160,6 +160,7 @@ if __name__ == "__main__":
             # Don't aks me why, but I need an extra random character in front
             # of the *dat files...
             'pamtra2.libs.refractiveIndex': ['*.dat'],
+            'pamtra2.libs.singleScattering': ['*.dat'],
         },
         platforms=['any'],
         install_requires=['numpy', 'scipy', 'xarray', 'dask[complete]', 'numba',
