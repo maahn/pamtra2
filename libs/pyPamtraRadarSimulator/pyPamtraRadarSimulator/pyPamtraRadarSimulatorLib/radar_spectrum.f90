@@ -198,7 +198,7 @@ contains
       !wavelength in m
       !vallVel: fall velocity of particle
       !out
-      !particle_spec particle spectrum in dependence of radar Doppler velocity in m6m-3/ms-1
+      !particle_spec particle spectrum in dependence of radar Doppler velocity in m6 m-3/ms-1
 
       use kinds
       use constants
@@ -253,7 +253,7 @@ contains
       end if
       err = 0
 
-      back = SUM(back_spec*spec_width)
+      back = SUM(back_spec)
 
       call assert_true(err, all(diameter_spec > 0), &
                        "nan or negative diameter_spec")
@@ -298,45 +298,10 @@ contains
       diameter_spec_cp(:) = diameter_spec(:)
       diameter_spec_cp2(:) = diameter_spec(:)
       back_spec_cp(:) = back_spec(:)
-
-      ! rho = rho_air(temp, press)
-      ! call viscosity_air(temp, viscosity)
-      ! nu = viscosity/rho !kinematic viscosity
-
-      ! err = 0
-      ! if (vel_size_mod == "khvorostyanov01_drops") then
-      !    call dia2vel_khvorostyanov01_drops(err, nbins, diameter_spec_cp, rho, nu, vel_spec)
-      ! else if (vel_size_mod == "khvorostyanov01_spheres") then
-      !    call dia2vel_khvorostyanov01_spheres(err, nbins, diameter_spec_cp, rho, nu, rho_particle, vel_spec)
-      ! else if (vel_size_mod .eq. "rogers_drops") then
-      !    call dia2vel_rogers_drops(err, nbins, diameter_spec_cp, rho, vel_spec)
-      ! else if (vel_size_mod == "heymsfield10_particles") then
-      !    k_factor = 0.5d0
-      !    call dia2vel_heymsfield10_particles(err, nbins, diameter_spec_cp, rho, nu, &
-      !                                        mass, area, k_factor, vel_spec)
-      !    !     else if (vel_size_mod == "heymsfield10_particles_K") then
-      !    !       call dia2vel_heymsfield10_particles(err,nbins,diameter_spec_cp,rho,nu,&
-      !    !             mass,area,radar_fallvel_A,vel_spec)
-      ! else if (vel_size_mod == "khvorostyanov01_particles") then
-      !    call dia2vel_khvorostyanov01_particles(err, nbins, diameter_spec_cp, rho, nu, &
-      !                                           mass, area, vel_spec)
-      ! else if (vel_size_mod .eq. "rogers_graupel") then
-      !    call dia2vel_rogers_graupel(err, nbins, diameter_spec_cp, vel_spec)
-      ! else if (vel_size_mod(:8) .eq. "powerLaw") then
-      !    call dia2vel_power_law(err, nbins, diameter_spec_cp, vel_size_mod, vel_spec)
-      ! else if (vel_size_mod(:11) .eq. "corPowerLaw") then
-      !    call dia2vel_corrected_power_law(err, nbins, diameter_spec_cp, rho, temp, vel_size_mod, vel_spec)
-      ! else
-      !    errorstatus = fatal
-      !    msg = 'Did not understand variable vel_size_mod: '//vel_size_mod
-      !    call report(errorstatus, msg, nameOfRoutine)
-      !    return
-      ! end if
-
       vel_spec(:) = fallVel
 
 
-      ! to do: make tis more efficient and sort all three arrays at once!
+      ! to do: make this more efficient and sort all three arrays at once!
       call dsort(err, diameter_spec_cp, back_spec_cp, nbins, 2)
       if (err /= 0) then
          msg = 'error in dsort!'
@@ -366,8 +331,8 @@ contains
          return
       end if
 
-      back_spec_ref = (1d0/(K2*pi**5))*back_spec_cp*(wavelength)**4 ![m⁶/m⁴]
-      back_spec_ref = back_spec_ref*1d18 !now non-SI: [mm⁶/m³/m]
+      back_spec_ref = (1d0/(K2*pi**5))*back_spec_cp*(wavelength)**4 ![m⁶/m³]
+      back_spec_ref = back_spec_ref/spec_width !now  [m⁶/m³/m]
 
       !spetial output for testing the radar simulator
       if (verbose >= 5) then
@@ -375,7 +340,7 @@ contains
          print *, "Diameter (D)"
          print *, diameter_spec
          print *, "##########################################"
-         print *, "back_spec_ref (D) [mm⁶/m³/m]"
+         print *, "back_spec_ref (D) [m⁶/m³/m]"
          print *, back_spec_ref
          print *, "##########################################"
       end if
@@ -385,7 +350,7 @@ contains
       !move from dimension to velocity!
       do jj = 1, nbins - 1
          dD_dU(jj) = (diameter_spec_cp(jj + 1) - diameter_spec_cp(jj))/(vel_spec(jj + 1) - vel_spec(jj)) ![m/(m/s)]
-         !         is all particles fall with the same velocity, dD_dU gets infinitive!
+         ! if all particles fall with the same velocity, dD_dU gets infinitive!
          if (abs(dD_dU(jj)) .ge. huge(dD_dU(jj))) then
             !             print*, jj,(diameter_spec_cp(jj+1)-diameter_spec_cp(jj)), (vel_spec(jj+1)-vel_spec(jj))
             !             errorstatus = fatal
@@ -394,6 +359,7 @@ contains
             !             return
             dD_dU(jj) = 0.d0
          end if
+
          if (verbose >= 4) print *, "jj,diameter_spec_cp(jj),vel_spec(jj), back_spec_ref(jj),dD_dU(jj)", jj, &
             diameter_spec_cp(jj), vel_spec(jj), back_spec_ref(jj), dD_dU(jj)
          del_v_model(jj) = ABS(vel_spec(jj + 1) - vel_spec(jj))
@@ -512,7 +478,7 @@ contains
          return
       end if
 
-      K = (Ze/SUM(particle_spec*del_v_radar))
+      K = (Ze/SUM(1d18*particle_spec*del_v_radar))
       particle_spec = K*particle_spec
 
       call assert_true(err, all(particle_spec >= 0), &
@@ -527,10 +493,10 @@ contains
 
       if (verbose >= 4) print *, "Ze", 10*log10(Ze)
       if (verbose >= 4) print *, "K", K
-      if (verbose >= 4) print *, " Ze SUM(back_vel_spec)*del_v_model", 10*log10(SUM(back_vel_spec*del_v_model))
-      if (verbose >= 4) print *, " Ze SUM(back_vel_spec_ext)*del_v_model", 10*log10(SUM(back_vel_spec_ext*del_v_model)), &
+      if (verbose >= 4) print *, " Ze SUM(back_vel_spec)*del_v_model", 10*log10(SUM(1d18*back_vel_spec*del_v_model))
+      if (verbose >= 4) print *, " Ze SUM(back_vel_spec_ext)*del_v_model", 10*log10(SUM(1d18*back_vel_spec_ext*del_v_model)), &
          "has value only when using vertical air motion)"
-      if (verbose >= 4) print *, " Ze SUM(particle_spec)*del_v_radar", 10*log10(SUM(particle_spec)*del_v_radar)
+      if (verbose >= 4) print *, " Ze SUM(particle_spec)*del_v_radar", 10*log10(SUM(1d18*particle_spec)*del_v_radar)
 
       !spetial output for testing the radar simulator
       if (verbose >= 20) then

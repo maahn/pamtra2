@@ -24,6 +24,7 @@ def create_simple_cloud_creator():
         size=0.001,
         hydrometeor='cloud',
         hydrometeorContent=0.0001,
+        verbosity=0,
         **kwargs
     ):
 
@@ -55,7 +56,7 @@ def create_simple_cloud_creator():
                 sizeBounds=pamtra2.hydrometeors.size.linspaceBounds,
                 sizeCenter=pamtra2.hydrometeors.size.boundsToMid,
                 sizeBoundsWidth=pamtra2.hydrometeors.size.boundsWidth,
-                sizeDistribution=pamtra2.hydrometeors.sizeDistribution.\
+                numberConcentration=pamtra2.hydrometeors.numberConcentration.\
                 monoDisperse,
                 aspectRatio=1.0,
                 mass=pamtra2.hydrometeors.mass.ellipsoid,
@@ -80,7 +81,7 @@ def create_simple_cloud_creator():
                 sizeBounds=pamtra2.hydrometeors.size.linspaceBounds,
                 sizeCenter=pamtra2.hydrometeors.size.boundsToMid,
                 sizeBoundsWidth=pamtra2.hydrometeors.size.boundsWidth,
-                sizeDistribution=pamtra2.hydrometeors.sizeDistribution.
+                numberConcentration=pamtra2.hydrometeors.numberConcentration.
                 exponentialFieldWC,
                 aspectRatio=1.0,
                 mass=pamtra2.hydrometeors.mass.powerLaw,
@@ -123,7 +124,8 @@ def create_simple_cloud_creator():
                 momentsNPeaks=1,
                 seed=11,
                 radarAliasingNyquistInterv=0,
-                radarPNoise1000=radarPNoise1000
+                radarPNoise1000=radarPNoise1000,
+                verbosity=verbosity,
             )
 
         if dask:
@@ -147,12 +149,14 @@ def test_rayleigh_mie(create_simple_cloud_creator):
 def test_rayleigh_scale_N(create_simple_cloud_creator):
     ray = create_simple_cloud_creator(
         Ntot=[0.1, 1, 10],
+        instrument='spectral',
         nHeights=3,
+        verbosity=0,
     ).results.radarReflectivity.values.flatten()
 
-    assert np.allclose(ray[0], -10, rtol=1e-01, atol=1e-01)
-    assert np.allclose(ray[1], 0, rtol=1e-01, atol=1e-01)
-    assert np.allclose(ray[2], 10, rtol=1e-01, atol=1e-01)
+    assert np.allclose(ray[0], -10, rtol=1e-01, atol=2e-01)
+    assert np.allclose(ray[1], 0, rtol=1e-01, atol=2e-01)
+    assert np.allclose(ray[2], 10, rtol=1e-01, atol=2e-01)
 
 
 def test_rayleigh_scale_N_dask(create_simple_cloud_creator):

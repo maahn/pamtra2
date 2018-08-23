@@ -106,8 +106,7 @@ def radarSimulator(
     Returns
     -------
     radar_spectrum : array_like
-        Simulated radar spectrum in mm6/m3. It is NOT normalized by bin width,
-        i.e. 10*log10(sum(radar_spectrum)) = Ze (not considering noise removal)
+        Simulated radar spectrum in mm6/m3/(m/s). 
 
     """
     nHydro = diameterSpec.shape[1]
@@ -477,9 +476,7 @@ def calcSpectralBroadening(
     Returns
     -------
     radar_spectrum : array_like
-        Simulated radar spectrum in mm6/m3. It is NOT normalized by bin width,
-        i.e. 10*log10(sum(radar_spectrum)) = Ze (not considering noise removal)
-
+        Simulated radar spectrum in mm6/m3/(m/s). 
     """
 
     rsLib.report_module.verbose = verbosity

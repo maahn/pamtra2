@@ -51,27 +51,57 @@ ice_matzler_2006.__doc__ = refractiveIndex.ice.matzler_2006.__doc__
 ice_iwabuchi_yang_2011.__doc__ = refractiveIndex.ice.iwabuchi_yang_2011.__doc__
 
 
-# Even though the mixing formulas work out of the box, we modify them to
-# account for density as input
-def mixing_maxwell_garnett(relativePermittivityIce, density):
-    mix = density/constants.rhoIce
-    assert (np.asarray(mix) <= 1).all()
-    assert (np.asarray(mix) > 0).all()
-    return refractiveIndex.mixing.maxwell_garnett(relativePermittivityIce, mix)
+# mixing wrapper
+def _mixing_wrapper(eps1, density1, func=None):
+    mix1 = density1/constants.rhoIce
+    mix2 = 1.0-mix1
+    assert (np.asarray(mix1) <= 1).all()
+    assert (np.asarray(mix1) > 0).all()
 
+    eps2 = complex(1.0, 0.0)+(0.0*eps1)
 
-def mixing_bruggeman(relativePermittivityIce, density):
-    mix = density/constants.rhoIce
-    assert (np.asarray(mix) <= 1).all()
-    assert (np.asarray(mix) > 0).all()
-    return refractiveIndex.mixing.bruggeman(relativePermittivityIce, mix)
+    mix = (mix1, mix2)
+    eps = (eps1, eps2)
+    return func(eps, mix)
 
 
 def mixing_sihvola(relativePermittivityIce, density):
-    mix = density/constants.rhoIce
-    assert (np.asarray(mix) <= 1).all()
-    assert (np.asarray(mix) > 0).all()
-    return refractiveIndex.mixing.sihvola(relativePermittivityIce, mix)
+    args = xr.broadcast(relativePermittivityIce, density)
+    relativePermittivity = xr.apply_ufunc(
+        _mixing_wrapper,
+        *args,
+        kwargs={'func': refractiveIndex.mixing.sihvola},
+        output_dtypes=[np.complex],
+        dask='parallelized',
+        vectorize=True,
+    )
+    return relativePermittivity
+
+
+def mixing_bruggeman(relativePermittivityIce, density):
+    args = xr.broadcast(relativePermittivityIce, density)
+    relativePermittivity = xr.apply_ufunc(
+        _mixing_wrapper,
+        *args,
+        kwargs={'func': refractiveIndex.mixing.bruggeman},
+        output_dtypes=[np.complex],
+        dask='parallelized',
+        vectorize=True,
+    )
+    return relativePermittivity
+
+
+def mixing_maxwell_garnett(relativePermittivityIce, density):
+    args = xr.broadcast(relativePermittivityIce, density)
+    relativePermittivity = xr.apply_ufunc(
+        _mixing_wrapper,
+        *args,
+        kwargs={'func': refractiveIndex.mixing.maxwell_garnett},
+        output_dtypes=[np.complex],
+        dask='parallelized',
+        vectorize=True,
+    )
+    return relativePermittivity
 
 
 # Copy doc strings

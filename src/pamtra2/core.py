@@ -166,14 +166,12 @@ class pamtra2(object):
         for crossSection in crossSections:
             perHydro = []
             for name in self.hydrometeors.keys():
-                sizeDistribution = self.hydrometeors[
-                    name].profile.sizeDistribution.fillna(0)
-                sizeWidth = self.hydrometeors[
-                    name].profile.sizeBoundsWidth
+                numberConcentration = self.hydrometeors[
+                    name].profile.numberConcentration.fillna(0)
                 crossSec = self.hydrometeors[name].profile[crossSection]
                 if frequencies is not None:
                     crossSec.sel(frequency=frequencies)
-                thisHydro = crossSec * sizeWidth * sizeDistribution
+                thisHydro = crossSec * numberConcentration
                 perHydro.append(thisHydro)
             integrated[crossSection] = xr.concat(
                 perHydro, dim='hydro').sum(['hydro', 'sizeBin'])

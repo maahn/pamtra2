@@ -196,8 +196,8 @@ contains
       !create array from min_v to max_v iwth del_v spacing -> velocity spectrum of radar
       spectra_velo = (/(((ii*del_v) + radar_min_V), ii=0, radar_nfft - 1)/) ! [m/s]
 
-      ! particle_spectrum already in correct units for linear Ze
-      Ze_back = SUM(particle_spectrum * del_v)
+      ! particle_spectrum is in SI
+      Ze_back = SUM(1d18*particle_spectrum * del_v)
 
       call assert_false(err, (ANY(ISNAN(particle_spectrum))), &
                         "got nan in values in backscattering spectrum")
@@ -217,7 +217,8 @@ contains
 
       !take care of path integrated attenuation
       Ze_back = Ze_back/10d0**(0.1d0*PIA)
-      particle_spectrum_att = particle_spectrum(:)/10d0**(0.1d0*PIA)
+      ! particle_spectrum_att not SI any more!
+      particle_spectrum_att = 1d18*particle_spectrum(:)/10d0**(0.1d0*PIA)
 
       if (verbose >= 5) print *, "particle_spectrum_att"
       if (verbose >= 5) print *, particle_spectrum_att
@@ -304,6 +305,12 @@ contains
          print *, "radar quality: NO aliasing found"
       end if
    end if
+
+      if (verbose >= 10) print *, "turb_spectra_aliased"
+      if (verbose >= 10) print *, SHAPE(turb_spectra_aliased)
+      if (verbose >= 10) print *, turb_spectra_aliased
+
+
 
    call assert_false(err, (ANY(ISNAN(turb_spectra_aliased)) .or. ANY(turb_spectra_aliased < 0.d0)), &
                      "got nan or negative value in linear turb_spectra_aliased")

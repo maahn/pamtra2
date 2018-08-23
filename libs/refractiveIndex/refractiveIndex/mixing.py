@@ -157,15 +157,15 @@ def sihvola(eps, mix, ni=0.85):
 #    raise NotImplementedError
 
     b = eps[1].real + 2.0*eps[0] - 2.0*ni*eps[0] - \
-        mix*(eps[1].real - eps[0])*(1.0 + ni)
+        mix[1]*(eps[1].real - eps[0])*(1.0 + ni)
 
     a = eps[0]*(eps[1].real + (2.0 - ni)*eps[0] +
-                mix*(2.0 - ni)*(eps[1] - eps[0]).real)
+                mix[1]*(2.0 - ni)*(eps[1] - eps[0]).real)
 
     em_real = (np.sqrt(b**2+4.0*ni*a) - b)/(2.0*ni)
 
-    em_imag = eps[1].imag*(-1.0*(em_real - eps[0]) + mix*(em_real + 2.0*eps[0] + ni*(em_real - eps[0]))) / (
-        (eps[1].real + 2.0*eps[0] + 2.0*ni*(em_real - eps[0])) - mix*(1.0 + ni)*(eps[1].real - eps[0]))
+    em_imag = eps[1].imag*(-1.0*(em_real - eps[0]) + mix[1]*(em_real + 2.0*eps[0] + ni*(em_real - eps[0]))) / (
+        (eps[1].real + 2.0*eps[0] + 2.0*ni*(em_real - eps[0])) - mix[1]*(1.0 + ni)*(eps[1].real - eps[0]))
 
     return em_real + (1j * em_imag)
 
@@ -230,12 +230,13 @@ def sihvola_paper(eps, mix, ni=0.85):
     v = ni
     e1 = eps[1]
     e0 = eps[0]
-    f = mix
+    f = mix[0] #or [1]??
 
     # a = v
     # b = -e1 + 2.0*e0 - 2.0*v*e0 + f*e1 + f*e1*v - f*e0 - f*e0*v
     # c = -e0*e1 - 2.0*e0**2.0 + v*e0**2 - 2.0*f*e1 * \
     #     e0 + f*e1*v*e0 + 2.0*f*e0**2.0 - f*v*e0**2.0
+    raise NotImplementedError
 
     return 0.5*(-e0*f*v - e0*f + 2.0*e0*v - 2.0*e0 + e1*f*v + e1*f - e1 -
         np.sqrt(e0**2*f**2*v**2 + 2.0*e0**2*f**2*v + e0**2*f**2 -
@@ -249,7 +250,6 @@ def sihvola_paper(eps, mix, ni=0.85):
         10.0*e0*e1*f*v - 2.0*e0*e1*f + 4.0*e0*e1 + e1**2*f**2*v**2 +
         2.0*e1**2*f**2*v + e1**2*f**2 - 2.0*e1**2*f*v - 2.0*e1**2*f + e1**2))/v
 
-    raise NotImplementedError
 
 ##############################################################################
 
