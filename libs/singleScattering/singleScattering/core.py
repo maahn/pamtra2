@@ -55,7 +55,7 @@ models_list = ['Rayleigh (Ray)', 'Mie', 'Tmatrix (TMM)',
 def scattering(diameters,
                frequencies=None, wavelengths=None,
                refractive_indices=None, dielectric_permittivities=None,
-               orientation=None,
+               orientation=None, # placeholder, look at what is implemented in Tmatrix
                model=None,
                **kwargs):
     """Scattering properties according to the passed scatterer parameters

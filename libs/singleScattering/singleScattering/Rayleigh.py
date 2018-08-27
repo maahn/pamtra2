@@ -60,12 +60,13 @@ class RayleighScatt(Scatterer):
         self.geometric_cross_section = np.pi*self.diameter*self.diameter*0.25
         self.K = ref_utils.K(self.dielectric_permittivity)
         
-        self.Cabs = 4.0*self.size_parameter*self.K.imag*self.geometric_cross_section
-        self.Csca = 8.0*self.size_parameter**4.0*self.K2*self.geometric_cross_section
+        self.Cabs = 4.*self.size_parameter*self.K.imag*self.geometric_cross_section
+        self.Csca = 8.*self.size_parameter**4*self.K2*self.geometric_cross_section/3.0
         self.Cext = self.Cabs + self.Csca
-        self.Cbck = 4.0*self.size_parameter**4*self.K2*self.geometric_cross_section
+        self.Cbck = 4.*self.size_parameter**4*self.K2*self.geometric_cross_section
         
-        self.S1 = -1.5j*self.size_parameter**3.0
-        self.S2 = self.S1*np.cos(self.scatt_angle)
+        #self.S1 = -1.5j*self.size_parameter**3.0
+        self.S2 = self.wavenumber**2*self.K*(self.diameter*0.5)**3
+        self.S1 = self.S2*np.cos(self.scatt_angle)
         self.S3 = 0.0
         self.S4 = 0.0

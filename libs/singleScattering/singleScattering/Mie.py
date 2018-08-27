@@ -23,6 +23,7 @@ Mie spherical scatterer object and member functions
 import sys
 
 import numpy as np
+
 from pamtra2.libs.refractiveIndex import utilities as ref_utils
 
 from . import cMie
@@ -59,14 +60,19 @@ class MieScatt(Scatterer):
         self.geometric_cross_section = np.pi*self.diameter*self.diameter*0.25
         self.K = ref_utils.K(self.dielectric_permittivity)
         
-        Q = cMie.mie(self.wavelength,self.diameter,self.refractive_index)
-        
+        Q, theta, vecS1, vecS2 = cMie.mie(self.wavelength,
+                                          self.diameter,
+                                          self.refractive_index)
+        #cosTheta =  np.cos(theta)
+        #self.S1 = np.interp(np.cos(self.scatt_angle), cosTheta, vecS1)
+        #self.S2 = np.interp(np.cos(self.scatt_angle), cosTheta, vecS2)
+        self.S1 = np.interp(self.scatt_angle, theta, vecS1)
+        self.S2 = np.interp(self.scatt_angle, theta, vecS2)
+        self.S3 = 0.0
+        self.S4 = 0.0
+
         self.Cext = Q[0]*self.geometric_cross_section
         self.Csca = Q[1]*self.geometric_cross_section
         self.Cabs = Q[2]*self.geometric_cross_section
         self.Cbck = Q[3]*self.geometric_cross_section
-        
-        #self.S1 = -1.5j*self.size_parameter**3.0
-        #self.S2 = self.S1*np.cos(self.scatt_angle)
-        #self.S3 = 0.0
-        #self.S4 = 0.0
+

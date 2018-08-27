@@ -15,11 +15,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-#cython: boundscheck=False
-#cython: wraparound=False
+# cython: boundscheck=False
+# cython: wraparound=False
 # Comments above are special. Please do not remove.
 cimport numpy as np  # needed for function arguments
-import numpy as np # needed for np.empty_like
+import numpy as np  # needed for np.empty_like
 
 # Import the namespace c_Mie described in c_Mie.pxd
 cimport c_Mie
@@ -29,36 +29,83 @@ ctypedef np.float64_t double_t
 ctypedef np.int32_t int_t
 ctypedef np.complex128_t complex_t
 
-#def mie(double_t x, complex_t m):#double_t wl,double_t size,complex_t m, th=None):
-def mie(double_t wavelength, double_t size, complex_t m):
-    #print('I am python3 c cmie and refractive index is ',m,' and wl is ',wavelength,' and size is ', size)
-    cdef double_t x
-    x=np.pi*size/wavelength
-    #print('I am python3 c cmie and refractive index is ',m,' and x is ',x)
-    cdef int_t nt
-    nt = 180
-    cdef np.ndarray[dtype=double_t, ndim=1, mode="c"] theta
-    theta = np.linspace(0.0, np.pi, nt, dtype='d')
-    cdef np.ndarray[dtype=complex_t, ndim=1, mode="c"] S1
-    S1 = np.zeros(nt, dtype=np.complex128)
-    cdef np.ndarray[dtype=complex_t, ndim=1, mode="c"] S2
-    S2 = np.zeros(nt, dtype=np.complex128)
-    cdef np.ndarray[dtype=double_t, ndim=1, mode="c"] Q
-    Q = np.zeros(4, dtype='d')
-    c_Mie.Mie(x, m, nt, <double*>theta.data, <double complex*> S1.data, <double complex*> S2.data, <double*>Q.data)
-#    print(S1[0],S2[0])
-#    print(S1[-1],S2[-1])
-#    print(Q[0],Q[1],Q[2],Q[3])
-    return Q
 
-def mie_coated(np.ndarray[dtype= double_t,ndim=1,mode='c'] x,
-               np.ndarray[dtype=complex_t,ndim=1,mode='c'] m):
-    raise NotImplementedError('mie_coated does nothing at the moment except receiving arguments')
-    print('I am python3 c cmie and refractive index is ',m)
+def mie(double_t wavelength, double_t size, complex_t m, nangles=180):
+    """ This is a python high level interface to the C version Mie included in
+    c_Mie external module.
+
+        Parameters
+        ----------
+        wavelength : scalar-double
+            The wavelength of the incoming electromagnetic radiation.
+            Can be in any measuring unit but we suggest SI [meters]
+
+        size : scalar-double (TODO become array)
+            Diameter of the scattering sphere. For consistency it must have the
+            same measuring unit of the wavelength.
+
+        m : scalar-complex (TODO become array)
+            The complex refractive index of the scattering sphere
+
+        nangles : scalar-integer
+            Number of angles to partition the 0-pi range for the calculation of
+            the elements of the amplitude matrix. By default it is set to 180,
+            so S is computed every 1 deg, but can be increased for accuracy in
+            postprocessing interpolation
+
+        Returns
+        -------
+        Q : array(4)-double (to become nd-double)
+            Array of 4 efficiencies Qext, Qsca, Qabs, Qbck. To be multiplied by the
+            geometric corss-section to get Cext, Csca, Cabs and Cbck
+
+        theta : array-double [rad]
+            Array of angles in radians at which the element of the complex amplitude
+            matrix S1 and S2 are computed
+        
+        S1 : array(nangles)-complex (TODO become nd-complex)
+            S1 elements of the amplitude matrix (S22 element in Bohren and Huffman)
+            one for each scattering angle
+
+        S2 : array(nangles)-complex (TODO become nd-complex)
+            S2 elements of the amplitude matrix (S11 element in Bohren and Huffman)
+            one for each scattering angle
+
+    """
+    cdef double_t x
+    x = np.pi * size / wavelength
+
+    cdef int_t nt
+    nt = nangles
+    cdef np.ndarray[dtype = double_t, ndim = 1, mode = "c"] theta
+    theta = np.linspace(0.0, np.pi, nt, dtype='d')
+
+    cdef np.ndarray[dtype = complex_t, ndim = 1, mode = "c"] S1
+    S1 = np.zeros(nt, dtype=np.complex128)
+    cdef np.ndarray[dtype = complex_t, ndim = 1, mode = "c"] S2
+    S2 = np.zeros(nt, dtype=np.complex128)
+
+    cdef np.ndarray[dtype = double_t, ndim = 1, mode = "c"] Q
+    Q = np.zeros(4, dtype='d')
+
+    c_Mie.Mie(x, m, nt, < double * > theta.data,
+              < double complex * > S1.data, < double complex * > S2.data,
+              < double * > Q.data)
+
+    return Q, theta, S1, S2
+
+
+def mie_coated(np.ndarray[dtype=double_t, ndim=1, mode='c'] x,
+               np.ndarray[dtype=complex_t, ndim=1, mode='c'] m):
+    raise NotImplementedError(
+        'mie_coated does nothing at the moment except receiving arguments')
+    print('I am python3 c cmie and refractive index is ', m)
     c_Mie.Mie(m)
 
-def mie_Nlayers(np.ndarray[dtype= double_t,ndim=1,mode='c'] x,
-                np.ndarray[dtype=complex_t,ndim=1,mode='c'] m):
-    raise NotImplementedError('mie_Nlayers does nothing at the moment except receiving arguments')
-    print('I am python3 c cmie and refractive index is ',m)
+
+def mie_Nlayers(np.ndarray[dtype=double_t, ndim=1, mode='c'] x,
+                np.ndarray[dtype=complex_t, ndim=1, mode='c'] m):
+    raise NotImplementedError(
+        'mie_Nlayers does nothing at the moment except receiving arguments')
+    print('I am python3 c cmie and refractive index is ', m)
     c_Mie.Mie(m)

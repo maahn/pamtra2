@@ -132,7 +132,7 @@ class Scatterer(object):
             if (dielectric_permittivity is None):
                # raise AttributeError('Dielectric permittivity or refractive' +
                #    ' index should be defined')
-               # need to allow this for DB based scattering
+               # need to allow this for DB based scattering ???
                 self.refractive_index = None
                 self.dielectric_permittivity = None
             else:

@@ -24,7 +24,17 @@ and member functions
 
 import numpy as np
 import pandas as pd
-from scipy import interp
+from scipy import interp, quad
+
+
+# Library of Self-Similar Rayleigh-Gans parameters
+ssrg_par = {}
+## Parameters derived for bullet-rosettes Hogan and Westbrook (2014)
+HW14 = {'kappa':0.19, 'beta':0.23, 'gamma':5./3., 'zeta1':1.}
+ssrg_par['HW14'] = HW14
+## Mean parameters derived for Leinonen-Szyrmer 2015 unrimed snow aggregates
+L15_0={'kappa':0.189177, 'beta':3.06939, 'gamma':2.53192,'zeta1':0.0709529}
+
 
 class SsrgScatt(Scatterer):
     """
@@ -35,13 +45,16 @@ class SsrgScatt(Scatterer):
                  diameter = 1.0e-3,
                  frequency = None,
                  wavelength = None,
-                 refractive_index=None,
-                 dielectric_permittivity=None,
+                 refractive_index = None,
+                 dielectric_permittivity = None,
                  theta_inc = 0.0,
                  phi_inc = 0.0,
                  theta_sca = 0.0,
                  phi_sca = 0.0,
-                 aspect_ratio=1.0):
+                 aspect_ratio = 1.0,
+                 ssrg_parameters = 'HW14',
+                 volume = None
+                 ):
         
         Scatterer.__init__(self,
                            diameter = diameter,
@@ -56,38 +69,141 @@ class SsrgScatt(Scatterer):
         self.geometric_cross_section = np.pi*self.diameter*self.diameter*0.25
         self.K = ref_utils.K(self.dielectric_permittivity)
         self.aspect_ratio = aspect_ratio
-       
-        self.Csca = 0.0
-        self.Cext = 0.0
-        self.Cbck = 0.0
-        self.Cabs = 0.0
+        
+        self.__set_ssrg_par(ssrg_parameters)
+        self.volume = volume
+
+        Deff = self.compute_effective_size(self.diameter,
+                                           self.aspect_ratio,
+                                           self.theta_inc)
+
+        x = k*Deff # effective size parameter
+
+        # First part of Eq. 1 in Hogan et al. (2017) (except phi(x))
+        # and factor pi**2/4 from eq.4 for speedup
+        prefactor = 9.*np.pi*self.wavenumber**4.*self.K2*self.volume**2./16.
+
+        self.S1 = np.cos(self.scatt_angle)*0.0
+        self.S2 = 1.0*0.0
+        self.S3 = 0.0
+        self.S4 = 0.0
+        
+        # so far in our convention the imaginary part of dielectric properties is
+        # positive for absorbing materials, thus you don't find -K.imag
+        self.Cabs = 3.*self.wavenumber*self.volume*self.K.imag
+        self.Cext = 2.*self.wavelength*self.S2.imag
+        self.Csca = self.Cext - self.Cabs
+        self.Cbck = self.__phase_function(prefactor, x,
+                                          self.kappa, self.beta,
+                                          self.gamma, self.zeta1,
+                                          theta=np.pi)
 
 
-def first(x, kappa):
-    """Compute the first term in the braces in Eq. 4 of Hogan (2017)
-       scattering by the mean ice distribution in the particles' population.
+def __phase_function(prefactor, x, kappa, beta, gamma, zeta1, theta):
+    """
+    Compute the phase function for the current state of the scatterer
+    """
+    shape_factor = self.__shape_factor(x, kappa, beta, gamma, zeta1, theta)
+    return prefactor*shape_factor*(1.+np.cos(theta)**2)*0.5
+
+def __shape_factor(x, kappa, beta, gamma, zeta1, theta):
+    """
+    Compute the shape factor for the current state of the scatterer
+    """
+    
+    xang = x*np.sin(theta*0.5)
+    shape_factor = self.__first(xang, kappa) + self.__summation(xang, beta,
+                                                                gamma, zeta1)
+    return shape_factor
+
+
+def __first(x, kappa):
+    """
+    Compute the first term in the braces in Eq. 4 of Hogan (2017)
+    scattering by the mean ice distribution in the particles' population.
     """
     scale_term = np.cos(x)*((1.+kappa/3.)*(1./(2.*x+np.pi)-1./(2.*x-np.pi))-
                             kappa*(1./(2.*x+3.*np.pi)-1./(2.*x-3.*np.pi)))
     return scale_term**2.
     
 
-def summation(x, beta, gamma, zeta1):
+def __summation(x, beta, gamma, zeta1):
     """
     provide the summation component of the phi shape function for ssrga.
     the second term in the braces in Eq. 4 of Hogan (2017)
     related to scattering by the modulation of ice distribution with respect
     to the mean.
     """
+
+    # Compute a "good" stopping point
     jmax = int(5.*x/np.pi + 1.)
     
+    # Compute first term separately for inclusion of zeta1
     summ = zeta1*2.**(-1.*gamma)*((0.5/(x+np.pi*j))**2.+(0.5/(x-np.pi*j))**2.)
     
+    #Compute the rest
     for j in range(2,jmax):
         term_a = (2.*j)**(-1.*gamma)
-        term_b = (0.5/(xeff+np.pi*j))**2.+(0.5/(xeff-np.pi*j))**2.
+        term_b = (0.5/(x+np.pi*j))**2.+(0.5/(x-np.pi*j))**2.
         summ = summ + term_a*term_b
-    return summ*beta*np.sin(xeff)**2.
+
+    return summ*beta*np.sin(x)**2.
+
+
+def __set_ssrg_par(par):
+    """
+    Convenience function to set the srrg parameters attributes according to
+    the requested model
+
+    Parameters
+    ----------
+    par : dict or str
+        explicit which set of parameters to use (dict) or the parameter
+        model (str) to pick from the library or filename
+
+    """
+    if isinstance(par,dict):
+        self.kappa = par['kappa']
+        self.beta = par['beta']
+        self.gamma = par['gamma']
+        self.zeta1 = par['zeta1']
+    else if isinstance(par, str):
+        self.kappa = ssrg_par[par]['kappa']
+        self.beta = ssrg_par[par]['beta']
+        self.gamma = ssrg_par[par]['gamma']
+        self.zeta1 = ssrg_par[par]['zeta1']
+
+
+def __compute_effective_size(size=None, ar=None, angle=None):
+    """
+    Returns the effective size of a spheroid along the propagation direction
+    TODO: Depending on how the propagation direction is defined also
+    orientation of the scatterer matters
+
+    Parameters
+    ----------
+    size : scalar-double
+        The horizontal size of the spheroid
+
+    ar : scalar-double
+        The aspect ratio of the spheroid (vertical/horizontal)
+
+    angle : scalar-double
+        The propagation direction along which the effective size has to be
+        computed
+
+    Returns
+    -------
+    size_eff : scalar-double
+        The effective size of the spheroid along the zenith direction defined
+        by angle
+    """
+
+    size_eff = (0.5*size*ar)**2/(ar**2*np.cos(angle)**2+np.sin(angle)**2)
+
+    return 2.*np.sqrt(size_eff)
+
+
 
 ################## OLD CODE I STILL NEED #######################################
 
