@@ -46,7 +46,7 @@ import numpy as np
 
 # Complementary library
 # Implemented with basic functionality
-from . import Mie, Rayleigh, Tmatrix, scatterer, scattering_utilities
+from . import mie, rayleigh, tmatrix, ssrg, scatterer, scattering_utilities
 
 models_list = ['Rayleigh (Ray)', 'Mie', 'Tmatrix (TMM)', 
                'Self-Similar Rayleigh-Gans (SSRG)', 'LiuDB', 'LeinonenDB', 
@@ -106,22 +106,21 @@ def scattering(diameters,
         raise NotImplementedError("At the moment the library only computes non oriented properties")
 
     if ((model == 'Rayleigh') or (model == 'Ray')):
-        scatt = Rayleigh.RayleighScatt(diameters,
-                              frequencies, wavelengths,
-                              refractive_indices, dielectric_permittivities,
-                              **kwargs) 
+        scatt = rayleigh.RayleighScatt(diameters, frequencies, wavelengths,
+                                       refractive_indices,
+                                       dielectric_permittivities, **kwargs)
     elif (model == 'Mie'):
-        scatt = Mie.MieScatt(diameters,
-                         frequencies, wavelengths,
-                         refractive_indices, dielectric_permittivities,
-                         **kwargs)
+        scatt = mie.MieScatt(diameters, frequencies, wavelengths,
+                             refractive_indices, dielectric_permittivities,
+                             **kwargs)
     elif ((model == 'Tmatrix') or (model == 'TMM')):
-        scatt = Tmatrix.TmatrixScatt(diameters,
-                         frequencies, wavelengths,
-                         refractive_indices, dielectric_permittivities,
-                         **kwargs)
+        scatt = tmatrix.TmatrixScatt(diameters, frequencies, wavelengths,
+                                     refractive_indices,
+                                     dielectric_permittivities, **kwargs)
     elif ( (model == 'Self-Similar Rayleigh-Gans') or (model=='SSRG') ):
-        raise NotImplementedError(model+" capabilities will be soon added")
+        scatt = ssrg.SsrgScatt(diameters, frequencies, wavelengths,
+                               refractive_indices, dielectric_permittivities,
+                               **kwargs)
     elif ((model == 'LiuDB') ):
         raise NotImplementedError(model+" capabilities will be soon added")
     elif ((model == 'LeinonenDB') ):

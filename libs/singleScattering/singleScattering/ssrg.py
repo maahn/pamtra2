@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-""" singleScattering.self_similar_rayleigh_gans.py
+""" singleScattering.ssrg.py
 
     Copyright (C) 2017 - 2018 Davide Ori dori@uni-koeln.de
     Institute for Geophysics and Meteorology - University of Cologne
@@ -24,8 +24,11 @@ and member functions
 
 import numpy as np
 import pandas as pd
-from scipy import interp, quad
+from scipy import interp
+from scipy.integrate import quad
 
+from .scatterer import Scatterer
+from pamtra2.libs.refractiveIndex import utilities as ref_utils
 
 # Library of Self-Similar Rayleigh-Gans parameters
 ssrg_par = {}
@@ -65,27 +68,32 @@ class SsrgScatt(Scatterer):
                            phi_inc = phi_inc,
                            theta_sca = theta_sca,
                            phi_sca = phi_sca)
-                                
+        
+        if volume is None:
+            raise AttributeError('you need to specify the volume occupied by the scattering material')
+        else:
+            self.volume = volume
+
+
         self.geometric_cross_section = np.pi*self.diameter*self.diameter*0.25
         self.K = ref_utils.K(self.dielectric_permittivity)
         self.aspect_ratio = aspect_ratio
         
-        self.__set_ssrg_par(ssrg_parameters)
-        self.volume = volume
+        self._set_ssrg_par(ssrg_parameters)
 
-        Deff = self.compute_effective_size(self.diameter,
-                                           self.aspect_ratio,
-                                           self.theta_inc)
+        Deff = compute_effective_size(self.diameter,
+                                      self.aspect_ratio,
+                                      self.theta_inc)
 
-        x = k*Deff # effective size parameter
+        self.xe = self.wavenumber*Deff # effective size parameter
 
         # First part of Eq. 1 in Hogan et al. (2017) (except phi(x))
         # and factor pi**2/4 from eq.4 for speedup
-        prefactor = 9.*np.pi*self.wavenumber**4.*self.K2*self.volume**2./16.
+        self.prefactor = 9.*self.wavenumber**4.*self.K2*self.volume**2./(4.*np.pi)
+        phi_ssrg = shape_factor(self.xe, self.kappa, self.beta, self.gamma,
+                                self.zeta1, self.scatt_angle)
 
-        self.S2 = self.wavenumber**2*self.K*(self.diameter*0.5)**3* \
-                  self.__shape_factor(x, self.kappa, self.beta,
-                                      self.gamma, self.zeta1, self.scatt_angle)
+        self.S2 = self.wavenumber**2*self.K*(self.diameter*0.5)**3*np.sqrt(phi_ssrg)
         self.S1 = self.S2*np.cos(self.scatt_angle)
         self.S3 = 0.0
         self.S4 = 0.0
@@ -93,37 +101,78 @@ class SsrgScatt(Scatterer):
         # so far in our convention the imaginary part of dielectric properties is
         # positive for absorbing materials, thus you don't find -K.imag
         self.Cabs = 3.*self.wavenumber*self.volume*self.K.imag
-        self.Cext = 2.*self.wavelength*self.S2.imag
-        self.Csca = self.Cext - self.Cabs
+        #self.Cext = 2.*self.wavelength*self.S2.imag
+        #self.Csca = self.Cext - self.Cabs
+        self.Csca = self.scattering_xsect()
+        self.Cext = self.Csca + self.Cabs
 
         # We have to recompute phase function and thus the inner shape factor
         # because this is computed for exact backscattering and the current
         # configuration might have a different scattering angle
-        self.Cbck = self.__phase_function(prefactor, x,
-                                          self.kappa, self.beta,
-                                          self.gamma, self.zeta1,
-                                          theta=np.pi)
+        self.Cbck = phase_function(self.prefactor, self.xe, self.kappa,
+                                   self.beta, self.gamma, self.zeta1,
+                                   theta=np.pi)
 
+    def _set_ssrg_par(self, par):
+        """
+        Convenience function to set the srrg parameters attributes according to
+        the requested model
 
-def __phase_function(prefactor, x, kappa, beta, gamma, zeta1, theta):
+        Parameters
+        ----------
+        par : dict or str
+            explicit which set of parameters to use (dict) or the parameter
+            model (str) to pick from the library or filename
+
+        """
+        if isinstance(par,dict):
+            self.kappa = par['kappa']
+            self.beta = par['beta']
+            self.gamma = par['gamma']
+            self.zeta1 = par['zeta1']
+        elif isinstance(par, str):
+            self.kappa = ssrg_par[par]['kappa']
+            self.beta = ssrg_par[par]['beta']
+            self.gamma = ssrg_par[par]['gamma']
+            self.zeta1 = ssrg_par[par]['zeta1']
+
+    def scattering_xsect(self):
+        """Calculates the scattering cross section by integrating over the all
+           the whole 4pi solid scattering angle
+           Note that the scattering phase function is already azimuthally
+           averaged, so we need to integrate only over theta [0, pi]
+        """
+                
+        def diff_xsect(theta):
+            """Differential scattering cross section multiplied by sin(theta)
+            """
+            return np.sin(theta)*phase_function(self.prefactor, self.xe,
+                                                self.kappa, self.beta,
+                                                self.gamma, self.zeta1,
+                                                theta)
+
+        xsect = quad(diff_xsect, 0.0, np.pi)
+
+        return 0.5*xsect[0]
+
+def phase_function(prefactor, x, kappa, beta, gamma, zeta1, theta):
     """
     Compute the phase function for the current state of the scatterer
     """
-    shape_factor = self.__shape_factor(x, kappa, beta, gamma, zeta1, theta)
-    return prefactor*shape_factor*(1.+np.cos(theta)**2)*0.5
+    phi_ssrg = shape_factor(x, kappa, beta, gamma, zeta1, theta)
+    return prefactor*phi_ssrg*(1.+np.cos(theta)**2)*0.5
 
-def __shape_factor(x, kappa, beta, gamma, zeta1, theta):
+def shape_factor(x, kappa, beta, gamma, zeta1, theta):
     """
     Compute the shape factor for the current state of the scatterer
     """
     
     xang = x*np.sin(theta*0.5)
-    shape_factor = self.__first(xang, kappa) + self.__summation(xang, beta,
-                                                                gamma, zeta1)
-    return shape_factor
+    shape_factor = first(xang, kappa) + summation(xang, beta, gamma, zeta1)
+    return np.pi**2*0.25*shape_factor
 
 
-def __first(x, kappa):
+def first(x, kappa):
     """
     Compute the first term in the braces in Eq. 4 of Hogan (2017)
     scattering by the mean ice distribution in the particles' population.
@@ -133,7 +182,7 @@ def __first(x, kappa):
     return scale_term**2.
     
 
-def __summation(x, beta, gamma, zeta1):
+def summation(x, beta, gamma, zeta1):
     """
     provide the summation component of the phi shape function for ssrga.
     the second term in the braces in Eq. 4 of Hogan (2017)
@@ -145,7 +194,7 @@ def __summation(x, beta, gamma, zeta1):
     jmax = int(5.*x/np.pi + 1.)
     
     # Compute first term separately for inclusion of zeta1
-    summ = zeta1*2.**(-1.*gamma)*((0.5/(x+np.pi*j))**2.+(0.5/(x-np.pi*j))**2.)
+    summ = zeta1*2.**(-1.*gamma)*((0.5/(x+np.pi))**2.+(0.5/(x-np.pi))**2.)
     
     #Compute the rest
     for j in range(2,jmax):
@@ -156,31 +205,7 @@ def __summation(x, beta, gamma, zeta1):
     return summ*beta*np.sin(x)**2.
 
 
-def __set_ssrg_par(par):
-    """
-    Convenience function to set the srrg parameters attributes according to
-    the requested model
-
-    Parameters
-    ----------
-    par : dict or str
-        explicit which set of parameters to use (dict) or the parameter
-        model (str) to pick from the library or filename
-
-    """
-    if isinstance(par,dict):
-        self.kappa = par['kappa']
-        self.beta = par['beta']
-        self.gamma = par['gamma']
-        self.zeta1 = par['zeta1']
-    elif isinstance(par, str):
-        self.kappa = ssrg_par[par]['kappa']
-        self.beta = ssrg_par[par]['beta']
-        self.gamma = ssrg_par[par]['gamma']
-        self.zeta1 = ssrg_par[par]['zeta1']
-
-
-def __compute_effective_size(size=None, ar=None, angle=None):
+def compute_effective_size(size=None, ar=None, angle=None):
     """
     Returns the effective size of a spheroid along the propagation direction
     TODO: Depending on how the propagation direction is defined also
