@@ -33,6 +33,8 @@ class RayleighScatt(Scatterer):
     """
     This is class implement the Rayleigh model of scattering for a sphere
     No check is performed to the actual validity of the Rayleigh approximation
+    Inherits from Scatterer, no additional argument with respect to the
+    Scatterer class
     """
     
     def __init__(self,

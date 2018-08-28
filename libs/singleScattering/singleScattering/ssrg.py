@@ -31,18 +31,62 @@ from .scatterer import Scatterer
 from pamtra2.libs.refractiveIndex import utilities as ref_utils
 
 # Library of Self-Similar Rayleigh-Gans parameters
+# TODO: this could be an object that provides a more descriptive information
+# about the underlying models
 ssrg_par = {}
 ## Parameters derived for bullet-rosettes Hogan and Westbrook (2014)
 HW14 = {'kappa':0.19, 'beta':0.23, 'gamma':5./3., 'zeta1':1.}
 ssrg_par['HW14'] = HW14
 ## Mean parameters derived for Leinonen-Szyrmer 2015 unrimed snow aggregates
 L15_0={'kappa':0.189177, 'beta':3.06939, 'gamma':2.53192,'zeta1':0.0709529}
+ssrg_par['LS15A0.0'] = L15_0
+## Mean parameters for Ori et al. 2014 unrimed assemblages of ice columns
+Oea14 = {'kappa':0.190031, 'beta':0.030681461,
+         'gamma':1.3002167, 'zeta1':0.29466184}
+ssrg_par['Oea14'] = Oea14
 
+# Size dependent parameters for Leinonen and Szyrmer (2015) rimed aggregates
+# model A (simultaneous aggregation and riming), also ELWP dependent.
+# WARNING: Overrides aspect_ratio
+leinonen_table = pd.read_csv(module_path + '/ssrg_coeffs_jussiagg_simult.dat',
+                             delim_whitespace=True)
+def leinonen_coeff(D, elwp=0.0):
+    table = leinonen_table[leinonen_table.ELWP == elwp].set_index('D')
+    beta = interp(D, table.index.values, table.beta_z)
+    gamma = interp(D, table.index.values, table.gamma_z)
+    kappa = interp(D, table.index.values, table.kappa_z)
+    zeta1 = interp(D, table.index.values, table.zeta1_z)
+    alpha_eff = interp(D, table.index.values, table.alpha_eff)
+    return beta, -gamma, kappa, zeta1, alpha_eff
+
+ssrg_lib_idx = ssrg_lib.keys() + ['leinonen_table']
 
 class SsrgScatt(Scatterer):
     """
     This is class implement the Self-Similar Rayleigh-Gans model of scattering
     for a non-spherical particle
+    Inherits from Scatterer.
+
+    Parameters
+    ----------
+    aspect_ratio: scalar-double
+        The ratio between the vertical and horizontal dimension of the particle
+        Consider the scatterer to be surrounded by an equvalent ellipsoid, then
+        the aspect ratio is the aspect ratio of the ellipsoid
+    ssrg_parameters : dict or str
+        The 4 parameters of the Self-Similar Rayleigh-Gans approximation. If a
+        dictionary is passed it must contain the keys kappa, beta, gamma and
+        zeta1. If a string is passed the code will look at the builtin library
+        of ssrg parameters; consult the ssrg_lib_idx variable for a list of
+        options (WARNING: it might override aspect_ratio)
+    volume : scalar-double
+        The volume occupied by the scattering material. It is mass-equivalent
+        (assuming the surraunding material to be air). Since SSRG has been
+        developed for non-spherical complex particles the user should know how
+        to calculate it for his/her own particle structures
+
+    Todo:
+    Allow for K dielectric factor to be model dependent
     """
     def __init__(self,
                  diameter = 1.0e-3,
@@ -74,11 +118,10 @@ class SsrgScatt(Scatterer):
         else:
             self.volume = volume
 
-
         self.geometric_cross_section = np.pi*self.diameter*self.diameter*0.25
         self.K = ref_utils.K(self.dielectric_permittivity)
-        self.aspect_ratio = aspect_ratio
         
+        self.aspect_ratio = aspect_ratio
         self._set_ssrg_par(ssrg_parameters)
 
         Deff = compute_effective_size(self.diameter,
@@ -93,7 +136,12 @@ class SsrgScatt(Scatterer):
         phi_ssrg = shape_factor(self.xe, self.kappa, self.beta, self.gamma,
                                 self.zeta1, self.scatt_angle)
 
-        self.S2 = self.wavenumber**2*self.K*(self.diameter*0.5)**3*np.sqrt(phi_ssrg)
+        # Here I am not sure of the term S2. For comparison with Rayleigh 
+        # formula it should be the option with D/2, but since ssrg works with
+        # non-spherical particles it is probably the formulation with scatterer
+        # volume by comparison with other scattering quantities in ssrg
+        #self.S2 = self.wavenumber**2*self.K*(self.diameter*0.5)**3*np.sqrt(phi_ssrg)
+        self.S2 = 3.*self.wavenumber**2*self.K*self.volume*np.sqrt(phi_ssrg)/(4.*np.pi)
         self.S1 = self.S2*np.cos(self.scatt_angle)
         self.S3 = 0.0
         self.S4 = 0.0
@@ -126,25 +174,53 @@ class SsrgScatt(Scatterer):
 
         """
         if isinstance(par,dict):
-            self.kappa = par['kappa']
-            self.beta = par['beta']
-            self.gamma = par['gamma']
-            self.zeta1 = par['zeta1']
+            try:
+                self.kappa = par['kappa']
+                self.beta = par['beta']
+                self.gamma = par['gamma']
+                self.zeta1 = par['zeta1']
+            except:
+                raise AttributeError('Invalid ssrg parameters')
         elif isinstance(par, str):
-            self.kappa = ssrg_par[par]['kappa']
-            self.beta = ssrg_par[par]['beta']
-            self.gamma = ssrg_par[par]['gamma']
-            self.zeta1 = ssrg_par[par]['zeta1']
+            if par[:14] == 'leinonen_table':
+                elwp = float(par.split('_')[-1])
+                r = leinonen_coeff(D, elwp)
+                self.kappa = r[0]
+                self.beta = r[1]
+                self.gamma = r[2]
+                self.zeta1 = r[3]
+                self.aspect_ratio = r[4]
+            else:
+                try:
+                    self.kappa = ssrg_par[par]['kappa']
+                    self.beta = ssrg_par[par]['beta']
+                    self.gamma = ssrg_par[par]['gamma']
+                    self.zeta1 = ssrg_par[par]['zeta1']
+                except:
+                    raise AttributeError('Invalid ssrg parameters')
+
 
     def scattering_xsect(self):
-        """Calculates the scattering cross section by integrating over the all
-           the whole 4pi solid scattering angle
-           Note that the scattering phase function is already azimuthally
-           averaged, so we need to integrate only over theta [0, pi]
+        """
+        Calculates the scattering cross section by integrating over the all
+        the whole 4pi solid scattering angle
+        Note that the scattering phase function is already azimuthally
+        averaged, so we need to integrate only over theta [0, pi]
         """
                 
         def diff_xsect(theta):
-            """Differential scattering cross section multiplied by sin(theta)
+            """
+            Differential scattering cross section multiplied by sin(theta)
+            
+            Parameters
+            ----------
+            theta : scalar-double
+                scattering angle (to be integrated upon dcos(th))
+
+            Returns
+            -------
+            sin(theta)dCsca/dtheta : scalar-double
+                value of the integrand over dtheta
             """
             return np.sin(theta)*phase_function(self.prefactor, self.xe,
                                                 self.kappa, self.beta,
@@ -155,12 +231,14 @@ class SsrgScatt(Scatterer):
 
         return 0.5*xsect[0]
 
+
 def phase_function(prefactor, x, kappa, beta, gamma, zeta1, theta):
     """
     Compute the phase function for the current state of the scatterer
     """
     phi_ssrg = shape_factor(x, kappa, beta, gamma, zeta1, theta)
     return prefactor*phi_ssrg*(1.+np.cos(theta)**2)*0.5
+
 
 def shape_factor(x, kappa, beta, gamma, zeta1, theta):
     """
@@ -184,7 +262,7 @@ def first(x, kappa):
 
 def summation(x, beta, gamma, zeta1):
     """
-    provide the summation component of the phi shape function for ssrga.
+    Provide the summation component of the phi shape function for ssrga.
     the second term in the braces in Eq. 4 of Hogan (2017)
     related to scattering by the modulation of ice distribution with respect
     to the mean.
@@ -215,10 +293,8 @@ def compute_effective_size(size=None, ar=None, angle=None):
     ----------
     size : scalar-double
         The horizontal size of the spheroid
-
     ar : scalar-double
         The aspect ratio of the spheroid (vertical/horizontal)
-
     angle : scalar-double
         The propagation direction along which the effective size has to be
         computed
@@ -238,7 +314,9 @@ def compute_effective_size(size=None, ar=None, angle=None):
 
 ################## OLD CODE I STILL NEED #######################################
 
-leinonen_table = pd.read_csv('/home/dori/develop/pyPamtra2/libs/singleScattering/singleScattering/ssrg_coeffs_jussiagg_simult.dat',
+from os import path
+module_path = path.split(path.abspath(__file__))[0]
+leinonen_table = pd.read_csv(module_path + '/ssrg_coeffs_jussiagg_simult.dat',
                              delim_whitespace=True)
 
 def leinonen_coeff(D, elwp):
@@ -259,8 +337,8 @@ diameters = np.linspace(0.001, 0.025, 50)
 brandes = lambda D: 7.9e-5*D**2.1
 smalles = lambda D: 4.1e-5*D**2.5
 
-
-def backscattering(frequency, diameters, n, table=None, ELWP=None, mass=None):  # SI units
+# SI units
+def backscattering(frequency, diameters, n, table=None, ELWP=None, mass=None):
     wavelength = c/frequency
     if mass is None:
         mass = min(brandes(diameters*1.0e3), smalles((diameters*1.0e3)))

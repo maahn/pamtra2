@@ -44,6 +44,15 @@ rad2deg = 180.0/np.pi
 class TmatrixScatt(Scatterer):
     """
     This is class implement the Tmatrix model of scattering for a spheroid
+    Inherits all the attributes from Scatterer and introduce the
+    aspect_ratio as an additional parameter. aspect_ratio is the ratio
+    between the vertical and the horizontal dimansion of the spheroid
+
+    Todo
+    ----
+    The underlying Fortran code by Mishchenko is capable of calculating the
+    scattering properties of Cylinders and Chebyshev particles. We might want
+    to enable that.
     """
     def __init__(self,
                  diameter = 1.0e-3,
@@ -90,7 +99,15 @@ class TmatrixScatt(Scatterer):
 
 
     def _init_tmatrix(self):
-        """Initialize the T-matrix.
+        """
+        Initialize the T-matrix.
+        The T-Matrix is computed for the current setup and it is not dependent
+        on particle orientation or incident and scattered direction. Thus it is
+        kept unchanged for any further calculation. If either, wavelength,
+        size, refractive index, aspect_ratio of the particle changes, this
+        this function must be invoked again.
+        The T-matrix is calculated and stored in the Fortran submodule memory
+        space and is unaccessible by the python interface
         """
         if self.radius_type == RADIUS_MAXIMUM:
             # Maximum radius is not directly supported in the original
@@ -110,7 +127,12 @@ class TmatrixScatt(Scatterer):
 
 
     def get_SZ(self, alpha=None, beta=None):
-        """Get the S and Z matrices for a single orientation.
+        """
+        Get the S and Z matrices for a single orientation.
+        From the stored T-matrix, this function calculates the S and Z matrices
+        for a specific orientation as described in Mischenko (2000) AO
+        "Calculation of the amplitude matrix for a nonspherical particle in a
+        fixed orientation"
         """
         if alpha == None:
             alpha = self.alpha
@@ -126,7 +148,8 @@ class TmatrixScatt(Scatterer):
     
 
     def extinction_xsect(self):
-        """Calculates the total extinction cross section
+        """
+        Calculates the total extinction cross section
         """
         old_theta = self.theta_sca
         old_phi = self.phi_sca
@@ -141,15 +164,17 @@ class TmatrixScatt(Scatterer):
                 
 
     def scattering_xsect(self):
-        """Calculates the scattering cross section by integrating over the all
-           the whole 4pi solid scattering angle
+        """
+        Calculates the scattering cross section by integrating over the all
+        the whole 4pi solid scattering angle
         """
         old_theta = self.theta_sca
         old_phi = self.phi_sca
         
         def diff_xsect(theta, phi):
-            """Differential scattering X section multiplied by sin(theta) to be
-               integrated over 4pi in order to get the scattering cross section
+            """
+            Differential scattering X section multiplied by sin(theta) to be
+            integrated over 4pi in order to get the scattering cross section
             """
             self.theta_sca = theta
             self.phi_sca = phi
@@ -167,8 +192,9 @@ class TmatrixScatt(Scatterer):
 
 
     def backscatter_xsect(self):
-        """Calculates the backscattering cross section for the current incident
-           angle. 
+        """
+        Calculates the backscattering cross section for the current incident
+        angle. 
         """
         old_theta = self.theta_sca
         old_phi = self.phi_sca
