@@ -83,8 +83,10 @@ class SsrgScatt(Scatterer):
         # and factor pi**2/4 from eq.4 for speedup
         prefactor = 9.*np.pi*self.wavenumber**4.*self.K2*self.volume**2./16.
 
-        self.S1 = np.cos(self.scatt_angle)*0.0
-        self.S2 = 1.0*0.0
+        self.S2 = self.wavenumber**2*self.K*(self.diameter*0.5)**3* \
+                  self.__shape_factor(x, self.kappa, self.beta,
+                                      self.gamma, self.zeta1, self.scatt_angle)
+        self.S1 = self.S2*np.cos(self.scatt_angle)
         self.S3 = 0.0
         self.S4 = 0.0
         
@@ -93,6 +95,10 @@ class SsrgScatt(Scatterer):
         self.Cabs = 3.*self.wavenumber*self.volume*self.K.imag
         self.Cext = 2.*self.wavelength*self.S2.imag
         self.Csca = self.Cext - self.Cabs
+
+        # We have to recompute phase function and thus the inner shape factor
+        # because this is computed for exact backscattering and the current
+        # configuration might have a different scattering angle
         self.Cbck = self.__phase_function(prefactor, x,
                                           self.kappa, self.beta,
                                           self.gamma, self.zeta1,
@@ -167,7 +173,7 @@ def __set_ssrg_par(par):
         self.beta = par['beta']
         self.gamma = par['gamma']
         self.zeta1 = par['zeta1']
-    else if isinstance(par, str):
+    elif isinstance(par, str):
         self.kappa = ssrg_par[par]['kappa']
         self.beta = ssrg_par[par]['beta']
         self.gamma = ssrg_par[par]['gamma']

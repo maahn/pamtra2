@@ -63,11 +63,14 @@ class MieScatt(Scatterer):
         Q, theta, vecS1, vecS2 = cMie.mie(self.wavelength,
                                           self.diameter,
                                           self.refractive_index)
-        #cosTheta =  np.cos(theta)
-        #self.S1 = np.interp(np.cos(self.scatt_angle), cosTheta, vecS1)
-        #self.S2 = np.interp(np.cos(self.scatt_angle), cosTheta, vecS2)
-        self.S1 = np.interp(self.scatt_angle, theta, vecS1)
-        self.S2 = np.interp(self.scatt_angle, theta, vecS2)
+        # Here I apply the dimension and convention conversion factor (-j/k)
+        # in order to compare to what Mishenko T-Matrix is giving
+        # TODO It might be beneficial if I document the convention somewhere
+        # I REALLY DO NOT KNOW WHY: Here I have to switch S1 and S2 and take
+        # out the (-) sign. In another program I found (-j/k)... still
+        # missing something or messing everything
+        self.S1 = 1.j*np.interp(self.scatt_angle, theta, vecS2)/self.wavenumber
+        self.S2 = 1.j*np.interp(self.scatt_angle, theta, vecS1)/self.wavenumber
         self.S3 = 0.0
         self.S4 = 0.0
 
