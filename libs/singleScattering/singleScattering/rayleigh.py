@@ -67,9 +67,8 @@ class RayleighScatt(Scatterer):
         self.Cext = self.Cabs + self.Csca
         self.Cbck = 4.*self.size_parameter**4*self.K2*self.geometric_cross_section
         
-        #self.S1 = -1.5j*self.size_parameter**3.0
-        self.S2 = self.wavenumber**2*self.K*(self.diameter*0.5)**3
-        self.S1 = self.S2*np.cos(self.scatt_angle)
+        self.S1 = self.wavenumber**2*self.K*(self.diameter*0.5)**3
+        self.S2 = -self.S1*np.cos(self.scatt_angle)
         self.S3 = 0.0 + 0.0j
         self.S4 = 0.0 + 0.0j
         self.S = np.array([[self.S2, self.S3], [self.S4, self.S1]])

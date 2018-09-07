@@ -146,8 +146,8 @@ class SsrgScatt(Scatterer):
         # volume by comparison with other scattering quantities in ssrg
         # NOTE: This should be not azimuthally averaged!!!
         #self.S2 = self.wavenumber**2*self.K*(self.diameter*0.5)**3*np.sqrt(phi_ssrg)
-        self.S2 = 3.*self.wavenumber**2*self.K*self.volume*np.sqrt(phi_ssrg)/(4.*np.pi)
-        self.S1 = self.S2*np.cos(self.scatt_angle)
+        self.S1 = -3.*self.wavenumber**2*self.K*self.volume*np.sqrt(phi_ssrg)/(4.*np.pi)
+        self.S2 = -self.S1*np.cos(self.scatt_angle)
         self.S3 = 0.0 + 0.0j
         self.S4 = 0.0 + 0.0j
         self.S = np.array([[self.S2, self.S3], [self.S4, self.S1]])
