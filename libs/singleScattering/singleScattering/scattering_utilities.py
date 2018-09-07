@@ -73,29 +73,29 @@ def amplitude2mueller(ampl):
     """
 
     mueller = np.ndarray((4, 4))
-    S1_2 = (ampl.S1 * ampl.S1.conj).real
-    S2_2 = (ampl.S2 * ampl.S2.conj).real
-    S3_2 = (ampl.S3 * ampl.S3.conj).real
-    S4_2 = (ampl.S4 * ampl.S4.conj).real
+    S1_2 = (ampl.S1 * ampl.S1.conjugate()).real
+    S2_2 = (ampl.S2 * ampl.S2.conjugate()).real
+    S3_2 = (ampl.S3 * ampl.S3.conjugate()).real
+    S4_2 = (ampl.S4 * ampl.S4.conjugate()).real
     mueller[0, 0] = 0.5 * (S2_2 + S1_2 + S4_2 + S3_2)
     mueller[0, 1] = 0.5 * (S2_2 - S1_2 + S4_2 - S3_2)
-    mueller[0, 2] = -(ampl.S2 * ampl.S3.conj + ampl.S1 * ampl.S4.conj).real
-    mueller[0, 3] = -(ampl.S2 * ampl.S3.conj - ampl.S1 * ampl.S4.conj).imag
+    mueller[0, 2] = -(ampl.S2 * ampl.S3.conjugate() + ampl.S1 * ampl.S4.conjugate()).real
+    mueller[0, 3] = -(ampl.S2 * ampl.S3.conjugate() - ampl.S1 * ampl.S4.conjugate()).imag
 
     mueller[1, 0] = 0.5 * (S2_2 - S1_2 - S4_2 + S3_2)
     mueller[1, 1] = 0.5 * (S2_2 + S1_2 - S4_2 - S3_2)
-    mueller[1, 2] = -(ampl.S2 * ampl.S3.conj - ampl.S1 * ampl.S4.conj).real
-    mueller[1, 3] = -(ampl.S2 * ampl.S3.conj + ampl.S1 * ampl.S4.conj).imag
+    mueller[1, 2] = -(ampl.S2 * ampl.S3.conjugate() - ampl.S1 * ampl.S4.conjugate()).real
+    mueller[1, 3] = -(ampl.S2 * ampl.S3.conjugate() + ampl.S1 * ampl.S4.conjugate()).imag
 
-    mueller[2, 0] = -(ampl.S2 * ampl.S4.conj + ampl.S1 * ampl.S3.conj).real
-    mueller[2, 1] = -(ampl.S2 * ampl.S4.conj - ampl.S1 * ampl.S3.conj).real
-    mueller[2, 2] = (ampl.S2 * ampl.S1.conj + ampl.S3 * ampl.S4.conj).real
-    mueller[2, 3] = (ampl.S2 * ampl.S1.conj + ampl.S4 * ampl.S3.conj).imag
+    mueller[2, 0] = -(ampl.S2 * ampl.S4.conjugate() + ampl.S1 * ampl.S3.conjugate()).real
+    mueller[2, 1] = -(ampl.S2 * ampl.S4.conjugate() - ampl.S1 * ampl.S3.conjugate()).real
+    mueller[2, 2] = (ampl.S2 * ampl.S1.conjugate() + ampl.S3 * ampl.S4.conjugate()).real
+    mueller[2, 3] = (ampl.S2 * ampl.S1.conjugate() + ampl.S4 * ampl.S3.conjugate()).imag
 
-    mueller[3, 0] = -(ampl.S4 * ampl.S2.conj + ampl.S1 * ampl.S3.conj).imag
-    mueller[3, 1] = -(ampl.S4 * ampl.S2.conj - ampl.S1 * ampl.S3.conj).imag
-    mueller[3, 2] = (ampl.S1 * ampl.S2.conj - ampl.S3 * ampl.S4.conj).imag
-    mueller[3, 3] = (ampl.S1 * ampl.S2.conj - ampl.S3 * ampl.S4.conj).real
+    mueller[3, 0] = -(ampl.S4 * ampl.S2.conjugate() + ampl.S1 * ampl.S3.conjugate()).imag
+    mueller[3, 1] = -(ampl.S4 * ampl.S2.conjugate() - ampl.S1 * ampl.S3.conjugate()).imag
+    mueller[3, 2] = (ampl.S1 * ampl.S2.conjugate() - ampl.S3 * ampl.S4.conjugate()).imag
+    mueller[3, 3] = (ampl.S1 * ampl.S2.conjugate() - ampl.S3 * ampl.S4.conjugate()).real
 
     return scattering_matrix(mueller)
 

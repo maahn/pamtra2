@@ -138,4 +138,4 @@ def scattering(diameters,
                              "valid substance I can only compute"
                              " dielectric properties of %s" % (
                                 model, models_list))
-    return scatt.Cext, scatt.Csca, scatt.Cabs, scatt.Cbck
+    return scatt.Cext, scatt.Csca, scatt.Cabs, scatt.Cbck, scatt.S

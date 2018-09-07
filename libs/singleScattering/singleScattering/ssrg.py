@@ -30,24 +30,28 @@ from scipy.integrate import quad
 from .scatterer import Scatterer
 from pamtra2.libs.refractiveIndex import utilities as ref_utils
 
+from os import path
+
 # Library of Self-Similar Rayleigh-Gans parameters
 # TODO: this could be an object that provides a more descriptive information
 # about the underlying models
-ssrg_par = {}
+ssrg_lib = {}
 ## Parameters derived for bullet-rosettes Hogan and Westbrook (2014)
 HW14 = {'kappa':0.19, 'beta':0.23, 'gamma':5./3., 'zeta1':1.}
-ssrg_par['HW14'] = HW14
+ssrg_lib['HW14'] = HW14
 ## Mean parameters derived for Leinonen-Szyrmer 2015 unrimed snow aggregates
 L15_0={'kappa':0.189177, 'beta':3.06939, 'gamma':2.53192,'zeta1':0.0709529}
-ssrg_par['LS15A0.0'] = L15_0
+ssrg_lib['LS15A0.0'] = L15_0
 ## Mean parameters for Ori et al. 2014 unrimed assemblages of ice columns
 Oea14 = {'kappa':0.190031, 'beta':0.030681461,
          'gamma':1.3002167, 'zeta1':0.29466184}
-ssrg_par['Oea14'] = Oea14
+ssrg_lib['Oea14'] = Oea14
 
 # Size dependent parameters for Leinonen and Szyrmer (2015) rimed aggregates
 # model A (simultaneous aggregation and riming), also ELWP dependent.
 # WARNING: Overrides aspect_ratio
+
+module_path = path.split(path.abspath(__file__))[0]
 leinonen_table = pd.read_csv(module_path + '/ssrg_coeffs_jussiagg_simult.dat',
                              delim_whitespace=True)
 def leinonen_coeff(D, elwp=0.0):
@@ -59,7 +63,7 @@ def leinonen_coeff(D, elwp=0.0):
     alpha_eff = interp(D, table.index.values, table.alpha_eff)
     return beta, -gamma, kappa, zeta1, alpha_eff
 
-ssrg_lib_idx = ssrg_lib.keys() + ['leinonen_table']
+ssrg_lib_idx = list(ssrg_lib.keys()) + ['leinonen_table']
 
 class SsrgScatt(Scatterer):
     """
@@ -140,11 +144,13 @@ class SsrgScatt(Scatterer):
         # formula it should be the option with D/2, but since ssrg works with
         # non-spherical particles it is probably the formulation with scatterer
         # volume by comparison with other scattering quantities in ssrg
+        # NOTE: This should be not azimuthally averaged!!!
         #self.S2 = self.wavenumber**2*self.K*(self.diameter*0.5)**3*np.sqrt(phi_ssrg)
         self.S2 = 3.*self.wavenumber**2*self.K*self.volume*np.sqrt(phi_ssrg)/(4.*np.pi)
         self.S1 = self.S2*np.cos(self.scatt_angle)
-        self.S3 = 0.0
-        self.S4 = 0.0
+        self.S3 = 0.0 + 0.0j
+        self.S4 = 0.0 + 0.0j
+        self.S = np.array([[self.S2, self.S3], [self.S4, self.S1]])
         
         # so far in our convention the imaginary part of dielectric properties is
         # positive for absorbing materials, thus you don't find -K.imag
@@ -192,10 +198,10 @@ class SsrgScatt(Scatterer):
                 self.aspect_ratio = r[4]
             else:
                 try:
-                    self.kappa = ssrg_par[par]['kappa']
-                    self.beta = ssrg_par[par]['beta']
-                    self.gamma = ssrg_par[par]['gamma']
-                    self.zeta1 = ssrg_par[par]['zeta1']
+                    self.kappa = ssrg_lib[par]['kappa']
+                    self.beta = ssrg_lib[par]['beta']
+                    self.gamma = ssrg_lib[par]['gamma']
+                    self.zeta1 = ssrg_lib[par]['zeta1']
                 except:
                     raise AttributeError('Invalid ssrg parameters')
 
@@ -313,11 +319,6 @@ def compute_effective_size(size=None, ar=None, angle=None):
 
 
 ################## OLD CODE I STILL NEED #######################################
-
-from os import path
-module_path = path.split(path.abspath(__file__))[0]
-leinonen_table = pd.read_csv(module_path + '/ssrg_coeffs_jussiagg_simult.dat',
-                             delim_whitespace=True)
 
 def leinonen_coeff(D, elwp):
     table = leinonen_table[leinonen_table.ELWP == elwp].set_index('D')

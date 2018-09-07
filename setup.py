@@ -120,7 +120,7 @@ cMie = Extension(
     include_dirs = [numpy.get_include()],
     extra_compile_args = ["-O3", "-ffast-math",
                           "-Wall", "-lm", "-fPIC", "-std=c99"],
-    # language='c'
+    language='c'
 )
 
 fTMat = Extension(

@@ -70,5 +70,6 @@ class RayleighScatt(Scatterer):
         #self.S1 = -1.5j*self.size_parameter**3.0
         self.S2 = self.wavenumber**2*self.K*(self.diameter*0.5)**3
         self.S1 = self.S2*np.cos(self.scatt_angle)
-        self.S3 = 0.0
-        self.S4 = 0.0
+        self.S3 = 0.0 + 0.0j
+        self.S4 = 0.0 + 0.0j
+        self.S = np.array([[self.S2, self.S3], [self.S4, self.S1]])
