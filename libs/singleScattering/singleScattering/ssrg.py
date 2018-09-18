@@ -28,6 +28,8 @@ from scipy import interp
 from scipy.integrate import quad
 
 from .scatterer import Scatterer
+from .scattering_utilities import rotation_matrix
+
 from pamtra2.libs.refractiveIndex import utilities as ref_utils
 
 from os import path
@@ -146,11 +148,11 @@ class SsrgScatt(Scatterer):
         # volume by comparison with other scattering quantities in ssrg
         # NOTE: This should be not azimuthally averaged!!!
         #self.S2 = self.wavenumber**2*self.K*(self.diameter*0.5)**3*np.sqrt(phi_ssrg)
-        self.S1 = -3.*self.wavenumber**2*self.K*self.volume*np.sqrt(phi_ssrg)/(4.*np.pi)
-        self.S2 = -self.S1*np.cos(self.scatt_angle)
-        self.S3 = 0.0 + 0.0j
-        self.S4 = 0.0 + 0.0j
-        self.S = np.array([[self.S2, self.S3], [self.S4, self.S1]])
+        S1 = 3.*self.wavenumber**2*self.K*self.volume*np.sqrt(phi_ssrg)/(4.*np.pi)
+        S2 = S1*np.cos(self.scatt_angle)
+        S34 = 0.0 + 0.0j
+        Ra, Rb = rotation_matrix(self.rot_alpha, self.rot_beta)
+        self.S = Rb@np.array([[S2, S34], [S34, S1]])@Ra.T # Ra should be orthogonal => Ra^-1 = Ra^T
         
         # so far in our convention the imaginary part of dielectric properties is
         # positive for absorbing materials, thus you don't find -K.imag

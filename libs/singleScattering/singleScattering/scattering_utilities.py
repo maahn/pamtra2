@@ -67,8 +67,12 @@ class scattering_matrix(object):
 
 def amplitude2mueller(ampl):
     """ This function implement the conversion between complex 2x2 amplitude matrix
-    to the real 4x4 scattering Mueller matrix according to Bohren Huffman pp..
+    to the real 4x4 scattering Mueller matrix according to Bohren Huffman pp 65
     actually according to Mishchenko (2000) pp 51-52
+    It should not be dependent on the reference fo S, so it is invariant by rotations
+    around the propagation vector
+    However, better to check, I see a sign problem in Z13 and Z14, also Z23 and Z24
+    and probably more ...
 
     """
 
@@ -129,7 +133,43 @@ def scattering_angle(theta_inc, theta_sca, phi_inc, phi_sca):
     measured from the vertical axis z, and the azimuth angle phi measured from
     the axis x???
 
+    It also returns the rotation angle alpha which is the angle between the
+    scattering plane and the plane defined by the scattering direction and z.
+    This angle is needed to transform S matrix components from the Bohren
+    and Huffman convention (parallel and perpendicular) to the Mishchenko
+    convention (theta and phi) and viceversa
+
     """
-    acos_th = np.sin(theta_inc) * np.sin(theta_sca) * \
-        np.cos(phi_inc - phi_sca) + np.cos(theta_inc) * np.cos(theta_sca)
-    return np.arccos(acos_th)
+    sin_inc = np.sin(theta_inc)
+    sin_sca = np.sin(theta_sca)
+    phidiff = abs(phi_sca - phi_inc)
+    if (phidiff > np.pi):
+        phidiff = 2.*np.pi-phidiff # we need phidiff [0,pi]
+    phidiff = abs(phi_sca - phi_inc)
+    acos_th = sin_inc * sin_sca * np.cos(phidiff) \
+              + np.cos(theta_inc) * np.cos(theta_sca)
+    th = np.arccos(acos_th)
+    factor = np.sin(phidiff)/np.sin(th)
+    alpha = np.arcsin(sin_sca*factor)
+    beta = np.arcsin(sin_inc*factor)
+    if np.isnan(alpha):
+        alpha = 0.0
+    if np.isnan(beta):
+        beta = 0.0
+    return th, alpha, beta
+
+
+def rotation_matrix(alpha, beta):
+    """ This function returns  two 2x2 rotation matrix specified by the
+    arguments alpha and beta, it should comes handy when you have to transform
+    amplitude matrices from the Bohren and Huffman (parallel, perpendicular)
+    basis to the Mishchenko (theta, phi) convention
+    Rb is actually an improper rotation (rotoreflection)
+
+    """
+    sina = np.sin(alpha)
+    cosa = np.cos(alpha)
+    sinb = np.sin(beta)
+    cosb = np.cos(beta)
+
+    return np.array([[cosa, -sina], [-sina, -cosa]]), np.array([[-cosb, sinb], [-sinb, -cosb]])

@@ -146,6 +146,7 @@ class Scatterer(object):
         else:
             raise AttributeError('Both dielectric permittivity and refractive'
                 +' index have been defined')
+
             
     def set_scattering_geometry(self,geometry):
         """ Convenience setter of the scattering geometry that takes as input
@@ -163,10 +164,9 @@ class Scatterer(object):
         
         (self.theta_inc, self.theta_sca, self.phi_inc, self.phi_sca,
          self.alpha, self.beta) = geometry
-        self.scatt_angle = scatt_utils.scattering_angle(self.theta_inc,
-                                                        self.theta_sca,
-                                                        self.phi_inc,
-                                                        self.phi_sca)
+        angles = scatt_utils.scattering_angle(self.theta_inc, self.theta_sca,
+                                              self.phi_inc, self.phi_sca)
+        self.scatt_angle, self.rot_alpha, self.rot_beta = angles
 
 class Liu_DB(Scatterer):
     def __init__(self):

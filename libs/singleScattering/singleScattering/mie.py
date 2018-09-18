@@ -28,6 +28,7 @@ from pamtra2.libs.refractiveIndex import utilities as ref_utils
 
 from . import cMie
 from .scatterer import Scatterer
+from .scattering_utilities import rotation_matrix
 
 
 class MieScatt(Scatterer):
@@ -66,11 +67,11 @@ class MieScatt(Scatterer):
         # Here I apply the dimension and convention conversion factor (-j/k)
         # in order to compare to what Mishenko T-Matrix is giving
         # TODO It might be beneficial if I document the convention somewhere
-        self.S1 = -1.j*np.interp(self.scatt_angle, theta, vecS1)/self.wavenumber
-        self.S2 = -1.j*np.interp(self.scatt_angle, theta, vecS2)/self.wavenumber
-        self.S3 = 0.0 + 0.0j
-        self.S4 = 0.0 + 0.0j
-        self.S = np.array([[self.S2, self.S3], [self.S4, self.S1]])
+        S1 = 1.j*np.interp(self.scatt_angle, theta, vecS1)/self.wavenumber # 1j* is equivalent to (/-1j)
+        S2 = 1.j*np.interp(self.scatt_angle, theta, vecS2)/self.wavenumber
+        S34 = 0.0 + 0.0j
+        Ra, Rb = rotation_matrix(self.rot_alpha, self.rot_beta)
+        self.S = Rb@np.array([[S2, S34], [S34, S1]])@Ra.T # Ra should be orthogonal => Ra^-1 = Ra^T
 
         self.Cext = Q[0]*self.geometric_cross_section
         self.Csca = Q[1]*self.geometric_cross_section
