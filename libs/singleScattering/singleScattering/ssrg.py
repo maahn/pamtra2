@@ -28,7 +28,7 @@ from scipy import interp
 from scipy.integrate import quad
 
 from .scatterer import Scatterer
-from .scattering_utilities import rotation_matrix
+from .scattering_utilities import transformation_matrices
 
 from pamtra2.libs.refractiveIndex import utilities as ref_utils
 
@@ -151,8 +151,25 @@ class SsrgScatt(Scatterer):
         S1 = 3.*self.wavenumber**2*self.K*self.volume*np.sqrt(phi_ssrg)/(4.*np.pi)
         S2 = S1*np.cos(self.scatt_angle)
         S34 = 0.0 + 0.0j
-        Ra, Rb = rotation_matrix(self.rot_alpha, self.rot_beta)
-        self.S = Rb@np.array([[S2, S34], [S34, S1]])@Ra.T # Ra should be orthogonal => Ra^-1 = Ra^T
+        Ra, Rb = transformation_matrices(self.rot_alpha, self.rot_beta, self.phi_inc, self.phi_sca)
+        if np.isnan(self.rot_alpha):
+            if (self.theta_inc == self.theta_sca): # polar
+                Ra = np.array([[np.cos(self.phi_inc), -np.sin(self.phi_inc)],
+                              [-np.sin(self.phi_inc),-np.cos(self.phi_inc)]])
+                Rb = np.array([[np.cos(self.phi_sca), -np.sin(self.phi_sca)],
+                              [-np.sin(self.phi_sca),-np.cos(self.phi_sca)]])
+            if ((self.phi_sca == self.phi_inc)): # forward???
+                Ra = np.array([[1, 0],[0, -1]])
+                Rb = Ra
+            if (self.theta_inc == 0.0):
+                diff = self.phi_sca - self.phi_inc
+                Ra = np.array([[np.cos(diff),np.sin(diff)],[np.sin(diff),-np.cos(diff)]])
+                Rb = np.array([[1, 0],[0, -1]])
+            if (self.theta_sca == 0.0):
+                diff = self.phi_inc - self.phi_sca
+                Ra = np.array([[1, 0],[0, -1]])
+                Rb = np.array([[np.cos(diff),np.sin(diff)],[np.sin(diff),-np.cos(diff)]])
+        self.S = Rb@np.array([[S2, S34], [S34, S1]])@Ra.T
         
         # so far in our convention the imaginary part of dielectric properties is
         # positive for absorbing materials, thus you don't find -K.imag

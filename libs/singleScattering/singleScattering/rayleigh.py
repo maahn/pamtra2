@@ -27,7 +27,7 @@ import numpy as np
 from pamtra2.libs.refractiveIndex import utilities as ref_utils
 
 from .scatterer import Scatterer
-from .scattering_utilities import rotation_matrix
+from .scattering_utilities import transformation_matrices
 
 
 class RayleighScatt(Scatterer):
@@ -71,5 +71,5 @@ class RayleighScatt(Scatterer):
         S1 = self.wavenumber**2*self.K*(self.diameter*0.5)**3
         S2 = S1*np.cos(self.scatt_angle)
         S34 = 0.0 + 0.0j
-        Ra, Rb = rotation_matrix(self.rot_alpha, self.rot_beta)
-        self.S = Rb@np.array([[S2, S34], [S34, S1]])@Ra.T # Ra should be orthogonal => Ra^-1 = Ra^T
+        Ra, Rb = transformation_matrices(self.rot_alpha, self.rot_beta, self.phi_inc, self.phi_sca)
+        self.S = Rb@np.array([[S2, S34], [S34, S1]])@Ra.T

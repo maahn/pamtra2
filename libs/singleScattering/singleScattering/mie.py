@@ -28,8 +28,7 @@ from pamtra2.libs.refractiveIndex import utilities as ref_utils
 
 from . import cMie
 from .scatterer import Scatterer
-from .scattering_utilities import rotation_matrix
-
+from .scattering_utilities import transformation_matrices
 
 class MieScatt(Scatterer):
     """
@@ -70,8 +69,8 @@ class MieScatt(Scatterer):
         S1 = 1.j*np.interp(self.scatt_angle, theta, vecS1)/self.wavenumber # 1j* is equivalent to (/-1j)
         S2 = 1.j*np.interp(self.scatt_angle, theta, vecS2)/self.wavenumber
         S34 = 0.0 + 0.0j
-        Ra, Rb = rotation_matrix(self.rot_alpha, self.rot_beta)
-        self.S = Rb@np.array([[S2, S34], [S34, S1]])@Ra.T # Ra should be orthogonal => Ra^-1 = Ra^T
+        Ra, Rb = transformation_matrices(self.rot_alpha, self.rot_beta, self.phi_inc, self.phi_sca)
+        self.S = Rb@np.array([[S2, S34], [S34, S1]])@Ra.T
 
         self.Cext = Q[0]*self.geometric_cross_section
         self.Csca = Q[1]*self.geometric_cross_section

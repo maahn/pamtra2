@@ -141,35 +141,72 @@ def scattering_angle(theta_inc, theta_sca, phi_inc, phi_sca):
 
     """
     sin_inc = np.sin(theta_inc)
+    cos_inc = np.cos(theta_inc)
     sin_sca = np.sin(theta_sca)
-    phidiff = abs(phi_sca - phi_inc)
-    if (phidiff > np.pi):
-        phidiff = 2.*np.pi-phidiff # we need phidiff [0,pi]
-    phidiff = abs(phi_sca - phi_inc)
-    acos_th = sin_inc * sin_sca * np.cos(phidiff) \
-              + np.cos(theta_inc) * np.cos(theta_sca)
-    th = np.arccos(acos_th)
-    factor = np.sin(phidiff)/np.sin(th)
-    alpha = np.arcsin(sin_sca*factor)
-    beta = np.arcsin(sin_inc*factor)
-    if np.isnan(alpha):
-        alpha = 0.0
-    if np.isnan(beta):
-        beta = 0.0
+    cos_sca = np.cos(theta_sca)
+    phidiff = min(abs(phi_sca - phi_inc),abs(phi_inc - phi_sca))
+    cos_th = sin_inc * sin_sca * np.cos(phidiff) + cos_inc * cos_sca
+    th = np.arccos(cos_th)
+    sin_th = np.sin(th)
+    alpha = np.arccos((cos_sca-cos_th*cos_inc)/(sin_th*sin_inc))
+    beta = np.arccos((cos_inc-cos_th*cos_sca)/(sin_th*sin_sca))
+    #if np.isnan(alpha):
+    #    alpha = 0.0
+    #if np.isnan(beta):
+    #    beta = 0.0
     return th, alpha, beta
 
 
-def rotation_matrix(alpha, beta):
+def module_angle(angle):
+    """
+    This function takes any angle (even negative) and unfolds it returning the
+    corresponding angle within [0, 2pi]
+    """
+    
+    return angle - 2.*np.pi*(angle//(2.*np.pi))
+
+
+def polar2cartesian(r=1.0, t=0.0, p=0.0):
+    """
+    Takes the three polar coordinates radius, theta(zenith), phi(azimuth) and
+    returns the tern of cartesian coordinates x, y, z
+    """
+
+    return r*np.sin(t)*np.cos(p), r*np.sin(t)*np.sin(p), r*np.cos(t)
+
+
+def cartesian2polar(x, y, z):
+    """
+    Takes the tern of cartesian coordinates x, y, z and returns the  three
+    polar coordinates radius, theta(zenith), phi(azimuth)
+    """
+    r = np.linalg.norm([x, y, z])
+    t = np.arccos(z/r)
+    p = np.arctan2(y, x)
+    p = module_angle(p)
+
+    return r, t, p
+
+
+def rotation2(ang):
+    """
+    Returns the classic 2x2 counterclockwise rotation matrix
+    """
+    cosa = np.cos(ang)
+    sina = np.sin(ang)
+    return np.array([[cosa, -sina], [sina, cosa]])
+
+
+def transformation_matrices(alpha, beta, phi_inc, phi_sca):
     """ This function returns  two 2x2 rotation matrix specified by the
     arguments alpha and beta, it should comes handy when you have to transform
     amplitude matrices from the Bohren and Huffman (parallel, perpendicular)
     basis to the Mishchenko (theta, phi) convention
-    Rb is actually an improper rotation (rotoreflection)
+    Ra Rb are actually improper rotations (rotoreflection)
 
     """
-    sina = np.sin(alpha)
-    cosa = np.cos(alpha)
-    sinb = np.sin(beta)
-    cosb = np.cos(beta)
-
-    return np.array([[cosa, -sina], [-sina, -cosa]]), np.array([[-cosb, sinb], [-sinb, -cosb]])
+    sig = np.sign(np.sin(phi_inc-phi_sca))
+    #flip = np.array([[-1, 0],[0, 1]]) # apparently it works without flipping
+    Ra = rotation2(sig*alpha)
+    Rb = rotation2(sig*(np.pi-beta))
+    return Ra, Rb
