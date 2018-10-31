@@ -103,7 +103,14 @@ def amplitude2mueller(ampl):
 
     return scattering_matrix(mueller)
 
-size_parameter = lambda radius, wavelength: 2.0 * np.pi * radius / wavelength
+
+def size_parameter(radius, wavelength):
+    """
+    Computes the classic size parameter of the scatterer
+    given the radius and the wavelength
+    For nonspherical targets the radius equals size/2
+    """
+    return 2.0 * np.pi * radius / wavelength
 
 
 class spheroid(object):

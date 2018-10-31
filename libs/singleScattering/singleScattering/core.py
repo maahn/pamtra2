@@ -109,7 +109,7 @@ def scattering(diameters,
         scatt = rayleigh.RayleighScatt(diameters, frequencies, wavelengths,
                                        refractive_indices,
                                        dielectric_permittivities, **kwargs)
-    elif (model == 'Mie'):
+    elif (model == 'Mie') or (model == 'MIE'):
         scatt = mie.MieScatt(diameters, frequencies, wavelengths,
                              refractive_indices, dielectric_permittivities,
                              **kwargs)

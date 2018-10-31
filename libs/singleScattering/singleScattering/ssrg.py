@@ -137,7 +137,6 @@ class SsrgScatt(Scatterer):
         self.xe = self.wavenumber*Deff # effective size parameter
 
         # First part of Eq. 1 in Hogan et al. (2017) (except phi(x))
-        # and factor pi**2/4 from eq.4 for speedup
         self.prefactor = 9.*self.wavenumber**4.*self.K2*self.volume**2./(4.*np.pi)
         phi_ssrg = shape_factor(self.xe, self.kappa, self.beta, self.gamma,
                                 self.zeta1, self.scatt_angle)
@@ -169,6 +168,7 @@ class SsrgScatt(Scatterer):
                 diff = self.phi_inc - self.phi_sca
                 Ra = np.array([[1, 0],[0, -1]])
                 Rb = np.array([[np.cos(diff),np.sin(diff)],[np.sin(diff),-np.cos(diff)]])
+        print('ORIGINAL\n\n',np.array([[S2, S34], [S34, S1]]))
         self.S = Rb@np.array([[S2, S34], [S34, S1]])@Ra.T
         
         # so far in our convention the imaginary part of dielectric properties is
