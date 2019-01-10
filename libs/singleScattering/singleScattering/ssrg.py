@@ -38,15 +38,16 @@ from os import path
 # TODO: this could be an object that provides a more descriptive information
 # about the underlying models
 ssrg_lib = {}
-## Parameters derived for bullet-rosettes Hogan and Westbrook (2014)
-HW14 = {'kappa':0.19, 'beta':0.23, 'gamma':5./3., 'zeta1':1.}
+# Parameters derived for bullet-rosettes Hogan and Westbrook (2014)
+HW14 = {'kappa': 0.19, 'beta': 0.23, 'gamma': 5./3., 'zeta1': 1.}
 ssrg_lib['HW14'] = HW14
-## Mean parameters derived for Leinonen-Szyrmer 2015 unrimed snow aggregates
-L15_0={'kappa':0.189177, 'beta':3.06939, 'gamma':2.53192,'zeta1':0.0709529}
+# Mean parameters derived for Leinonen-Szyrmer 2015 unrimed snow aggregates
+L15_0 = {'kappa': 0.189177, 'beta': 3.06939,
+         'gamma': 2.53192, 'zeta1': 0.0709529}
 ssrg_lib['LS15A0.0'] = L15_0
-## Mean parameters for Ori et al. 2014 unrimed assemblages of ice columns
-Oea14 = {'kappa':0.190031, 'beta':0.030681461,
-         'gamma':1.3002167, 'zeta1':0.29466184}
+# Mean parameters for Ori et al. 2014 unrimed assemblages of ice columns
+Oea14 = {'kappa': 0.190031, 'beta': 0.030681461,
+         'gamma': 1.3002167, 'zeta1': 0.29466184}
 ssrg_lib['Oea14'] = Oea14
 
 # Size dependent parameters for Leinonen and Szyrmer (2015) rimed aggregates
@@ -56,6 +57,8 @@ ssrg_lib['Oea14'] = Oea14
 module_path = path.split(path.abspath(__file__))[0]
 leinonen_table = pd.read_csv(module_path + '/ssrg_coeffs_jussiagg_simult.dat',
                              delim_whitespace=True)
+
+
 def leinonen_coeff(D, elwp=0.0):
     table = leinonen_table[leinonen_table.ELWP == elwp].set_index('D')
     beta = interp(D, table.index.values, table.beta_z)
@@ -65,7 +68,9 @@ def leinonen_coeff(D, elwp=0.0):
     alpha_eff = interp(D, table.index.values, table.alpha_eff)
     return beta, -gamma, kappa, zeta1, alpha_eff
 
+
 ssrg_lib_idx = list(ssrg_lib.keys()) + ['leinonen_table']
+
 
 class SsrgScatt(Scatterer):
     """
@@ -94,39 +99,41 @@ class SsrgScatt(Scatterer):
     Todo:
     Allow for K dielectric factor to be model dependent
     """
+
     def __init__(self,
-                 diameter = 1.0e-3,
-                 frequency = None,
-                 wavelength = None,
-                 refractive_index = None,
-                 dielectric_permittivity = None,
-                 theta_inc = 0.0,
-                 phi_inc = 0.0,
-                 theta_sca = 0.0,
-                 phi_sca = 0.0,
-                 aspect_ratio = 1.0,
-                 ssrg_parameters = 'HW14',
-                 volume = None
+                 diameter=1.0e-3,
+                 frequency=None,
+                 wavelength=None,
+                 refractive_index=None,
+                 dielectric_permittivity=None,
+                 theta_inc=0.0,
+                 phi_inc=0.0,
+                 theta_sca=0.0,
+                 phi_sca=0.0,
+                 aspect_ratio=1.0,
+                 ssrg_parameters='HW14',
+                 volume=None
                  ):
-        
+
         Scatterer.__init__(self,
-                           diameter = diameter,
-                           frequency = frequency,
+                           diameter=diameter,
+                           frequency=frequency,
                            refractive_index=refractive_index,
                            dielectric_permittivity=dielectric_permittivity,
-                           theta_inc = theta_inc,
-                           phi_inc = phi_inc,
-                           theta_sca = theta_sca,
-                           phi_sca = phi_sca)
-        
+                           theta_inc=theta_inc,
+                           phi_inc=phi_inc,
+                           theta_sca=theta_sca,
+                           phi_sca=phi_sca)
+
         if volume is None:
-            raise AttributeError('you need to specify the volume occupied by the scattering material')
+            raise AttributeError(
+                'you need to specify the volume occupied by the scattering material')
         else:
             self.volume = volume
 
         self.geometric_cross_section = np.pi*self.diameter*self.diameter*0.25
         self.K = ref_utils.K(self.dielectric_permittivity)
-        
+
         self.aspect_ratio = aspect_ratio
         self._set_ssrg_par(ssrg_parameters)
 
@@ -134,43 +141,48 @@ class SsrgScatt(Scatterer):
                                       self.aspect_ratio,
                                       self.theta_inc)
 
-        self.xe = self.wavenumber*Deff # effective size parameter
+        self.xe = self.wavenumber*Deff  # effective size parameter
 
         # First part of Eq. 1 in Hogan et al. (2017) (except phi(x))
-        self.prefactor = 9.*self.wavenumber**4.*self.K2*self.volume**2./(4.*np.pi)
+        self.prefactor = 9.*self.wavenumber**4. * \
+            self.K2*self.volume**2./(4.*np.pi)
         phi_ssrg = shape_factor(self.xe, self.kappa, self.beta, self.gamma,
                                 self.zeta1, self.scatt_angle)
 
-        # Here I am not sure of the term S2. For comparison with Rayleigh 
+        # Here I am not sure of the term S2. For comparison with Rayleigh
         # formula it should be the option with D/2, but since ssrg works with
         # non-spherical particles it is probably the formulation with scatterer
         # volume by comparison with other scattering quantities in ssrg
         # NOTE: This should be not azimuthally averaged!!!
         #self.S2 = self.wavenumber**2*self.K*(self.diameter*0.5)**3*np.sqrt(phi_ssrg)
-        S1 = 3.*self.wavenumber**2*self.K*self.volume*np.sqrt(phi_ssrg)/(4.*np.pi)
+        S1 = 3.*self.wavenumber**2*self.K * \
+            self.volume*np.sqrt(phi_ssrg)/(4.*np.pi)
         S2 = S1*np.cos(self.scatt_angle)
         S34 = 0.0 + 0.0j
-        Ra, Rb = transformation_matrices(self.rot_alpha, self.rot_beta, self.phi_inc, self.phi_sca)
+        Ra, Rb = transformation_matrices(
+            self.rot_alpha, self.rot_beta, self.phi_inc, self.phi_sca)
         if np.isnan(self.rot_alpha):
-            if (self.theta_inc == self.theta_sca): # polar
+            if (self.theta_inc == self.theta_sca):  # polar
                 Ra = np.array([[np.cos(self.phi_inc), -np.sin(self.phi_inc)],
-                              [-np.sin(self.phi_inc),-np.cos(self.phi_inc)]])
+                               [-np.sin(self.phi_inc), -np.cos(self.phi_inc)]])
                 Rb = np.array([[np.cos(self.phi_sca), -np.sin(self.phi_sca)],
-                              [-np.sin(self.phi_sca),-np.cos(self.phi_sca)]])
-            if ((self.phi_sca == self.phi_inc)): # forward???
-                Ra = np.array([[1, 0],[0, -1]])
+                               [-np.sin(self.phi_sca), -np.cos(self.phi_sca)]])
+            if ((self.phi_sca == self.phi_inc)):  # forward???
+                Ra = np.array([[1, 0], [0, -1]])
                 Rb = Ra
             if (self.theta_inc == 0.0):
                 diff = self.phi_sca - self.phi_inc
-                Ra = np.array([[np.cos(diff),np.sin(diff)],[np.sin(diff),-np.cos(diff)]])
-                Rb = np.array([[1, 0],[0, -1]])
+                Ra = np.array([[np.cos(diff), np.sin(diff)],
+                               [np.sin(diff), -np.cos(diff)]])
+                Rb = np.array([[1, 0], [0, -1]])
             if (self.theta_sca == 0.0):
                 diff = self.phi_inc - self.phi_sca
-                Ra = np.array([[1, 0],[0, -1]])
-                Rb = np.array([[np.cos(diff),np.sin(diff)],[np.sin(diff),-np.cos(diff)]])
-        print('ORIGINAL\n\n',np.array([[S2, S34], [S34, S1]]))
+                Ra = np.array([[1, 0], [0, -1]])
+                Rb = np.array([[np.cos(diff), np.sin(diff)],
+                               [np.sin(diff), -np.cos(diff)]])
+        print('ORIGINAL\n\n', np.array([[S2, S34], [S34, S1]]))
         self.S = Rb@np.array([[S2, S34], [S34, S1]])@Ra.T
-        
+
         # so far in our convention the imaginary part of dielectric properties is
         # positive for absorbing materials, thus you don't find -K.imag
         self.Cabs = 3.*self.wavenumber*self.volume*self.K.imag
@@ -198,7 +210,7 @@ class SsrgScatt(Scatterer):
             model (str) to pick from the library or filename
 
         """
-        if isinstance(par,dict):
+        if isinstance(par, dict):
             try:
                 self.kappa = par['kappa']
                 self.beta = par['beta']
@@ -224,7 +236,6 @@ class SsrgScatt(Scatterer):
                 except:
                     raise AttributeError('Invalid ssrg parameters')
 
-
     def scattering_xsect(self):
         """
         Calculates the scattering cross section by integrating over the all
@@ -232,11 +243,11 @@ class SsrgScatt(Scatterer):
         Note that the scattering phase function is already azimuthally
         averaged, so we need to integrate only over theta [0, pi]
         """
-                
+
         def diff_xsect(theta):
             """
             Differential scattering cross section multiplied by sin(theta)
-            
+
             Parameters
             ----------
             theta : scalar-double
@@ -269,7 +280,7 @@ def shape_factor(x, kappa, beta, gamma, zeta1, theta):
     """
     Compute the shape factor for the current state of the scatterer
     """
-    
+
     xang = x*np.sin(theta*0.5)
     shape_factor = first(xang, kappa) + summation(xang, beta, gamma, zeta1)
     return np.pi**2*0.25*shape_factor
@@ -280,10 +291,10 @@ def first(x, kappa):
     Compute the first term in the braces in Eq. 4 of Hogan (2017)
     scattering by the mean ice distribution in the particles' population.
     """
-    scale_term = np.cos(x)*((1.+kappa/3.)*(1./(2.*x+np.pi)-1./(2.*x-np.pi))-
+    scale_term = np.cos(x)*((1.+kappa/3.)*(1./(2.*x+np.pi)-1./(2.*x-np.pi)) -
                             kappa*(1./(2.*x+3.*np.pi)-1./(2.*x-3.*np.pi)))
     return scale_term**2.
-    
+
 
 def summation(x, beta, gamma, zeta1):
     """
@@ -295,12 +306,12 @@ def summation(x, beta, gamma, zeta1):
 
     # Compute a "good" stopping point
     jmax = int(5.*x/np.pi + 1.)
-    
+
     # Compute first term separately for inclusion of zeta1
     summ = zeta1*2.**(-1.*gamma)*((0.5/(x+np.pi))**2.+(0.5/(x-np.pi))**2.)
-    
-    #Compute the rest
-    for j in range(2,jmax):
+
+    # Compute the rest
+    for j in range(2, jmax):
         term_a = (2.*j)**(-1.*gamma)
         term_b = (0.5/(x+np.pi*j))**2.+(0.5/(x-np.pi*j))**2.
         summ = summ + term_a*term_b
@@ -336,7 +347,6 @@ def compute_effective_size(size=None, ar=None, angle=None):
     return 2.*np.sqrt(size_eff)
 
 
-
 ################## OLD CODE I STILL NEED #######################################
 
 def leinonen_coeff(D, elwp):
@@ -349,15 +359,21 @@ def leinonen_coeff(D, elwp):
     alpha_eff = interp(D, table.index.values, table.alpha_eff)
     return beta, gamma, kappa, zeta1, alpha_eff
 
+
 c = 2.99792458e8
 
 # INPUT
 diameters = np.linspace(0.001, 0.025, 50)
 
-brandes = lambda D: 7.9e-5*D**2.1
-smalles = lambda D: 4.1e-5*D**2.5
+
+def brandes(D): return 7.9e-5*D**2.1
+
+
+def smalles(D): return 4.1e-5*D**2.5
 
 # SI units
+
+
 def backscattering(frequency, diameters, n, table=None, ELWP=None, mass=None):
     wavelength = c/frequency
     if mass is None:
