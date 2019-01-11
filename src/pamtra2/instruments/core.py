@@ -60,6 +60,9 @@ class instrument(object):
         if self.parent is None:
             raise AttributeError('set .parent attribute to pamtra2 object')
 
+        if self.frequencies == 'all':
+            self.frequencies = self.parent.profile.frequency
+
         self.profile = self.parent.profile.sel(frequency=self.frequencies)
         self.hydrometeorProfiles = helpers.AttrDict()
         for hydro in self.parent.hydrometeors.keys():

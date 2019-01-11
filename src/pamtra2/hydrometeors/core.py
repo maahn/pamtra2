@@ -306,11 +306,11 @@ class hydrometeor(object):
         ]
 
         for key in varsGreaterZero:
-            if key in self.profile[key]:
+            if key in self.profile.keys():
                 assert (self.profile[key] > 0).all()
 
         for key in varsGreaterEqualZero:
-            if key in self.profile[key]:
+            if key in self.profile.keys():
                 assert (self.profile[key] >= 0).all()
 
         return self.profile

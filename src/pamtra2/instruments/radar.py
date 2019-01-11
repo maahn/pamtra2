@@ -34,9 +34,6 @@ class simpleRadar(microwaveInstrument):
 
         self._link_parent()
 
-        if self.frequencies == 'all':
-            self.frequencies = self.parent.profile.frequency
-
         self._calcPIA()
 
         if self.parent.nHydrometeors > 0:
@@ -187,9 +184,6 @@ class dopplerRadarPamtra(simpleRadar):
                           'settings.)')
 
         self._link_parent()
-
-        if self.frequencies == 'all':
-            self.frequencies = self.parent.profile.frequency
 
         for name in self.hydrometeorProfiles.keys():
             if len(self.hydrometeorProfiles[name].sizeBin) <= 1:
