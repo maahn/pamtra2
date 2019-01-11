@@ -41,25 +41,30 @@ class instrument(object):
 
     def __init__(
         self,
-        parent,
+        parent=None,
         frequencies='all',
+        name='instrument',
         **settings
     ):
-        if frequencies == 'all':
-            frequencies = parent.profile.frequency
-        elif not hasattr(frequencies, '__iter__'):
+        if not hasattr(frequencies, '__iter__'):
             frequencies = [frequencies]
         self.frequencies = frequencies
         self.settings = settings
         self.parent = parent
-
-        self.profile = parent.profile.sel(frequency=frequencies)
-        self.hydrometeorProfiles = helpers.AttrDict()
-        for hydro in parent.hydrometeors.keys():
-            self.hydrometeorProfiles[hydro] = parent.hydrometeors[
-                hydro].profile.sel(frequency=frequencies)
+        self.name = name
 
         self.results = xr.Dataset()
+
+    def _link_parent(self):
+
+        if self.parent is None:
+            raise AttributeError('set .parent attribute to pamtra2 object')
+
+        self.profile = self.parent.profile.sel(frequency=self.frequencies)
+        self.hydrometeorProfiles = helpers.AttrDict()
+        for hydro in self.parent.hydrometeors.keys():
+            self.hydrometeorProfiles[hydro] = self.parent.hydrometeors[
+                hydro].profile.sel(frequency=self.frequencies)
 
     def to_netcdf(
         self,
@@ -98,13 +103,13 @@ class instrument(object):
 class microwaveInstrument(instrument):
     def __init__(
         self,
-        parent,
+        parent=None,
         frequencies='all',
         gaseousAttenuationModel='Rosenkranz98',
         **settings
     ):
         super().__init__(
-            parent,
+            parent=parent,
             frequencies=frequencies,
             gaseousAttenuationModel=gaseousAttenuationModel,
             **settings,

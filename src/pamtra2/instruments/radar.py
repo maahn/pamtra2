@@ -12,7 +12,8 @@ from .core import microwaveInstrument
 class simpleRadar(microwaveInstrument):
     def __init__(
         self,
-        parent,
+        name='simpleRadar',
+        parent=None,
         frequencies='all',
         radarK2=0.93,
         gaseousAttenuationModel='Rosenkranz98',
@@ -20,7 +21,8 @@ class simpleRadar(microwaveInstrument):
         **kwargs
     ):
         super().__init__(
-            parent,
+            name=name,
+            parent=parent,
             frequencies=frequencies,
             radarK2=radarK2,
             applyAttenuation=applyAttenuation,
@@ -29,6 +31,11 @@ class simpleRadar(microwaveInstrument):
         )
 
     def solve(self):
+
+        self._link_parent()
+
+        if self.frequencies == 'all':
+            self.frequencies = self.parent.profile.frequency
 
         self._calcPIA()
 
@@ -101,7 +108,8 @@ class dopplerRadarPamtra(simpleRadar):
 
     def __init__(
         self,
-        parent,
+        name='dopplerRadarPamtra',
+        parent=None,
         frequencies='all',
         radarMaxV=7.885,
         radarMinV=-7.885,
@@ -134,7 +142,8 @@ class dopplerRadarPamtra(simpleRadar):
     ):
 
         super().__init__(
-            parent,
+            name=name,
+            parent=parent,
             frequencies=frequencies,
             radarMaxV=radarMaxV,
             radarMinV=radarMinV,
@@ -166,14 +175,21 @@ class dopplerRadarPamtra(simpleRadar):
             gaseousAttenuationModel=gaseousAttenuationModel,
         )
 
-        if len(frequencies) > 1:
+
+
+    def solve(self):
+
+        if len(self.frequencies) > 1:
             warnings.warn('Note that the radar simulator '
                           'assumes that settings are the same for '
                           'all frequencies (due to '
                           'missing support for vectorized '
                           'settings.)')
 
-    def solve(self):
+        self._link_parent()
+
+        if self.frequencies == 'all':
+            self.frequencies = self.parent.profile.frequency
 
         for name in self.hydrometeorProfiles.keys():
             if len(self.hydrometeorProfiles[name].sizeBin) <= 1:

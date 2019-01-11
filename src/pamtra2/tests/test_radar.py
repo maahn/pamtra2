@@ -49,58 +49,60 @@ def create_simple_cloud_creator():
         pam2.addMissingVariables()
 
         if hydrometeor == 'cloud':
-            pam2.describeHydrometeor(
-                pamtra2.hydrometeors.softEllipsoidFixedDensity,
-                name='hydrometeor',  # or None, then str(index)
-                nBins=2,
-                sizeBounds=pamtra2.hydrometeors.size.linspaceBounds,
-                sizeCenter=pamtra2.hydrometeors.size.boundsToMid,
-                sizeBoundsWidth=pamtra2.hydrometeors.size.boundsWidth,
-                numberConcentration=pamtra2.hydrometeors.numberConcentration.\
-                monoDisperse,
-                aspectRatio=1.0,
-                mass=pamtra2.hydrometeors.mass.ellipsoid,
-                density=pamtra2.hydrometeors.density.water,
-                crossSectionArea=pamtra2.hydrometeors.crossSectionArea.sphere,
-                relativePermittivity=relativePermittivity,
-                scattering=scattering,
-                fallVelocity=pamtra2.hydrometeors.fallVelocity.\
-                khvorostyanov01_drops,
-                Dmin=size - .5e-10,
-                Dmax=size + .5e-10,
-                Ntot=xr.DataArray(Ntot, coords=[pam2.profile.layer]),
-                checkTemperatureForRelativePermittivity=False,
-                useFuncArgDefaults=False,
-                **kwargs,
+            pam2.addHydrometeor(
+                pamtra2.hydrometeors.softEllipsoidFixedDensity(
+                    name='hydrometeor',  # or None, then str(index)
+                    nBins=2,
+                    sizeBounds=pamtra2.hydrometeors.size.linspaceBounds,
+                    sizeCenter=pamtra2.hydrometeors.size.boundsToMid,
+                    sizeBoundsWidth=pamtra2.hydrometeors.size.boundsWidth,
+                    numberConcentration=pamtra2.hydrometeors.numberConcentration.\
+                    monoDisperse,
+                    aspectRatio=1.0,
+                    mass=pamtra2.hydrometeors.mass.ellipsoid,
+                    density=pamtra2.hydrometeors.density.water,
+                    crossSectionArea=pamtra2.hydrometeors.crossSectionArea.sphere,
+                    relativePermittivity=relativePermittivity,
+                    scattering=scattering,
+                    fallVelocity=pamtra2.hydrometeors.fallVelocity.\
+                    khvorostyanov01_drops,
+                    Dmin=size - .5e-10,
+                    Dmax=size + .5e-10,
+                    Ntot=xr.DataArray(Ntot, coords=[pam2.profile.layer]),
+                    checkTemperatureForRelativePermittivity=False,
+                    useFuncArgDefaults=False,
+                    **kwargs,
+                )
             )
         elif hydrometeor == 'snow':
-            pam2.describeHydrometeor(
-                pamtra2.hydrometeors.softEllipsoidMassSize,
-                name='hydrometeor',  # or None, then str(index)
-                nBins=10,
-                sizeBounds=pamtra2.hydrometeors.size.linspaceBounds,
-                sizeCenter=pamtra2.hydrometeors.size.boundsToMid,
-                sizeBoundsWidth=pamtra2.hydrometeors.size.boundsWidth,
-                numberConcentration=pamtra2.hydrometeors.numberConcentration.
-                exponentialFieldWC,
-                aspectRatio=1.0,
-                mass=pamtra2.hydrometeors.mass.powerLaw,
-                density=pamtra2.hydrometeors.density.softEllipsoid,
-                crossSectionArea=pamtra2.hydrometeors.crossSectionArea.sphere,
-                relativePermittivity=relativePermittivity,
-                scattering=scattering,
-                fallVelocity=pamtra2.hydrometeors.fallVelocity.
-                heymsfield10_particles,
-                Dmin=size,
-                Dmax=size + 0.01,
-                Ntot=xr.DataArray(Ntot, coords=[pam2.profile.layer]),
-                checkTemperatureForRelativePermittivity=False,
-                useFuncArgDefaults=False,
-                massSizeA=0.0121,
-                massSizeB=1.9,
-                minDensity=100,
-                maxDensity=pamtra2.constants.rhoIce,
-                **kwargs,
+            pam2.addHydrometeor(
+                pamtra2.hydrometeors.softEllipsoidMassSize(
+                    name='hydrometeor',  # or None, then str(index)
+                    nBins=10,
+                    sizeBounds=pamtra2.hydrometeors.size.linspaceBounds,
+                    sizeCenter=pamtra2.hydrometeors.size.boundsToMid,
+                    sizeBoundsWidth=pamtra2.hydrometeors.size.boundsWidth,
+                    numberConcentration=pamtra2.hydrometeors.numberConcentration.
+                    exponentialFieldWC,
+                    aspectRatio=1.0,
+                    mass=pamtra2.hydrometeors.mass.powerLaw,
+                    density=pamtra2.hydrometeors.density.softEllipsoid,
+                    crossSectionArea=pamtra2.hydrometeors.crossSectionArea.sphere,
+                    relativePermittivity=relativePermittivity,
+                    scattering=scattering,
+                    fallVelocity=pamtra2.hydrometeors.fallVelocity.
+                    heymsfield10_particles,
+                    Dmin=size,
+                    Dmax=size + 0.01,
+                    Ntot=xr.DataArray(Ntot, coords=[pam2.profile.layer]),
+                    checkTemperatureForRelativePermittivity=False,
+                    useFuncArgDefaults=False,
+                    massSizeA=0.0121,
+                    massSizeB=1.9,
+                    minDensity=100,
+                    maxDensity=pamtra2.constants.rhoIce,
+                    **kwargs,
+                )
             )
 
         # pam2.profile['pathIntegratedAtenuattion'] = xr.zeros_like(
@@ -112,20 +114,22 @@ def create_simple_cloud_creator():
 
         if instrument == 'simple':
             results = pam2.addInstrument(
-                pamtra2.instruments.radar.simpleRadar,
-                name='simple',
-                frequencies=3e9,
+                pamtra2.instruments.radar.simpleRadar(
+                    name='simple',
+                    frequencies=3e9,
+                )
             )
         elif instrument == 'spectral':
             results = pam2.addInstrument(
-                pamtra2.instruments.radar.dopplerRadarPamtra,
-                name='spectral',
-                frequencies=3e9,
-                momentsNPeaks=1,
-                seed=11,
-                radarAliasingNyquistInterv=0,
-                radarPNoise1000=radarPNoise1000,
-                verbosity=verbosity,
+                pamtra2.instruments.radar.dopplerRadarPamtra(
+                    name='spectral',
+                    frequencies=3e9,
+                    momentsNPeaks=1,
+                    seed=11,
+                    radarAliasingNyquistInterv=0,
+                    radarPNoise1000=radarPNoise1000,
+                    verbosity=verbosity,
+                )
             )
 
         if dask:

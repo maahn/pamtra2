@@ -77,7 +77,7 @@ class hydrometeor(object):
 
     def __init__(
         self,
-        parent,
+        parent=None,
         name=None,
         discreteProperties=None,
         calculationOrder=None,
@@ -91,9 +91,9 @@ class hydrometeor(object):
         self.useFuncArgDefaults = useFuncArgDefaults
         self.description = kwargs
         self.name = name
-        self.index = np.where(parent.profile.hydrometeor.values == name)[0][0]
+        # self.index = np.where(parent.profile.hydrometeor.values == name)[0][0]
         self._parentFull = parent
-        self.coords = parent.coords
+        # self.coords = parent.coords
         self.verbosity = verbosity
 
         if discreteProperties is None:
@@ -221,6 +221,9 @@ class hydrometeor(object):
         discreteProperties
             xr.Dataset with results
         """
+
+        if self._parentFull is None:
+            raise AttributeError('set .parent attribute to pamtra2 object')
 
         if self.calculationOrder is None:
             self.calculationOrder = DEFAULT_CALCULATION_ORDER()

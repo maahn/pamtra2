@@ -360,11 +360,10 @@ class pamtra2(object):
         """ """
         return len(self.profile.layer)
 
-    def describeHydrometeor(
+    def addHydrometeor(
         self,
         hydrometeorClass,
-        solve=True,
-        **kwargs
+        solve=True
     ):
         """
         Add hydrometeor properties for one hydrometeor. Hydrometeor is added
@@ -373,57 +372,50 @@ class pamtra2(object):
         Parameters
         ----------
         hydrometeorClass :
-            hydrometeor class
-        **kwargs : dict
-            Arguments handed over to hydrometeorClass to initialize class
+            initialized hydrometeor class
+        solve : bool, optional
+            Solve hydrometeor description (default true)
 
         Returns
         -------
         hydrometeorClass :
-            Evaluated hydrometeor class
+            linked hydrometeor class
         """
 
-        name = kwargs['name']
-        self.hydrometeors[name] = hydrometeorClass(
-            self,
-            **kwargs
-        )
-
+        name = hydrometeorClass.name
+        self.hydrometeors[name] = hydrometeorClass
+        # link parent object with hydrometeor
+        self.hydrometeors[name]._parentFull = self
         if solve:
             self.hydrometeors[name].solve()
 
         return self.hydrometeors[name]
 
+
     def addInstrument(
         self,
         instrumentClass,
-        name=None,
-        frequencies=[],
-        solve=True,
-        **kwargs
+        solve=True
     ):
         """
 
         Parameters
         ----------
-        name :
-
-        frequencies :
-             (Default value = [])
+        instrumentClass :
+            initialized instrument class
+        solve : bool, optional
+            Solve instrument description (default true)
 
         Returns
         -------
 
         """
 
-        if not hasattr(frequencies, '__iter__'):
-            frequencies = [frequencies]
+        name = instrumentClass.name
+        self.instruments[name] = instrumentClass
 
-        self.instruments[name] = instrumentClass(
-            self,
-            frequencies=frequencies,
-            **kwargs
-        )
+        # link parent object with instruments
+        self.instruments[name].parent = self
 
         if solve:
             self.instruments[name].solve()
