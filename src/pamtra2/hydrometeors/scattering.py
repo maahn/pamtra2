@@ -14,13 +14,13 @@ def _scatteringWrapper(diameter,
                        ):
 
     if ((model == 'Rayleigh') or (model == 'Ray')):
-        scatt = singleScattering.Rayleigh.RayleighScatt(
+        scatt = singleScattering.rayleigh.RayleighScatt(
             diameter,
             wavelength=wavelength,
             dielectric_permittivity=relativePermittivity,
         )
     elif (model == 'Mie'):
-        scatt = singleScattering.Mie.MieScatt(
+        scatt = singleScattering.mie.MieScatt(
             diameter,
             wavelength=wavelength,
             dielectric_permittivity=relativePermittivity,
@@ -74,6 +74,7 @@ def Rayleigh(
         output_dtypes=[sizeCenter.dtype],
         output_sizes={'scatteringProperty': 4},
         dask='parallelized',
+        vectorize=True,
     )
 
     return scatteringProperty
