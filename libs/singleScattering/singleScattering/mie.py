@@ -69,11 +69,14 @@ class MieScatt(Scatterer):
         S1 = 1.j*np.interp(self.scatt_angle, theta, vecS1)/self.wavenumber # 1j* is equivalent to (/-1j)
         S2 = 1.j*np.interp(self.scatt_angle, theta, vecS2)/self.wavenumber
         S34 = 0.0 + 0.0j
-        Ra, Rb = transformation_matrices(self.rot_alpha, self.rot_beta, self.phi_inc, self.phi_sca)
-        self.S = Rb@np.array([[S2, S34], [S34, S1]])@Ra.T
+        Ra, Rb = transformation_matrices(
+            self.rot_alpha, self.rot_beta, self.phi_inc, self.phi_sca)
+        self.estimate_amplitude_matrix(S1, S2, S34, Ra, Rb)
 
         self.Cext = Q[0]*self.geometric_cross_section
         self.Csca = Q[1]*self.geometric_cross_section
         self.Cabs = Q[2]*self.geometric_cross_section
         self.Cbck = Q[3]*self.geometric_cross_section
+
+        self.squeeze_results()
 

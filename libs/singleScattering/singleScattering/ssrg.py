@@ -181,7 +181,7 @@ class SsrgScatt(Scatterer):
                 Rb = np.array([[np.cos(diff), np.sin(diff)],
                                [np.sin(diff), -np.cos(diff)]])
         print('ORIGINAL\n\n', np.array([[S2, S34], [S34, S1]]))
-        self.S = Rb@np.array([[S2, S34], [S34, S1]])@Ra.T
+        self.estimate_amplitude_matrix(S1, S2, S34, Ra, Rb)
 
         # so far in our convention the imaginary part of dielectric properties is
         # positive for absorbing materials, thus you don't find -K.imag
@@ -197,6 +197,8 @@ class SsrgScatt(Scatterer):
         self.Cbck = phase_function(self.prefactor, self.xe, self.kappa,
                                    self.beta, self.gamma, self.zeta1,
                                    theta=np.pi)
+
+        self.squeeze_results()
 
     def _set_ssrg_par(self, par):
         """

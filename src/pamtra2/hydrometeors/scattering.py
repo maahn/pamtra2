@@ -74,7 +74,6 @@ def Rayleigh(
         output_dtypes=[sizeCenter.dtype],
         output_sizes={'scatteringProperty': 4},
         dask='parallelized',
-        vectorize=True,
     )
 
     return scatteringProperty
