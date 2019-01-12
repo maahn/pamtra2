@@ -97,7 +97,7 @@ class TmatrixScatt(Scatterer):
         self.Cbck = self.backscatter_xsect()
         self.Cabs = self.Cext-self.Csca 
 
-        self.squeeze_results()
+        self.unravel_output()
 
     def _init_tmatrix(self):
         """

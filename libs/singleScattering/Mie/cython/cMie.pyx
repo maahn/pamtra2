@@ -30,7 +30,25 @@ ctypedef np.int32_t int_t
 ctypedef np.complex128_t complex_t
 
 
-def mie(double_t wavelength, double_t size, complex_t m, nangles=180):
+def mie(wavelength, size, m,  nangles=180):
+
+
+    nIterations = len(wavelength)
+
+    Q = np.zeros((nIterations, 4,), dtype=np.float64)
+    S1 = np.zeros((nIterations, nangles,), dtype=np.complex128)
+    S2 = np.zeros((nIterations, nangles,), dtype=np.complex128)
+
+    for ii in range(nIterations):
+        Q[ii], theta, S1[ii], S2[ii] = mie_one(
+            wavelength[ii],  size[ii],  m[ii], nangles=nangles
+            )
+
+    return Q, theta, S1, S2
+
+
+
+def mie_one(double_t wavelength, double_t size, complex_t m, nangles=180):
     """ This is a python high level interface to the C version Mie included in
     c_Mie external module.
 

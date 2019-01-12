@@ -48,7 +48,6 @@ def Mie(
         output_dtypes=[sizeCenter.dtype],
         output_sizes={'scatteringProperty': 4},
         dask='parallelized',
-        vectorize=True,  # mie code needs to accept vectors!
     )
 
     return scatteringProperty

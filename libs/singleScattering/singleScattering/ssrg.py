@@ -198,7 +198,7 @@ class SsrgScatt(Scatterer):
                                    self.beta, self.gamma, self.zeta1,
                                    theta=np.pi)
 
-        self.squeeze_results()
+        self.unravel_output()
 
     def _set_ssrg_par(self, par):
         """

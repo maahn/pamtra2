@@ -23,6 +23,7 @@ Mie spherical scatterer object and member functions
 import sys
 
 import numpy as np
+import scipy
 
 from pamtra2.libs.refractiveIndex import utilities as ref_utils
 
@@ -66,17 +67,21 @@ class MieScatt(Scatterer):
         # Here I apply the dimension and convention conversion factor (-j/k)
         # in order to compare to what Mishenko T-Matrix is giving
         # TODO It might be beneficial if I document the convention somewhere
-        S1 = 1.j*np.interp(self.scatt_angle, theta, vecS1)/self.wavenumber # 1j* is equivalent to (/-1j)
-        S2 = 1.j*np.interp(self.scatt_angle, theta, vecS2)/self.wavenumber
+        f1 = scipy.interpolate.interp1d(theta, vecS1)
+        f2 = scipy.interpolate.interp1d(theta, vecS2)
+
+        S1 = 1.j*f1(self.scatt_angle)/self.wavenumber # 1j* is equivalent to (/-1j)
+        S2 = 1.j*f2(self.scatt_angle)/self.wavenumber # 1j* is equivalent to (/-1j)
+
         S34 = 0.0 + 0.0j
         Ra, Rb = transformation_matrices(
             self.rot_alpha, self.rot_beta, self.phi_inc, self.phi_sca)
         self.estimate_amplitude_matrix(S1, S2, S34, Ra, Rb)
 
-        self.Cext = Q[0]*self.geometric_cross_section
-        self.Csca = Q[1]*self.geometric_cross_section
-        self.Cabs = Q[2]*self.geometric_cross_section
-        self.Cbck = Q[3]*self.geometric_cross_section
+        self.Cext = Q[...,0]*self.geometric_cross_section
+        self.Csca = Q[...,1]*self.geometric_cross_section
+        self.Cabs = Q[...,2]*self.geometric_cross_section
+        self.Cbck = Q[...,3]*self.geometric_cross_section
 
-        self.squeeze_results()
+        self.unravel_output()
 

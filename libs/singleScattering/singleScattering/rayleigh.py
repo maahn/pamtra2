@@ -76,4 +76,4 @@ class RayleighScatt(Scatterer):
 
         self.estimate_amplitude_matrix(S1, S2, S34, Ra, Rb)
 
-        self.squeeze_results()
+        self.unravel_output()
