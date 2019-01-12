@@ -7,11 +7,11 @@ from ..libs import singleScattering
 # required because apply_ufunc is picky about args and kwargs...
 
 
-def _scatteringWrapper(diameter,
-                       wavelength,
-                       relativePermittivity,
-                       model='Rayleigh',
-                       ):
+def _MieRayleighWrapper(diameter,
+                        wavelength,
+                        relativePermittivity,
+                        model='Rayleigh',
+                        ):
 
     if ((model == 'Rayleigh') or (model == 'Ray')):
         scatt = singleScattering.rayleigh.RayleighScatt(
@@ -39,7 +39,7 @@ def Mie(
 
     kwargs = dict(model='Mie')
     scatteringProperty = xr.apply_ufunc(
-        _scatteringWrapper,
+        _MieRayleighWrapper,
         sizeCenter,
         wavelength,
         relativePermittivity,
@@ -64,7 +64,7 @@ def Rayleigh(
 
     kwargs = dict(model='Rayleigh')
     scatteringProperty = xr.apply_ufunc(
-        _scatteringWrapper,
+        _MieRayleighWrapper,
         sizeCenter,
         wavelength,
         relativePermittivity,

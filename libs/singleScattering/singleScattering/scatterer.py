@@ -112,29 +112,26 @@ class Scatterer(object):
                 scalar_input = True
         return var, scalar_input
 
-
-
     def ravel_input(self):
 
         # make sure input is flatt
 
-
         out = np.broadcast_arrays(
-            self.diameter, 
-            self.refractive_index, 
-            self.K2, 
-            self.dielectric_permittivity, 
-            self.frequency, 
+            self.diameter,
+            self.refractive_index,
+            self.K2,
+            self.dielectric_permittivity,
+            self.frequency,
             self.wavelength
-            )
+        )
         (
-            self.diameter, 
-            self.refractive_index, 
-            self.K2, 
-            self.dielectric_permittivity, 
-            self.frequency, 
+            self.diameter,
+            self.refractive_index,
+            self.K2,
+            self.dielectric_permittivity,
+            self.frequency,
             self.wavelength,
-            ) = out
+        ) = out
 
         self.shapeIn = self.diameter.shape
 
@@ -158,12 +155,11 @@ class Scatterer(object):
             self.Cext = np.squeeze(self.Cext)
             self.Cbck = np.squeeze(self.Cbck)
         else:
-            self.S = self.S.reshape(self.shapeIn+(2,2,))
+            self.S = self.S.reshape(self.shapeIn+(2, 2,))
             self.Cabs = self.Cabs.reshape(self.shapeIn)
             self.Csca = self.Csca.reshape(self.shapeIn)
             self.Cext = self.Cext.reshape(self.shapeIn)
             self.Cbck = self.Cbck.reshape(self.shapeIn)
-
 
     def set_electromagnetic_wave(self, wavelength, frequency):
         """ Convenience setter of the properties of the incoming electromagnetic
@@ -267,6 +263,7 @@ class Scatterer(object):
 
         # @ operator applies only to two last dimesnions.
         self.S = Rb@S1234@Ra.T
+
 
 class Liu_DB(Scatterer):
     def __init__(self):

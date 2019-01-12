@@ -83,23 +83,35 @@ def amplitude2mueller(ampl):
     S4_2 = (ampl.S4 * ampl.S4.conjugate()).real
     mueller[0, 0] = 0.5 * (S2_2 + S1_2 + S4_2 + S3_2)
     mueller[0, 1] = 0.5 * (S2_2 - S1_2 + S4_2 - S3_2)
-    mueller[0, 2] = -(ampl.S2 * ampl.S3.conjugate() + ampl.S1 * ampl.S4.conjugate()).real
-    mueller[0, 3] = -(ampl.S2 * ampl.S3.conjugate() - ampl.S1 * ampl.S4.conjugate()).imag
+    mueller[0, 2] = -(ampl.S2 * ampl.S3.conjugate() +
+                      ampl.S1 * ampl.S4.conjugate()).real
+    mueller[0, 3] = -(ampl.S2 * ampl.S3.conjugate() -
+                      ampl.S1 * ampl.S4.conjugate()).imag
 
     mueller[1, 0] = 0.5 * (S2_2 - S1_2 - S4_2 + S3_2)
     mueller[1, 1] = 0.5 * (S2_2 + S1_2 - S4_2 - S3_2)
-    mueller[1, 2] = -(ampl.S2 * ampl.S3.conjugate() - ampl.S1 * ampl.S4.conjugate()).real
-    mueller[1, 3] = -(ampl.S2 * ampl.S3.conjugate() + ampl.S1 * ampl.S4.conjugate()).imag
+    mueller[1, 2] = -(ampl.S2 * ampl.S3.conjugate() -
+                      ampl.S1 * ampl.S4.conjugate()).real
+    mueller[1, 3] = -(ampl.S2 * ampl.S3.conjugate() +
+                      ampl.S1 * ampl.S4.conjugate()).imag
 
-    mueller[2, 0] = -(ampl.S2 * ampl.S4.conjugate() + ampl.S1 * ampl.S3.conjugate()).real
-    mueller[2, 1] = -(ampl.S2 * ampl.S4.conjugate() - ampl.S1 * ampl.S3.conjugate()).real
-    mueller[2, 2] = (ampl.S2 * ampl.S1.conjugate() + ampl.S3 * ampl.S4.conjugate()).real
-    mueller[2, 3] = (ampl.S2 * ampl.S1.conjugate() + ampl.S4 * ampl.S3.conjugate()).imag
+    mueller[2, 0] = -(ampl.S2 * ampl.S4.conjugate() +
+                      ampl.S1 * ampl.S3.conjugate()).real
+    mueller[2, 1] = -(ampl.S2 * ampl.S4.conjugate() -
+                      ampl.S1 * ampl.S3.conjugate()).real
+    mueller[2, 2] = (ampl.S2 * ampl.S1.conjugate() +
+                     ampl.S3 * ampl.S4.conjugate()).real
+    mueller[2, 3] = (ampl.S2 * ampl.S1.conjugate() +
+                     ampl.S4 * ampl.S3.conjugate()).imag
 
-    mueller[3, 0] = -(ampl.S4 * ampl.S2.conjugate() + ampl.S1 * ampl.S3.conjugate()).imag
-    mueller[3, 1] = -(ampl.S4 * ampl.S2.conjugate() - ampl.S1 * ampl.S3.conjugate()).imag
-    mueller[3, 2] = (ampl.S1 * ampl.S2.conjugate() - ampl.S3 * ampl.S4.conjugate()).imag
-    mueller[3, 3] = (ampl.S1 * ampl.S2.conjugate() - ampl.S3 * ampl.S4.conjugate()).real
+    mueller[3, 0] = -(ampl.S4 * ampl.S2.conjugate() +
+                      ampl.S1 * ampl.S3.conjugate()).imag
+    mueller[3, 1] = -(ampl.S4 * ampl.S2.conjugate() -
+                      ampl.S1 * ampl.S3.conjugate()).imag
+    mueller[3, 2] = (ampl.S1 * ampl.S2.conjugate() -
+                     ampl.S3 * ampl.S4.conjugate()).imag
+    mueller[3, 3] = (ampl.S1 * ampl.S2.conjugate() -
+                     ampl.S3 * ampl.S4.conjugate()).real
 
     return scattering_matrix(mueller)
 
@@ -151,15 +163,15 @@ def scattering_angle(theta_inc, theta_sca, phi_inc, phi_sca):
     cos_inc = np.cos(theta_inc)
     sin_sca = np.sin(theta_sca)
     cos_sca = np.cos(theta_sca)
-    phidiff = min(abs(phi_sca - phi_inc),abs(phi_inc - phi_sca))
+    phidiff = min(abs(phi_sca - phi_inc), abs(phi_inc - phi_sca))
     cos_th = sin_inc * sin_sca * np.cos(phidiff) + cos_inc * cos_sca
     th = np.arccos(cos_th)
     sin_th = np.sin(th)
     alpha = np.arccos((cos_sca-cos_th*cos_inc)/(sin_th*sin_inc))
     beta = np.arccos((cos_inc-cos_th*cos_sca)/(sin_th*sin_sca))
-    #if np.isnan(alpha):
+    # if np.isnan(alpha):
     #    alpha = 0.0
-    #if np.isnan(beta):
+    # if np.isnan(beta):
     #    beta = 0.0
     return th, alpha, beta
 
@@ -169,7 +181,7 @@ def module_angle(angle):
     This function takes any angle (even negative) and unfolds it returning the
     corresponding angle within [0, 2pi]
     """
-    
+
     return angle - 2.*np.pi*(angle//(2.*np.pi))
 
 
@@ -213,7 +225,7 @@ def transformation_matrices(alpha, beta, phi_inc, phi_sca):
 
     """
     sig = np.sign(np.sin(phi_inc-phi_sca))
-    #flip = np.array([[-1, 0],[0, 1]]) # apparently it works without flipping
+    # flip = np.array([[-1, 0],[0, 1]]) # apparently it works without flipping
     Ra = rotation2(sig*alpha)
     Rb = rotation2(sig*(np.pi-beta))
     return Ra, Rb

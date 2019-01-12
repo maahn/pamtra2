@@ -41,6 +41,7 @@ SHAPE_CHEBYSHEV = 1
 deg2rad = np.pi/180.0
 rad2deg = 180.0/np.pi
 
+
 class TmatrixScatt(Scatterer):
     """
     This is class implement the Tmatrix model of scattering for a spheroid
@@ -54,30 +55,31 @@ class TmatrixScatt(Scatterer):
     scattering properties of Cylinders and Chebyshev particles. We might want
     to enable that.
     """
+
     def __init__(self,
-                 diameter = 1.0e-3,
-                 frequency = None,
-                 wavelength = None,
+                 diameter=1.0e-3,
+                 frequency=None,
+                 wavelength=None,
                  refractive_index=None,
                  dielectric_permittivity=None,
-                 theta_inc = 0.0,
-                 phi_inc = 0.0,
-                 theta_sca = 0.0,
-                 phi_sca = 0.0,
-                 alpha = 0.0, # we introduce alpha and beta euler angles
-                 beta = 0.0,  # for orientation
+                 theta_inc=0.0,
+                 phi_inc=0.0,
+                 theta_sca=0.0,
+                 phi_sca=0.0,
+                 alpha=0.0,  # we introduce alpha and beta euler angles
+                 beta=0.0,  # for orientation
                  aspect_ratio=1.0):
-        
+
         Scatterer.__init__(self,
-                           diameter = diameter,
-                           frequency = frequency,
+                           diameter=diameter,
+                           frequency=frequency,
                            refractive_index=refractive_index,
                            dielectric_permittivity=dielectric_permittivity,
-                           theta_inc = theta_inc,
-                           phi_inc = phi_inc,
-                           theta_sca = theta_sca,
-                           phi_sca = phi_sca)
-                                
+                           theta_inc=theta_inc,
+                           phi_inc=phi_inc,
+                           theta_sca=theta_sca,
+                           phi_sca=phi_sca)
+
         self.geometric_cross_section = np.pi*self.diameter*self.diameter*0.25
         self.K = ref_utils.K(self.dielectric_permittivity)
         self.radius = 0.5*self.diameter
@@ -88,14 +90,14 @@ class TmatrixScatt(Scatterer):
         self.ndgs = 2
         self.alpha = alpha
         self.beta = beta
-        
+
         self._init_tmatrix()
-        
+
         self.S, self.Z = self.get_SZ()
         self.Csca = self.scattering_xsect()
         self.Cext = self.extinction_xsect()
         self.Cbck = self.backscatter_xsect()
-        self.Cabs = self.Cext-self.Csca 
+        self.Cabs = self.Cext-self.Csca
 
         self.unravel_output()
 
@@ -118,14 +120,13 @@ class TmatrixScatt(Scatterer):
         else:
             radius_type = self.radius_type
             radius = self.radius
-        
+
         m = self.refractive_index
         self.nmax = fTMat.calctmat(radius, radius_type, self.wavelength,
                                    self.refractive_index.real,
                                    self.refractive_index.imag,
                                    self.aspect_ratio, self.shape, self.ddelt,
                                    self.ndgs)
-
 
     def get_SZ(self, alpha=None, beta=None):
         """
@@ -139,14 +140,13 @@ class TmatrixScatt(Scatterer):
             alpha = self.alpha
         if beta == None:
             beta = self.beta
-            
-        (S, Z) = fTMat.calcampl(self.nmax, self.wavelength, 
+
+        (S, Z) = fTMat.calcampl(self.nmax, self.wavelength,
                                 self.theta_inc*rad2deg, self.theta_sca*rad2deg,
                                 self.phi_inc*rad2deg, self.phi_sca*rad2deg,
                                 alpha, beta)
 
         return (S, Z)
-    
 
     def extinction_xsect(self):
         """
@@ -154,15 +154,14 @@ class TmatrixScatt(Scatterer):
         """
         old_theta = self.theta_sca
         old_phi = self.phi_sca
-        self.theta_sca = self.theta_inc # forward scattering must be set
+        self.theta_sca = self.theta_inc  # forward scattering must be set
         self.phi_sca = self.phi_inc
-        
+
         S, Z = self.get_SZ()
         self.theta_sca = old_theta
         self.phi_sca = old_phi
 
-        return 2.*self.wavelength*S[1,1].imag  # horizontal polarization
-                
+        return 2.*self.wavelength*S[1, 1].imag  # horizontal polarization
 
     def scattering_xsect(self):
         """
@@ -171,7 +170,7 @@ class TmatrixScatt(Scatterer):
         """
         old_theta = self.theta_sca
         old_phi = self.phi_sca
-        
+
         def diff_xsect(theta, phi):
             """
             Differential scattering X section multiplied by sin(theta) to be
@@ -180,17 +179,17 @@ class TmatrixScatt(Scatterer):
             self.theta_sca = theta
             self.phi_sca = phi
             S, Z = self.get_SZ()
-            I = Z[0, 0] - Z[0, 1] # horizontal polarization
+            I = Z[0, 0] - Z[0, 1]  # horizontal polarization
             return I * np.sin(theta)
 
         try:
-            xsect = dblquad(diff_xsect, 0.0, 2*np.pi, lambda x: 0.0, lambda x: np.pi)
+            xsect = dblquad(diff_xsect, 0.0, 2*np.pi,
+                            lambda x: 0.0, lambda x: np.pi)
         finally:
             self.theta_sca = old_theta
             self.phi_sca = old_phi
 
         return xsect[0]
-
 
     def backscatter_xsect(self):
         """
@@ -202,9 +201,9 @@ class TmatrixScatt(Scatterer):
         self.theta_sca = np.pi-self.theta_inc
         p1 = np.pi+self.phi_inc
         self.phi_sca = p1 - 2.*np.pi*(p1//(2.*np.pi))
-        S,Z = self.get_SZ()
-        Cbck = 2.*np.pi*(Z[0,0]-Z[0,1]-Z[1,0]+Z[1,1])  # horizontal polarization
+        S, Z = self.get_SZ()
+        Cbck = 2.*np.pi*(Z[0, 0]-Z[0, 1]-Z[1, 0]+Z[1, 1]
+                         )  # horizontal polarization
         self.theta_sca = old_theta
         self.phi_sca = old_phi
         return Cbck
-        

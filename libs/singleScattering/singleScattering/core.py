@@ -29,7 +29,7 @@ Example
     $ python
     >>> import singleScattering
     >>> singleScattering.scattering(frequency, size, refractive_index, **kwargs)
-	and returns the most important scattering quantities Cext, Csca, Cabs, Cbk
+    and returns the most important scattering quantities Cext, Csca, Cabs, Cbk
 
 Notes
 -----
@@ -48,14 +48,15 @@ import numpy as np
 # Implemented with basic functionality
 from . import mie, rayleigh, tmatrix, ssrg, scatterer, scattering_utilities
 
-models_list = ['Rayleigh (Ray)', 'Mie', 'Tmatrix (TMM)', 
-               'Self-Similar Rayleigh-Gans (SSRG)', 'LiuDB', 'LeinonenDB', 
+models_list = ['Rayleigh (Ray)', 'Mie', 'Tmatrix (TMM)',
+               'Self-Similar Rayleigh-Gans (SSRG)', 'LiuDB', 'LeinonenDB',
                'AydinDB', 'HongDB', 'ChalmersDB', 'OpenSSP (KwoDB)']
+
 
 def scattering(diameters,
                frequencies=None, wavelengths=None,
                refractive_indices=None, dielectric_permittivities=None,
-               orientation=None, # placeholder, look at what is implemented in Tmatrix
+               orientation=None,  # placeholder, look at what is implemented in Tmatrix
                model=None,
                **kwargs):
     """Scattering properties according to the passed scatterer parameters
@@ -79,7 +80,7 @@ def scattering(diameters,
         refractive_indices
     orientation : placeholder for orientation of the scatterer
     model : one of the model_list (might be substituted by the shortname in the parenthesis)
-    
+
     **kwargs : additional arguments to be passed to the requested model
 
     Returns
@@ -103,7 +104,8 @@ def scattering(diameters,
     """
 
     if (orientation is not None):
-        raise NotImplementedError("At the moment the library only computes non oriented properties")
+        raise NotImplementedError(
+            "At the moment the library only computes non oriented properties")
 
     if ((model == 'Rayleigh') or (model == 'Ray')):
         scatt = rayleigh.RayleighScatt(diameters, frequencies, wavelengths,
@@ -117,25 +119,25 @@ def scattering(diameters,
         scatt = tmatrix.TmatrixScatt(diameters, frequencies, wavelengths,
                                      refractive_indices,
                                      dielectric_permittivities, **kwargs)
-    elif ( (model == 'Self-Similar Rayleigh-Gans') or (model=='SSRG') ):
+    elif ((model == 'Self-Similar Rayleigh-Gans') or (model == 'SSRG')):
         scatt = ssrg.SsrgScatt(diameters, frequencies, wavelengths,
                                refractive_indices, dielectric_permittivities,
                                **kwargs)
-    elif ((model == 'LiuDB') ):
+    elif ((model == 'LiuDB')):
         raise NotImplementedError(model+" capabilities will be soon added")
-    elif ((model == 'LeinonenDB') ):
+    elif ((model == 'LeinonenDB')):
         raise NotImplementedError(model+" capabilities will be soon added")
-    elif ((model == 'AydinDB') ):
+    elif ((model == 'AydinDB')):
         raise NotImplementedError(model+" capabilities will be soon added")
-    elif ((model == 'HongDB') ):
+    elif ((model == 'HongDB')):
         raise NotImplementedError(model+" capabilities will be soon added")
-    elif ((model == 'ChalmersDB') ):
+    elif ((model == 'ChalmersDB')):
         raise NotImplementedError(model+" capabilities will be soon added")
     elif ((model == 'OpenSSP') or (model == 'KwoDB')):
         raise NotImplementedError(model+" capabilities will be soon added")
     else:
-        raise AttributeError("I do not recognize the %s as a " 
+        raise AttributeError("I do not recognize the %s as a "
                              "valid substance I can only compute"
                              " dielectric properties of %s" % (
-                                model, models_list))
+                                 model, models_list))
     return scatt.Cext, scatt.Csca, scatt.Cabs, scatt.Cbck, scatt.S

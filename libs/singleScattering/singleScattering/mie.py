@@ -31,36 +31,38 @@ from . import cMie
 from .scatterer import Scatterer
 from .scattering_utilities import transformation_matrices
 
+
 class MieScatt(Scatterer):
     """
     This is class implement the Mie model of scattering for a sphere
     """
+
     def __init__(self,
-                 diameter = 1.0e-3,
-                 frequency = None,
-                 wavelength = None,
-                 refractive_index = None,
-                 dielectric_permittivity = None,
-                 theta_inc = 0.0,
-                 phi_inc = 0.0,
-                 theta_sca = 0.0,
-                 phi_sca = 0.0):
-        
+                 diameter=1.0e-3,
+                 frequency=None,
+                 wavelength=None,
+                 refractive_index=None,
+                 dielectric_permittivity=None,
+                 theta_inc=0.0,
+                 phi_inc=0.0,
+                 theta_sca=0.0,
+                 phi_sca=0.0):
+
         Scatterer.__init__(self,
-                           diameter = diameter,
-                           frequency = frequency,
-                           wavelength = wavelength,
-                           refractive_index = refractive_index,
-                           dielectric_permittivity = dielectric_permittivity,
-                           theta_inc = theta_inc,
-                           phi_inc = phi_inc,
-                           theta_sca = theta_sca,
-                           phi_sca = phi_sca)
+                           diameter=diameter,
+                           frequency=frequency,
+                           wavelength=wavelength,
+                           refractive_index=refractive_index,
+                           dielectric_permittivity=dielectric_permittivity,
+                           theta_inc=theta_inc,
+                           phi_inc=phi_inc,
+                           theta_sca=theta_sca,
+                           phi_sca=phi_sca)
 
         #print('I am a Mie instance')
         self.geometric_cross_section = np.pi*self.diameter*self.diameter*0.25
         self.K = ref_utils.K(self.dielectric_permittivity)
-        
+
         Q, theta, vecS1, vecS2 = cMie.mie(self.wavelength,
                                           self.diameter,
                                           self.refractive_index)
@@ -70,18 +72,19 @@ class MieScatt(Scatterer):
         f1 = scipy.interpolate.interp1d(theta, vecS1)
         f2 = scipy.interpolate.interp1d(theta, vecS2)
 
-        S1 = 1.j*f1(self.scatt_angle)/self.wavenumber # 1j* is equivalent to (/-1j)
-        S2 = 1.j*f2(self.scatt_angle)/self.wavenumber # 1j* is equivalent to (/-1j)
+        # 1j* is equivalent to (/-1j)
+        S1 = 1.j*f1(self.scatt_angle)/self.wavenumber
+        # 1j* is equivalent to (/-1j)
+        S2 = 1.j*f2(self.scatt_angle)/self.wavenumber
 
         S34 = 0.0 + 0.0j
         Ra, Rb = transformation_matrices(
             self.rot_alpha, self.rot_beta, self.phi_inc, self.phi_sca)
         self.estimate_amplitude_matrix(S1, S2, S34, Ra, Rb)
 
-        self.Cext = Q[...,0]*self.geometric_cross_section
-        self.Csca = Q[...,1]*self.geometric_cross_section
-        self.Cabs = Q[...,2]*self.geometric_cross_section
-        self.Cbck = Q[...,3]*self.geometric_cross_section
+        self.Cext = Q[..., 0]*self.geometric_cross_section
+        self.Csca = Q[..., 1]*self.geometric_cross_section
+        self.Cabs = Q[..., 2]*self.geometric_cross_section
+        self.Cbck = Q[..., 3]*self.geometric_cross_section
 
         self.unravel_output()
-
