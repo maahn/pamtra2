@@ -89,6 +89,8 @@ def create_simple_cloud_creator():
                     density=pamtra2.hydrometeors.density.softEllipsoid,
                     crossSectionArea=pamtra2.hydrometeors.crossSectionArea.sphere,
                     relativePermittivity=relativePermittivity,
+                    relativePermittivityIce=pamtra2.hydrometeors.relativePermittivity.
+                        ice_iwabuchi_yang_2011,
                     scattering=scattering,
                     fallVelocity=pamtra2.hydrometeors.fallVelocity.
                     heymsfield10_particles,
@@ -101,6 +103,7 @@ def create_simple_cloud_creator():
                     massSizeB=1.9,
                     minDensity=100,
                     maxDensity=pamtra2.constants.rhoIce,
+                    ssrgParameters='HW14',
                     **kwargs,
                 )
             )
@@ -159,6 +162,34 @@ def test_rayleigh_tmatrix(create_simple_cloud_creator):
     ).results.radarReflectivity.values
 
     assert np.allclose(ray, tmatrix, rtol=1e-01, atol=1e-01)
+
+
+def test_mie_tmatrix(create_simple_cloud_creator):
+    mie = create_simple_cloud_creator(
+        scattering=pamtra2.hydrometeors.scattering.Mie,
+        size=0.01,
+    ).results.radarReflectivity.values
+
+    tmatrix = create_simple_cloud_creator(
+        scattering=pamtra2.hydrometeors.scattering.TMatrix,
+        size=0.01,
+    ).results.radarReflectivity.values
+
+    assert np.allclose(mie, tmatrix, rtol=1e-01, atol=1e-01)
+
+
+def test_mie_ssrg(create_simple_cloud_creator):
+    mie = create_simple_cloud_creator(
+        scattering=pamtra2.hydrometeors.scattering.Mie,
+        hydrometeor='snow',
+    ).results.radarReflectivity.values
+
+    ssrg = create_simple_cloud_creator(
+        scattering=pamtra2.hydrometeors.scattering.SSRG,
+        hydrometeor='snow',
+    ).results.radarReflectivity.values
+
+    assert np.allclose(mie, ssrg, rtol=1e-01, atol=1e-01)
 
 
 def test_rayleigh_scale_N(create_simple_cloud_creator):
