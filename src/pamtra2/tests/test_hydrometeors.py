@@ -323,6 +323,25 @@ class TestScattering(object):
         )[3]
         assert np.allclose(back1, back2)
 
+    def testCompareRayleighTMatrix(self):
+        diameter = 1e-4
+        wavelength = 1e-2
+        refractiveIndex = 5.97+2.79j
+        aspect_ratio = 1.
+        back1 = pamtra2.hydrometeors.scattering._MieRayleighWrapper(
+            diameter,
+            wavelength,
+            refractiveIndex,
+            model='Rayleigh'
+        )[3]
+        back2 = pamtra2.hydrometeors.scattering._TMatrixWrapper(
+            diameter,
+            aspect_ratio,
+            wavelength,
+            refractiveIndex,
+        )[3]
+        assert np.allclose(back1, back2)
+
 
 class TestFallVelocity(object):
     def test_khvorostyanov01_drops(self):

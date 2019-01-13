@@ -150,6 +150,17 @@ def test_rayleigh_mie(create_simple_cloud_creator):
     assert np.allclose(ray, mie, rtol=1e-01, atol=1e-01)
 
 
+def test_rayleigh_tmatrix(create_simple_cloud_creator):
+    ray = create_simple_cloud_creator(
+        scattering=pamtra2.hydrometeors.scattering.Rayleigh
+    ).results.radarReflectivity.values
+    tmatrix = create_simple_cloud_creator(
+        scattering=pamtra2.hydrometeors.scattering.TMatrix
+    ).results.radarReflectivity.values
+
+    assert np.allclose(ray, tmatrix, rtol=1e-01, atol=1e-01)
+
+
 def test_rayleigh_scale_N(create_simple_cloud_creator):
     ray = create_simple_cloud_creator(
         Ntot=[0.1, 1, 10],
