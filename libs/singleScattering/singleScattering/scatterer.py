@@ -63,7 +63,9 @@ class Scatterer(object):
                  theta_inc=0.0,
                  theta_sca=0.0,
                  phi_inc=0.0,
-                 phi_sca=0.0
+                 phi_sca=0.0,
+                 aspect_ratio=1,
+                 volume=-99,
                  ):
 
         # first, convert inputs to arrays
@@ -74,19 +76,26 @@ class Scatterer(object):
             dielectric_permittivity)
         frequency, frequency_scalar = self.makeArray(frequency)
         wavelength, wavelength_scalar = self.makeArray(wavelength)
+        aspect_ratio, aspect_ratio_scalar = self.makeArray(aspect_ratio)
+        volume, volume_scalar = self.makeArray(volume)
 
         if (
             diameter_scalar and
             refractive_index_scalar and
             dielectric_permittivity_scalar and
             frequency_scalar and
-            wavelength_scalar
+            wavelength_scalar and
+            aspect_ratio_scalar and
+            volume_scalar
         ):
             self.scalar_input = True
         else:
             self.scalar_input = False
 
         self.diameter = diameter
+        self.aspect_ratio = aspect_ratio
+        self.volume = volume
+        
         self.set_electromagnetic_wave(wavelength, frequency)
 
         self.set_dielectric_properties(refractive_index,
@@ -122,7 +131,9 @@ class Scatterer(object):
             self.K2,
             self.dielectric_permittivity,
             self.frequency,
-            self.wavelength
+            self.wavelength,
+            self.aspect_ratio,
+            self.volume,
         )
         (
             self.diameter,
@@ -131,6 +142,8 @@ class Scatterer(object):
             self.dielectric_permittivity,
             self.frequency,
             self.wavelength,
+            self.aspect_ratio,
+            self.volume,
         ) = out
 
         self.shapeIn = self.diameter.shape
@@ -141,6 +154,10 @@ class Scatterer(object):
         self.dielectric_permittivity = self.dielectric_permittivity.ravel()
         self.frequency = self.frequency.ravel()
         self.wavelength = self.wavelength.ravel()
+        self.aspect_ratio = self.aspect_ratio.ravel()
+        self.volume = self.volume.ravel()
+
+
 
     def unravel_output(self):
 

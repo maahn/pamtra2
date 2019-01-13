@@ -309,13 +309,13 @@ class TestScattering(object):
         diameter = 1e-4
         wavelength = 1e-2
         refractiveIndex = 5.97+2.79j
-        back1 = pamtra2.hydrometeors.scattering._scatteringWrapper(
+        back1 = pamtra2.hydrometeors.scattering._MieRayleighWrapper(
             diameter,
             wavelength,
             refractiveIndex,
             model='Rayleigh'
         )[3]
-        back2 = pamtra2.hydrometeors.scattering._scatteringWrapper(
+        back2 = pamtra2.hydrometeors.scattering._MieRayleighWrapper(
             diameter,
             wavelength,
             refractiveIndex,

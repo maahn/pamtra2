@@ -73,6 +73,7 @@ class TmatrixScatt(Scatterer):
         Scatterer.__init__(self,
                            diameter=diameter,
                            frequency=frequency,
+                           wavelength=wavelength,
                            refractive_index=refractive_index,
                            dielectric_permittivity=dielectric_permittivity,
                            theta_inc=theta_inc,
@@ -84,7 +85,7 @@ class TmatrixScatt(Scatterer):
         self.K = ref_utils.K(self.dielectric_permittivity)
         self.radius = 0.5*self.diameter
         self.radius_type = RADIUS_EQUAL_VOLUME
-        self.aspect_ratio = aspect_ratio
+
         self.shape = SHAPE_SPHEROID
         self.ddelt = 1e-3
         self.ndgs = 2
@@ -100,6 +101,7 @@ class TmatrixScatt(Scatterer):
         self.Cabs = self.Cext-self.Csca
 
         self.unravel_output()
+
 
     def _init_tmatrix(self):
         """
