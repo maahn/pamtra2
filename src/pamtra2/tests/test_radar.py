@@ -178,6 +178,7 @@ def test_mie_tmatrix(create_simple_cloud_creator):
 
     assert np.allclose(mie, tmatrix, rtol=1e-01, atol=1e-01)
 
+
 @pytest.mark.skip(reason="SSRG broken ?!")
 def test_mie_ssrg(create_simple_cloud_creator):
     mie = create_simple_cloud_creator(
@@ -237,12 +238,21 @@ def test_rayleigh_scale_size(create_simple_cloud_creator):
 
 def test_simple_spectra(create_simple_cloud_creator):
     simple = create_simple_cloud_creator(
-    ).results.radarReflectivity.values.flatten()
+    ).results
     spectral = create_simple_cloud_creator(
         instrument='spectral',
-    ).results.radarReflectivity.values.flatten()
+    ).results
 
-    assert np.allclose(simple, spectral, rtol=1e-01, atol=1e-01)
+    assert np.allclose(
+        simple.radarReflectivity.values.flatten(),
+        spectral.radarReflectivity.values.flatten(),
+        rtol=1e-01, atol=1e-01
+    )
+    assert np.allclose(
+        simple.meanDopplerVel.values.flatten(),
+        spectral.meanDopplerVel.values.flatten(),
+        rtol=1e-01, atol=1e-01
+    )
 
 
 def test_dask(create_simple_cloud_creator):

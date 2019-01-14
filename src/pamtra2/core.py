@@ -94,8 +94,10 @@ class pamtra2(object):
         ],
         profile=None,
         additionalDims={},
+        verbosity=0,
     ):
 
+        self.verbosity = verbosity
         self.coords = {}
         self.coords[dimensions.ADDITIONAL] = OrderedDict(additionalDims)
         self.coords[dimensions.LAYER] = OrderedDict(layer=range(nLayer))

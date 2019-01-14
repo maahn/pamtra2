@@ -82,7 +82,6 @@ class hydrometeor(object):
         discreteProperties=None,
         calculationOrder=None,
         useFuncArgDefaults=True,
-        verbosity=0,
         **kwargs
     ):
 
@@ -94,7 +93,7 @@ class hydrometeor(object):
         # self.index = np.where(parent.profile.hydrometeor.values == name)[0][0]
         self._parentFull = parent
         # self.coords = parent.coords
-        self.verbosity = verbosity
+        # self._parentFull.verbosity = parent.verbosity
 
         if discreteProperties is None:
             discreteProperties = xr.Dataset(
@@ -157,7 +156,7 @@ class hydrometeor(object):
         """
 
         if callable(thisDesription):
-            if self.verbosity >= 1:
+            if self._parentFull.verbosity >= 1:
                 print('callable')
 
             func = thisDesription
@@ -202,11 +201,11 @@ class hydrometeor(object):
                                    'functions\'s defaultArgs for '
                                    ' %s' % (k, thisKey))
 
-            if self.verbosity >= 2:
+            if self._parentFull.verbosity >= 2:
                 print('kw4Func', kw4Func)
             thisProperty = func(**kw4Func)
         else:
-            if self.verbosity >= 1:
+            if self._parentFull.verbosity >= 1:
                 print('not callable')
             thisProperty = thisDesription
 
@@ -238,7 +237,7 @@ class hydrometeor(object):
         for key in self.calculationOrder:
 
             value = self.description[key]
-            if self.verbosity >= 1:
+            if self._parentFull.verbosity >= 1:
                 print(key, value)
 
             thisProperty = self._arrayOrFunc(key, value)

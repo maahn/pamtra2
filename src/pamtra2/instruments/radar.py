@@ -38,19 +38,44 @@ class simpleRadar(microwaveInstrument):
 
         if self.parent.nHydrometeors > 0:
 
-            crossSections = self.parent.getIntegratedScatteringCrossSections(
-                crossSections=['backscatterCrossSection'],
-                frequencies=self.frequencies,
-            )
-
-            back = crossSections['backscatterCrossSection']
             wavelength = self.parent.profile.wavelength.sel(
                 frequency=self.frequencies)
             K2 = self.settings['radarK2']
 
-            Ze_back = 1.e18*(1.e0/(K2*np.pi**5))*back*(wavelength)**4
+            Ze_increment = 0.
+            MDV_increment = 0.
 
-            self.results['radarReflectivity'] = 10*np.log10(Ze_back)
+            for hydro in self.hydrometeorProfiles.keys():
+                bsc = self.hydrometeorProfiles[hydro].backscatterCrossSection\
+                    .sel(frequency=self.frequencies)
+                N = self.hydrometeorProfiles[hydro]\
+                    .numberConcentration.fillna(0)
+                Ze_bin = 1.e18*(1.e0/(K2*np.pi**5))*bsc*N*(wavelength)**4
+                vel = self.hydrometeorProfiles[hydro].fallVelocity
+                Ze_increment += Ze_bin.sum(['sizeBin'])
+                MDV_increment += (vel*Ze_bin).sum(['sizeBin'])
+            # perHydro = []
+            # for name in self.hydrometeors.keys():
+            #     numberConcentration = self.hydrometeors[
+            #         name].profile.numberConcentration.fillna(0)
+            #     crossSec = self.hydrometeors[name].profile[crossSection]
+            #     if frequencies is not None:
+            #         crossSec.sel(frequency=frequencies)
+            #     thisHydro = crossSec * numberConcentration
+            #     perHydro.append(thisHydro)
+            # integrated[crossSection] = xr.concat(
+            #     perHydro, dim='hydro').sum(['hydro', 'sizeBin'])
+
+            # crossSections = self.parent.getIntegratedScatteringCrossSections(
+            #     crossSections=['backscatterCrossSection'],
+            #     frequencies=self.frequencies,
+            # )
+
+            # back = crossSections['backscatterCrossSection']
+            # Ze_back = 1.e18*(1.e0/(K2*np.pi**5))*back*(wavelength)**4
+
+            self.results['radarReflectivity'] = 10*np.log10(Ze_increment)
+            self.results['meanDopplerVel'] = MDV_increment/Ze_increment
 
             if self.settings['applyAttenuation'] is None:
                 pass
@@ -171,8 +196,6 @@ class dopplerRadarPamtra(simpleRadar):
             applyAttenuation=applyAttenuation,
             gaseousAttenuationModel=gaseousAttenuationModel,
         )
-
-
 
     def solve(self):
 
