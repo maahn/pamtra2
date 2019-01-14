@@ -16,6 +16,8 @@ def create_simple_cloud_creator():
         scattering=pamtra2.hydrometeors.scattering.Rayleigh,
         relativePermittivity=pamtra2.hydrometeors.relativePermittivity.
         water_turner_kneifel_cadeddu,
+        relativePermittivityIce=pamtra2.hydrometeors.relativePermittivity.
+        ice_iwabuchi_yang_2011,
         radarPNoise1000=-30,
         temperature=250,
         instrument='simple',
@@ -89,8 +91,7 @@ def create_simple_cloud_creator():
                     density=pamtra2.hydrometeors.density.softEllipsoid,
                     crossSectionArea=pamtra2.hydrometeors.crossSectionArea.sphere,
                     relativePermittivity=relativePermittivity,
-                    relativePermittivityIce=pamtra2.hydrometeors.relativePermittivity.
-                        ice_iwabuchi_yang_2011,
+                    relativePermittivityIce=relativePermittivityIce,
                     scattering=scattering,
                     fallVelocity=pamtra2.hydrometeors.fallVelocity.
                     heymsfield10_particles,
@@ -176,7 +177,6 @@ def test_mie_tmatrix(create_simple_cloud_creator):
     ).results.radarReflectivity.values
 
     assert np.allclose(mie, tmatrix, rtol=1e-01, atol=1e-01)
-
 
 def test_mie_ssrg(create_simple_cloud_creator):
     mie = create_simple_cloud_creator(
