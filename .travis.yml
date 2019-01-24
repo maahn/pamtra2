@@ -21,7 +21,8 @@ before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq gcc gfortran liblapack-dev libfftw3-dev ; fi
 - pip install Cython 
 - pip install numpy
-- pip install pytest>=3.6 coveralls pytest-cov
+- pip install --upgrade pytest>=3.6 
+- pip install coveralls pytest-cov
 install:
 - python setup.py install
 script:
