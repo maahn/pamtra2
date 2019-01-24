@@ -169,6 +169,6 @@ if __name__ == "__main__":
         setup_requires=["pytest-runner"],
         tests_require=["pytest"],
         ext_modules=cythonize(
-            [cMie, fTMat, pamgasabs, pyrasim, pyramom]),
+            [pamgasabs, pyrasim, pyramom, cMie, fTMat]),
 
     )
