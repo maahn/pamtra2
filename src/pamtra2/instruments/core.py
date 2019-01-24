@@ -60,7 +60,7 @@ class instrument(object):
         if self.parent is None:
             raise AttributeError('set .parent attribute to pamtra2 object')
 
-        if self.frequencies == 'all':
+        if (type(self.frequencies) is str) and (self.frequencies == 'all'):
             self.frequencies = self.parent.profile.frequency
 
         self.profile = self.parent.profile.sel(frequency=self.frequencies)
