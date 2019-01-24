@@ -1,6 +1,6 @@
 python module fTMat ! in 
     interface  ! in :fTMat
-        subroutine calctmat(axi,rat,lam,mrr,mri,eps,np,ddelt,ndgs,nmax) ! in :fTMat:ampld.lp.f
+        subroutine calctmat(axi,rat,lam,mrr,mri,eps,np,ddelt,ndgs,nmax) ! in :fTMat:ampld.lp.f90
             real*8 intent(in) :: axi
             real*8 intent(in) :: rat
             real*8 intent(in) :: lam
@@ -12,7 +12,7 @@ python module fTMat ! in
             integer intent(in) :: ndgs
             integer intent(out) :: nmax
         end subroutine calctmat
-        subroutine calcampl(nmax,lam,thet0,thet,phi0,phi,alpha,beta,s,z) ! in :fTMat:ampld.lp.f
+        subroutine calcampl(nmax,lam,thet0,thet,phi0,phi,alpha,beta,s,z) ! in :fTMat:ampld.lp.f90
             integer intent(in) :: nmax
             real*8 intent(in) :: lam
             real*8 intent(in) :: thet0

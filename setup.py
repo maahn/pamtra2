@@ -126,8 +126,8 @@ cMie = Extension(
 fTMat = Extension(
     name = 'pamtra2.libs.singleScattering.fTMat',
     sources = [
-        '%s/Tmatrix/ampld.lp.f' % singleScattering_path,
-        '%s/Tmatrix/lpd.f' % singleScattering_path,
+        '%s/Tmatrix/ampld.lp.f90' % singleScattering_path,
+        '%s/Tmatrix/lpd.f90' % singleScattering_path,
         '%s/Tmatrix/pytmatrix.pyf' % singleScattering_path,
     ],
     **kw)
