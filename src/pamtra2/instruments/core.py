@@ -168,7 +168,7 @@ class microwaveInstrument(instrument):
             kwargs['sumResults'] = True
             func = pamgasabs.calculate_gas_absorption_rosenkranz98
         elif self.settings['gaseousAttenuationModel'] == 'Liebe93':
-            func = pamgasabs.calculate_gas_absorption_rosenkranz98
+            func = pamgasabs.calculate_gas_absorption_liebe93
         else:
             raise ValueError('Do not recognize gaseousAttenuationModel: %s' %
                              self.settings['gaseousAttenuationModel'])
