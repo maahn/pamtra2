@@ -54,7 +54,7 @@ class simpleRadar(microwaveInstrument):
                 vel = self.hydrometeorProfiles[hydro].fallVelocity
                 Ze_increment += Ze_bin.sum(['sizeBin'])
                 MDV_increment += (vel*Ze_bin).sum(['sizeBin'])
-            # perHydro = []
+            # perHydro = [] 
             # for name in self.hydrometeors.keys():
             #     numberConcentration = self.hydrometeors[
             #         name].profile.numberConcentration.fillna(0)

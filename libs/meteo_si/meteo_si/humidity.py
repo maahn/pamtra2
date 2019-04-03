@@ -12,7 +12,6 @@ from . import constants, density, temperature
 # from .due import due, Doi
 
 
-
 __all__ = ['a2e', 'e2a', "e2q", "q2e", "rh2q", "rh2a", "rh_to_iwv",
            "e_sat_gg_ice", "e_sat_gg_water", "q2rh", "a2rh"]
 
@@ -278,6 +277,26 @@ def q2rh(q, T, p, e_sat_func=e_sat_gg_water):
     eStar = e_sat_func(T)
     rh = e / eStar
     return rh
+
+
+def r2q(r):
+    '''mixing ratio to specific humidty
+    Source: http://glossary.ametsoc.org/wiki/Specific_humidity
+
+
+    Parameters
+    ----------
+    r : mixing ratio [kg/kg]
+
+    Returns
+    -------
+
+    float :
+        specific humidity [kg / m^2]
+
+    '''
+
+    return r/(1+r)
 
 
 def rh_to_iwv(relhum_lev, temp_lev, press_lev, hgt_lev):

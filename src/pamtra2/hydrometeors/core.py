@@ -22,6 +22,7 @@ def DEFAULT_CALCULATION_ORDER():
         'mass',
         'crossSectionArea',
         'numberConcentration',
+        'relativePermittivityIce',
         'relativePermittivity',
         'scattering',
         'fallVelocity',
@@ -236,6 +237,11 @@ class hydrometeor(object):
 
         for key in self.calculationOrder:
 
+            if key not in self.description.keys():
+                print('Did not find information about %s. This might cause'
+                      ' trouble later.' % key)
+                continue
+
             value = self.description[key]
             if self._parentFull.verbosity >= 1:
                 print(key, value)
@@ -244,7 +250,7 @@ class hydrometeor(object):
             if (isinstance(thisProperty, xr.DataArray) and
                     (key in ['sizeCenter', 'sizeBoundsWidth'])):
                 # when sizeCenter and sizeBoundsWidth are estimated from
-                # sizeBounds with numpy, teh dimension name is typically
+                # sizeBounds with numpy, the dimension name is typically
                 # wrong. So we try to rename:
                 try:
                     thisProperty = thisProperty.rename({

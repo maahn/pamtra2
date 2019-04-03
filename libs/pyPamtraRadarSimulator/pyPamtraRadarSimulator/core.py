@@ -106,7 +106,7 @@ def radarSimulator(
     Returns
     -------
     radar_spectrum : array_like
-        Simulated radar spectrum in mm6/m3/(m/s). 
+        Simulated radar spectrum in mm6/m3/(m/s).
 
     """
     nHydro = diameterSpec.shape[1]
@@ -114,7 +114,6 @@ def radarSimulator(
 
     for hh in range(nHydro):
         assert not np.all(np.isnan(backSpec[:, hh, :]))
-
 
         particleSpec = createRadarSpectrum(
             diameterSpec=diameterSpec[:, hh, :],
@@ -379,7 +378,7 @@ def simulateRadarSpectrum(
 
     """
 
-    assert np.all(height > 0)
+    assert np.all(height > -420) # altitude Dead Sea
     assert np.all(eddyDissipationRate > 0)
     assert np.all(horizontalWind >= 0)
     assert np.all(mergedParticleSpec >= 0)
