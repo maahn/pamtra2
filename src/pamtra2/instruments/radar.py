@@ -463,7 +463,7 @@ class dopplerRadarPamtra(simpleRadar):
             peak=np.arange(1, self.settings['momentsNPeaks']+1)
         )
 
-        self.results.merge(moments, inplace=True)
+        self.results = self.results.merge(moments)
         return moments
 
 

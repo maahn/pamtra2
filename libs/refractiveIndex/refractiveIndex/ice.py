@@ -58,7 +58,7 @@ warren_ice_table = pd.read_csv(
     )
 warren_ice_table['f'] = 299792.458e9 / \
     warren_ice_table.wl  # wl is microns, should return Hz
-warren_ice_table.set_index('f', inplace=True)
+warren_ice_table = warren_ice_table.set_index('f')
 warren_ice_table = warren_ice_table.iloc[::-1]  # reverse order
 warren_ice_eps = (warren_ice_table.mr.values+1j*warren_ice_table.mi.values)**2
 warren_ice_interpolated = interpolate.interp1d(

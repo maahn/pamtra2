@@ -339,7 +339,7 @@ class hydrometeor(object):
             )
 
         self.profile = self.profile.drop('scattering')
-        self.profile.merge(scatteringProperty, inplace=True)
+        self.profile = self.profile.merge(scatteringProperty)
 
         return
 
