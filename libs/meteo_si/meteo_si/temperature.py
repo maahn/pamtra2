@@ -13,8 +13,7 @@ from . import constants, humidity
 # from .due import due, Doi
 
 
-
-__all__ = ["kelvin_2_celsius", "celsius_to_kelvin", "T_virt_rh", "T_virt_q"]
+__all__ = ["kelvin_2_celsius", "celsius_to_kelvin", "T_virt_rh", "T_virt_q", "T_pot"]
 
 
 '''
@@ -107,3 +106,27 @@ def T_virt_q(T, q):
         Virtual temperature in K
     '''
     return T + T * (constants.Rvapor/constants.Rair-1) * q
+
+
+def T_pot(T, p, p0=100000):
+    '''
+    Calculate potential temperature
+
+    Parameters
+    ----------
+    T
+        Temperature in in K
+    p
+        pressure in Pa
+    p0, optional
+        reference pressure in Pa (default 100000)
+
+    Returns
+    -------
+    float
+        Potential temperature in K
+    '''
+
+    Rl = constants.Rair
+    cp = constants.Cp
+    return T * (p0/p) ** (Rl/cp)
