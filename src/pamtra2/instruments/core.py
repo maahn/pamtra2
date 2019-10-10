@@ -4,7 +4,7 @@ import numpy as np
 import xarray as xr
 
 from .. import helpers, units
-from ..libs import pamgasabs
+# from ..libs import pamgasabs
 
 
 class instrument(object):
@@ -138,50 +138,3 @@ class microwaveInstrument(instrument):
 
         return hydroAbs
 
-    def _calcGaseousAbsorption(self):
-        '''Calculate gaseous absorption
-
-        Returns
-        -------
-        xr.DataArray
-            absorption coefficient
-        '''
-        coords = helpers.concatDicts(
-            self.parent.coords['additional'],
-            self.parent.coords['layer'],
-            self.parent.coords['frequency']
-        )
-        thisProf = self.parent.profile.sel(
-            frequency=self.frequencies
-            ).stack(merged=coords)
-
-        kwargs = {}
-
-        args = [thisProf.frequency,
-                thisProf.temperature,
-                thisProf.waterVaporPressure,
-                thisProf.pressure
-                ]
-        args = xr.broadcast(*args)
-
-        if self.settings['gaseousAttenuationModel'] == 'Rosenkranz98':
-            kwargs['sumResults'] = True
-            func = pamgasabs.calculate_gas_absorption_rosenkranz98
-        elif self.settings['gaseousAttenuationModel'] == 'Liebe93':
-            func = pamgasabs.calculate_gas_absorption_liebe93
-        else:
-            raise ValueError('Do not recognize gaseousAttenuationModel: %s' %
-                             self.settings['gaseousAttenuationModel'])
-
-        gasAbs = xr.apply_ufunc(
-            func,
-            *args,
-            kwargs=kwargs,
-            dask='parallelized',
-            output_dtypes=[args[1].dtype],
-        )
-
-        gasAbs = xr.Dataset({'gasAbs': gasAbs})
-        gasAbs = helpers.xrFastUnstack(gasAbs, 'merged').gasAbs
-
-        return gasAbs
