@@ -14,6 +14,8 @@
 Pamtra2
 #######
 
+Special branch without fortran code to allow use by https://mybinder.org/
+
 EARLY ALPHA VERSION! NOT FEATURE COMPLETE!
 
 Please see https://pamtra2.readthedocs.io for documentation. 
