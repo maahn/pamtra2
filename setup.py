@@ -16,10 +16,14 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
+try:
+    os.environ['LDFLAGS'] += " -shared"
+except KeyError:
+    os.environ['LDFLAGS'] = " -shared"
+
 kw = {}
-kw['extra_link_args'] = shlex.split(os.environ.pop('LDFLAGS', ''))
 if sys.platform == 'darwin':
-    kw['extra_link_args'] += ['-undefined dynamic_lookup', '-bundle']
+    kw['extra_link_args'] = ['-undefined dynamic_lookup', '-bundle']
 
 library_dirs = ['~/.local/lib/', '/usr/local/lib/', '/opt/local/lib/']
 
