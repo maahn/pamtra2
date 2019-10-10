@@ -66,14 +66,6 @@ cMie = Extension(
     language='c'
 )
 
-fTMat = Extension(
-    name = 'pamtra2.libs.singleScattering.fTMat',
-    sources = [
-        '%s/Tmatrix/ampld.lp.f90' % singleScattering_path,
-        '%s/Tmatrix/lpd.f90' % singleScattering_path,
-        '%s/Tmatrix/pytmatrix.pyf' % singleScattering_path,
-    ],
-    **kw)
 
 if __name__ == "__main__":
 
@@ -108,6 +100,6 @@ if __name__ == "__main__":
         setup_requires=["pytest-runner"],
         tests_require=["pytest"],
         ext_modules=cythonize(
-            [cMie, fTMat]),
+            [cMie]),
 
     )

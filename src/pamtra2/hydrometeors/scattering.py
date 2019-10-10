@@ -48,25 +48,6 @@ def _SSRGWrapper(diameter,
     return np.stack([scatt.Cext, scatt.Csca, scatt.Cabs, scatt.Cbck], axis=-1)
 
 
-def _TMatrixWrapper(diameter,
-                    aspect_ratio,
-                    wavelength,
-                    relativePermittivity,
-                    ):
-
-    scatt = singleScattering.tmatrix.TmatrixScatt(
-        diameter,
-        wavelength=wavelength,
-        dielectric_permittivity=relativePermittivity,
-        aspect_ratio=aspect_ratio,
-        alpha=0.0,  # needs to be exposed to Pamtra2!
-        beta=0.0,  # needs to be exposed to Pamtra2!
-
-    )
-
-    return np.stack([scatt.Cext, scatt.Csca, scatt.Cabs, scatt.Cbck], axis=-1)
-
-
 def Mie(
     sizeCenter,
     wavelength,
@@ -150,31 +131,3 @@ def SSRG(
 
     return scatteringProperty
 
-
-def TMatrix(
-    sizeCenter,
-    aspectRatio,
-    wavelength,
-    relativePermittivity,
-):
-    """Simple Wrapper for singleScattering.SSRG.SSRGScatt to
-    make sure it works with xr.DataArrays.
-    """
-
-    kwargs = dict()
-
-    scatteringProperty = xr.apply_ufunc(
-        _TMatrixWrapper,
-        sizeCenter,
-        aspectRatio,
-        wavelength,
-        relativePermittivity,
-        kwargs=kwargs,
-        output_core_dims=[['scatteringProperty']],
-        output_dtypes=[sizeCenter.dtype],
-        output_sizes={'scatteringProperty': 4},
-        dask='parallelized',
-        vectorize=True,
-    )
-
-    return scatteringProperty
