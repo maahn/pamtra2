@@ -1,4 +1,6 @@
 import os
+import shlex
+
 import sys
 from glob import glob
 
@@ -15,8 +17,9 @@ def read(fname):
 
 
 kw = {}
+kw['extra_link_args'] = shlex.split(os.environ.pop('LDFLAGS', ''))
 if sys.platform == 'darwin':
-    kw['extra_link_args'] = ['-undefined dynamic_lookup', '-bundle']
+    kw['extra_link_args'] += ['-undefined dynamic_lookup', '-bundle']
 
 library_dirs = ['~/.local/lib/', '/usr/local/lib/', '/opt/local/lib/']
 
