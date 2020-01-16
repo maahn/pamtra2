@@ -115,14 +115,13 @@ class simpleRadar(microwaveInstrument):
 
         attenuation = attenuation * self.parent.profile.heightBinDepth
 
-        attenuationRev = attenuation.isel(
-            layer=attenuation.coords[dim].values[::-1])
+        attenuationRev = attenuation.isel(**{dim: slice(None, None, -1)})
 
         PIA_bottomup = attenuation.cumsum(dim) * 2 - attenuation
         PIA_topdown = attenuationRev.cumsum(dim) * 2 - attenuationRev
 
-        PIA_topdown = PIA_topdown.isel(
-            layer=attenuation.coords[dim].values[::-1])
+        PIA_topdown = PIA_topdown.isel(**{dim: slice(None, None, -1)})
+        
         return PIA_bottomup, PIA_topdown
 
 
