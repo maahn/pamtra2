@@ -19,8 +19,8 @@ before_install:
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install lapack fftw gfortran; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq ; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq gcc gfortran liblapack-dev libfftw3-dev ; fi
-- pip install Cython 
-- pip install numpy
+- pip install --upgrade Cython 
+- pip install --upgrade numpy>=1.14
 - pip install --upgrade pytest>=3.6 
 - pip install coveralls pytest-cov
 install:
