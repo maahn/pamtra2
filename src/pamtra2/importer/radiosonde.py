@@ -58,10 +58,9 @@ def arm_interpolatedsonde(
 
     profile['temperature'] = units.celsius2Kelvin(profile.temperature)
     profile['pressure'] = profile.pressure * 1000
-    profile['layer'] = profile.layer * 1000
 
-    profile['height'] = profile.layer
-    profile['layer'].values = np.arange(len(profile.layer))
+    profile['height'] = profile.layer * 1000
+    profile = profile.assign_coords(layer = np.arange(len(profile.layer)))
 
     profile['frequency'] = xr.DataArray(
         frequencies, dims=['frequency'], coords=[frequencies])
