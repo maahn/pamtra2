@@ -69,7 +69,8 @@ pamgasabs = Extension(
         '%s/pamgasabs_lib/gasabs_module.f90' % pamgasabs_path,
         '%s/pamgasabs_lib/rosen98_gasabs.f90' % pamgasabs_path,
         '%s/pamgasabs_lib/mpm93.f90' % pamgasabs_path,
-    ],
+    ], 
+    extra_compile_args = [ "-fPIC"],
     **kw)
 
 pyrasim_path = 'libs/pyPamtraRadarSimulator/pyPamtraRadarSimulator'
@@ -95,6 +96,7 @@ pyrasim = Extension(
     ],
     library_dirs=library_dirs,
     libraries=['fftw3', 'lapack'],
+    extra_compile_args = [ "-fPIC"],
     **kw)
 
 pyramom_path = 'libs/pyPamtraRadarMoments/pyPamtraRadarMoments'
@@ -114,6 +116,7 @@ pyramom = Extension(
     ],
     library_dirs=library_dirs,
     libraries=['fftw3', 'lapack'],
+    extra_compile_args = [ "-fPIC"],
     **kw)
 
 refractiveIndex_path = 'libs/refractiveIndex/refractiveIndex'
@@ -137,6 +140,7 @@ fTMat = Extension(
         '%s/Tmatrix/lpd.f90' % singleScattering_path,
         '%s/Tmatrix/pytmatrix.pyf' % singleScattering_path,
     ],
+    extra_compile_args = [ "-fPIC"],
     **kw)
 
 
