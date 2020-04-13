@@ -16,10 +16,10 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-try:
-    os.environ['LDFLAGS'] += " -shared"
-except KeyError:
-    os.environ['LDFLAGS'] = " -shared"
+# try:
+#     os.environ['LDFLAGS'] += " -shared"
+# except KeyError:
+#     os.environ['LDFLAGS'] = " -shared"
 
 kw = {}
 if sys.platform == 'darwin':
