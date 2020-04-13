@@ -22,6 +22,7 @@ before_install:
 - pip install --upgrade Cython 
 - pip install --upgrade numpy>=1.14
 - pip install --upgrade pytest>=3.6 
+- pip install --upgrade setuptools>=41
 - pip install coveralls pytest-cov
 install:
 - python setup.py install
