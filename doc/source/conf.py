@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'pamtra2'
-copyright = '2018, Pamtra Team'
+copyright = '2020, Pamtra Team'
 author = 'Pamtra Team'
 
 # The short X.Y version
@@ -39,7 +39,7 @@ release = ''
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
+    # 'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
@@ -47,7 +47,19 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
-    'nbsphinx',
+    # 'nbsphinx',
+    'autoapi.extension'
+]
+
+autoapi_type = 'python'
+autoapi_dirs = [
+    '../../src/pamtra2',
+    '../../libs/meteo_si/meteo_si',
+    '../../libs/pamgasabs/pamgasabs',
+    '../../libs/pyPamtraRadarMoments/pyPamtraRadarMoments',
+    '../../libs/pyPamtraRadarSimulator/pyPamtraRadarSimulator',
+    '../../libs/refractiveIndex/refractiveIndex',
+    '../../libs/singleScattering/singleScattering',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

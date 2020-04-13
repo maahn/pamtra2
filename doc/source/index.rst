@@ -24,8 +24,8 @@ Included Libraries
 
 Besides the core python package `pamtra2` , additonal are libraries provided in `/libs`. They are installed as part of pamtra2 in `pamtra2.libs`, but can be also installed separately with the provided `setup.py` files:
 
-* meteo_si - Meteo SI is a collection of functions for atmospheric sciences following the 
-SI-convention (unless stated otherwise)* pamgasabs - Estimate gaseous absorption
+* meteo_si - Meteo SI is a collection of functions for atmospheric sciences following the SI-convention (unless stated otherwise)
+* pamgasabs - Estimate gaseous absorption
 * pyPamtraRadarSimulator - Simulate a radar Doppler spectrum
 * pyPamtraRadarMoments - Estimate the moments of the radar Doppler spectrum
 * refractiveIndex - general purpose refractive index of ice, water and Effective Medium Approximations
@@ -39,14 +39,8 @@ SI-convention (unless stated otherwise)* pamgasabs - Estimate gaseous absorption
 
    install
    tutorial
-   pamtra2
-   libs
    examples
 
-
-
-.. automodule:: pamtra2
-   :members:
 
 
 

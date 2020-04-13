@@ -2,7 +2,7 @@ channels:
 - conda-forge
 dependencies:
 - cython
-- python>=3.5
+- python>=3.6
 - numpy
 - scipy
 - xarray
@@ -17,3 +17,4 @@ dependencies:
 - gfortran_linux-64
 - fftw
 - lapack
+- sphinx-autoapi
