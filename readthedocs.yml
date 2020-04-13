@@ -1,9 +1,6 @@
-requirements_file:
-  doc/requirements.txt
-
-build:
-    image: latest
-
+version: 2
+formats:
+  - epub
+  - pdf
 python:
-    version: 3.6
-    setup_py_install: false
+   version: 3.6
