@@ -25,7 +25,7 @@ kw = {}
 if sys.platform == 'darwin':
     kw['extra_link_args'] = ['-undefined dynamic_lookup', '-bundle']
 
-library_dirs = ['~/.local/lib/', '/usr/local/lib/', '/opt/local/lib/']
+library_dirs = ['~/.local/lib/', '/usr/local/lib/', '/opt/local/lib/', '/opt/homebrew/lib/']
 
 def configuration(parent_package='', top_path=None):
 
