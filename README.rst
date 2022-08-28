@@ -11,10 +11,10 @@
     :alt: Code Coverage
 
 
-Pamtra2
-#######
-
 EARLY ALPHA VERSION! NOT FEATURE COMPLETE! It is strongly recommended to use the better documented normal Pamtra version avalable at https://github.com/igmk/pamtra
 
+
+Pamtra2
+#######
 Please see https://pamtra2.readthedocs.io for documentation. 
 
